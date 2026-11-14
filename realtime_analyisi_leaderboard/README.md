@@ -35,26 +35,28 @@ trends)? how does it compare with the reference? is there a better-founded techn
 
 ## Current reading
 
-_Updated 14 Nov 2026, 14:45 CET._
+_Updated 14 Nov 2026, 15:02 CET._
 
-- **`skore_money_v5` (learned ranker) is live since 14:35 CET, A/B against `skore_money_v4` (the rules).**
-  First seven minutes, so a direction and not a result: known shoppers 2.39% with v5 (11 purchases in 461
-  requests) against 1.35% with v4 (6 in 443); new shoppers 2.97% (6 in 202) against 2.62% (5 in 191).
-- **The mechanism is doing what the analysis asked for**, and this part is already solid (4,600 impressions per
-  arm): v5 puts 62% of its known-shopper impressions in subcategories where the shopper has bought before;
-  v4 puts 34%. Those impressions sell at about 0.3% each, the others at under 0.1%.
-- **Leaderboard**: conversion 1.47 against 1.21 for the best rival (team_09); reference 2.03, baseline 0.70 —
-  58% of the way from baseline to reference. Cold conversion 1.92, above the reference's 1.82.
-- **Reliability**: back to normal after the 14:14–14:31 stall (p95 1.67 s); the leaderboard's hourly
-  `on_time` is 95% and will keep recovering. The switch to v5 cost 38 unanswered requests.
-- **When to read the A/B**: with about 1,800 known-shopper requests per arm every 30 minutes, a difference
-  like 1.4% vs 2.4% needs roughly one hour (until about 15:35 CET) to be outside the noise.
+- **The learned ranker won the A/B.** 13:34–13:57 UTC: `skore_money_v5` 2.50% (58 purchases in 2,322
+  requests) against `skore_money_v4` 1.50% (29 in 1,936), 2.4 standard errors apart. The gain is on known
+  shoppers: 2.10% against 0.97% (2.6 standard errors). New shoppers 3.50% against 2.68%, not conclusive.
+  See [the 15:00 note](notes/2026-11-14_1500_v5-ab-result.md).
+- **All traffic is on v5 since 14:57 CET**, with a small exploration arm (`skore_money_v5_explore`).
+- **Against the reference**: v5 is at its level on the requests it served (2.50 ± 0.64 against 2.06). The
+  leaderboard shows 1.50 (rank 1; best rival team_09 at 1.27) because its one-hour window is still mostly v4;
+  cold conversion 2.01 against the reference's 1.85.
+- **Reliability is the open problem**: a second stall at 14:58–15:01 CET lost 172 requests; other teams were
+  unaffected, so it is local. `on_time` on the leaderboard is 93.5%. See
+  [the incident note](notes/2026-11-14_1414_incident-unanswered-requests.md).
+- **Next to watch**: v5 on new shoppers (the final brings new shoppers), and whether the leaderboard climbs
+  towards 2 over the next hour.
 
 ## Notes
 
 | When (CET) | Finding |
 |---|---|
+| [14 Nov 15:00](notes/2026-11-14_1500_v5-ab-result.md) | **A/B result**: the learned ranker converts 2.50% against 1.50% for the rules (2.4 standard errors); the gain is on known shoppers (2.10% vs 0.97%); v5 puts 62% of known-shopper impressions in purchase-history subcategories against 34%. At the reference's level on served requests |
 | [14 Nov 14:30](notes/2026-11-14_1430_why-far-from-reference.md) | **Why we are far from the reference**: the gap is all on known shoppers; their purchases follow their purchase-history subcategories (63%), not the session's category (21%); arithmetic of what the lever is worth; a proposed A/B arm |
-| [14 Nov 14:14](notes/2026-11-14_1414_incident-unanswered-requests.md) | Incident: 22% of requests unanswered for 8 minutes — a heavy local job starved the server. What to change before the final |
+| [14 Nov 14:14](notes/2026-11-14_1414_incident-unanswered-requests.md) | Incidents: requests unanswered at 14:14–14:31 (heavy local job + OneDrive upload) and again at 14:58–15:01 (cause not established; local, other teams unaffected). What to change before the final |
 | [14 Nov 14:25](notes/2026-11-14_1425_generalisation-reference-techniques.md) | Generalisation: the purchase-history lever also works with live-only history (new shoppers 5.8×), and the stream alone gives a live purchase for 28% of requests by the second hour. The reference beats us only on known shoppers. Techniques ranked by expected return, with sources. Price drops lift purchases ≈26% |
 | [14 Nov 14:06](notes/2026-11-14_1406_known-shoppers-gap.md) | The gap to the reference is on known shoppers; a purchase history in the product's subcategory multiplies purchases 6–14×; organic events show no satiation, the carousel does |

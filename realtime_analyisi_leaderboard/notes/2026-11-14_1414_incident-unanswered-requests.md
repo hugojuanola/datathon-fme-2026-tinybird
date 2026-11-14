@@ -43,3 +43,23 @@ requests apart from the 38 lost in the switch to v5.
 
 On the analysis side: the EDA cache moved out of the repository as well, and `tick.py` no longer scans
 `shop.history_events`.
+
+## Update, 15:02 CET — a second, shorter stall at 14:58–15:01
+
+After the hand-over to v5 + exploration at 14:57:00 CET (itself clean: no request lost), fallbacks per 20 seconds:
+
+| 20 s starting (UTC) | 13:58:00 | 13:58:20 | 13:59:20 | 14:00:00 | 14:00:20 | 14:00:40 | 14:01:00 | 14:01:20 |
+|---|---|---|---|---|---|---|---|---|
+| Unanswered, of 60 | 6 | 11 | 7 | 53 | 39 | 40 | 16 | 0 |
+
+172 requests lost in three minutes. The server log shows `slow_loops` growing by 8 a minute from its first
+minute, then at 15:00:00 CET all three refreshers timing out at once (`refresh_feedback`, `refresh_catalog`,
+`refresh_events`, read timeout 5 s) and connection timeouts to the API.
+
+What it was not: a RawTree outage — team_09, team_01 and team_20 stayed at 99.6–99.8% on time. So it is local
+to our laptop or our key. Not established: whether it is the server's own fast polling around the 5-minute
+mark, another local process, or this watch — a tick ran at 13:59:05–13:59:30 UTC and two small diagnostic
+queries at about 14:00:15, overlapping the stall without clearly preceding it.
+
+Changes on the watch side, in case it contributes: one tick per 15 minutes instead of two runs, never within
+a minute of a 5-minute mark, no extra diagnostic queries while the server is unhealthy.
