@@ -39,7 +39,7 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## Current reading
 
-_Updated 14 Nov 2026, 15:45 CET._
+_Updated 14 Nov 2026, 15:52 CET._
 
 - **Leaderboard**: 1.53, rank 2 — team_19 passed us with 1.54; team_09 at 1.42. Reference 2.10, baseline 0.73.
   Cold conversion 2.18, above the reference's 1.96.
@@ -47,19 +47,21 @@ _Updated 14 Nov 2026, 15:45 CET._
   (142 purchases in 7,328 requests) and earns more per request than the reference. The board loses about
   0.12 points to unanswered requests (8.3% since 15:06 CET) and about 0.22 to the exploration arm (20% of
   traffic at 0.83%). See [the 15:40 note](notes/2026-11-14_1540_path-to-the-reference.md).
-- **What is left to reach the reference is on known shoppers**: the `home` page (0.59% against 1.8–2.0% on
-  the other pages, worth ≈0.13), repeat visits (0.95% against 1.89% on a first visit, worth ≈0.11), and
-  shoppers with a medium history (no gain from v5).
-- **The 15:06 drop eased**: per six minutes 1.15, 1.13, 1.40, 1.56, 1.93, 1.47. The 2.35% of 14:34–15:06 was
-  probably a lucky stretch; the average since v5 went live is the better estimate.
-- **Reliability**: a new server instance with hedged requests started at 15:35 CET; first minutes clean.
+- **New lever for known shoppers: brand history.** A product of a brand the shopper has bought before sells
+  2.2–2.5× more per impression (0.213% vs 0.099% inside their subcategories, 0.163% vs 0.066% outside), and
+  the model has no shopper × brand feature. Worth about +0.2 overall by the usual arithmetic.
+- **Checked and discarded**: the `home` page (its lists are already history-based; the page itself converts
+  less), impression discounting for repeat visits (repeated products sell more than fresh ones), recency of
+  the last purchase, price against the shopper's usual price, popularity inside the subcategory.
+- **Reliability**: the instance started at 15:35 CET is clean so far; the laptop's upload dropped to 20 KB/s
+  once the call, the browser and OneDrive were closed.
 - **Live**: 80% `skore_money_v5`, 20% `skore_money_v5_explore`.
 
 ## Notes
 
 | When (CET) | Finding |
 |---|---|
-| [14 Nov 15:40](notes/2026-11-14_1540_path-to-the-reference.md) | **The path to the reference**: v5 converts 1.94% on what it serves; the board loses ≈0.12 to unanswered requests and ≈0.22 to exploration; the remaining model gap is on known shoppers — `home` page, repeat visits, medium-history shoppers — with a size for each and what to do |
+| [14 Nov 15:40](notes/2026-11-14_1540_path-to-the-reference.md) | **The path to the reference**: v5 converts 1.94% on what it serves; the board loses ≈0.12 to unanswered requests and ≈0.22 to exploration; the remaining model gap is on known shoppers. New lever: the brands a shopper has bought (2.2–2.5×, not in the model). Checked and withdrawn: `home` page, impression discounting |
 | [14 Nov 15:20](notes/2026-11-14_1520_conversion-drop-after-1406.md) | **v5 converts half as much since 14:06 UTC** (1.22% vs 2.35%) with unchanged lists, order, shoppers and organic stream; what was ruled out, what is left, and the test that separates the two remaining causes. Also: repeat visits convert half as much as first visits |
 | [14 Nov 15:00](notes/2026-11-14_1500_v5-ab-result.md) | **A/B result**: the learned ranker converts 2.50% against 1.50% for the rules (2.4 standard errors); the gain is on known shoppers (2.10% vs 0.97%); v5 puts 62% of known-shopper impressions in purchase-history subcategories against 34%. At the reference's level on served requests |
 | [14 Nov 14:30](notes/2026-11-14_1430_why-far-from-reference.md) | **Why we are far from the reference**: the gap is all on known shoppers; their purchases follow their purchase-history subcategories (63%), not the session's category (21%); arithmetic of what the lever is worth; a proposed A/B arm |

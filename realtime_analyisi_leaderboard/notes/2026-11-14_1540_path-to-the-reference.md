@@ -1,4 +1,4 @@
-# 14 Nov, 15:40 CET — the path to the reference, point by point
+# 14 Nov, 15:40 CET (revised 15:50) — the path to the reference, point by point
 
 **Where we are.** Leaderboard at 15:37 CET: team_06 1.53 (rank 2 — team_19 passed us with 1.54), reference
 2.10, baseline 0.73. The gap is 0.57 points. On the requests it actually serves, `skore_money_v5` converts
@@ -21,78 +21,72 @@ About the drop reported at 15:20: it eased. Per six minutes since 15:06 CET: 1.1
 1.47. v5 since 15:06 is at 1.60% (65 / 4,063), still 2.2 standard errors under the 2.35% of 14:34–15:06, so
 the earlier stretch was probably a lucky one and the truth is near the 1.94% average.
 
-## Where the model still loses: known shoppers, in three places
+## Where the model still loses: known shoppers
 
 v5 converts new shoppers at 2.78% (61 / 2,193) — well above the reference's cold 1.96 — and known shoppers at
-1.58% (81 / 5,135), against about 2.17 implied for the reference. Inside the known shoppers:
+1.58% (81 / 5,135), against about 2.17 implied for the reference.
 
-**1 · The `home` page — 20% of their requests, 7% of their purchases.**
+## The new lever: the brands a shopper has already bought
 
-| Page | Requests | Purchases | Conversion | Purchases per click |
-|---|---|---|---|---|
-| category | 1,218 | 24 | 1.97% | 35% |
-| product | 2,893 | 51 | 1.76% | 29% |
-| **home** | 1,024 | 6 | **0.59%** | 17% |
+Known shoppers, every impression we served since 13:40 CET (v4 and v5, exploration excluded), products the
+shopper had not bought — 133,800 impressions:
 
-On `home` there is no session, so everything must come from the shopper's history — and a known shopper has
-one. If `home` reached 1.5%, the overall number would rise by about **0.13**.
-
-**2 · Repeat visits — a third of their requests and growing.**
-
-| Request of the shopper since 13:40 CET | Requests | Purchases | Conversion | Purchases per click |
-|---|---|---|---|---|
-| First | 3,442 | 65 | 1.89% | 33% |
-| Later ones | 1,693 | 16 | **0.95%** | 20% |
-
-A returning shopper sees much the same list they already passed over. Recovering half of that difference is
-worth about **0.11** overall, and more in the second hour of a round, when most requests are repeat visits.
-
-**3 · Shoppers with a medium history.**
-
-| Purchases in the 60 days | Share of known requests | v5 | v4 (rules) |
+| The product is… | Impressions | Purchases | Purchases / impression |
 |---|---|---|---|
-| 0 | 4% | 0.49% | 0.00% |
-| 1–4 | 21% | 0.64% | 0.43% |
-| 5–9 | 19% | 1.52% | 0.98% |
-| 10–19 | 22% | **1.36%** | 1.35% |
-| 20+ | 34% | **2.46%** | 1.36% |
+| in a subcategory **and** of a brand the shopper has bought | 39,033 | 83 | **0.213%** |
+| of a brand the shopper has bought, in a new subcategory | 13,456 | 22 | **0.163%** |
+| in a subcategory the shopper has bought, of a new brand | 21,146 | 21 | 0.099% |
+| neither | 60,165 | 40 | 0.066% |
 
-The learned ranker's gain is concentrated in the heaviest buyers (2.46% against 1.36%). Shoppers with 10–19
-purchases did not move, and the light ones remain low.
+A brand the shopper has bought before multiplies purchases by 2.2 inside their subcategories and by 2.5
+outside them. **The model has no such feature**: `reco/features.py` knows the brand of the last viewed product
+(`same_brand`) and the shopper's history per subcategory and category, but not per brand.
+
+What it is worth, by the same arithmetic as before: today 65% of the impressions inside purchase-history
+subcategories and 18% outside them are of a bought brand. Moving those to 90% and 60% would take known
+shoppers from about 1.4% to about 1.7% per request — roughly **+0.2 overall**, the size of the model gap.
+
+It should generalise: a brand purchase can be counted from the live stream the moment it happens, like the
+subcategory purchases, so it exists for a shopper first seen in the final.
+
+## What does not matter (so nobody spends time on it)
+
+Same 133,800 impressions, inside purchase-history subcategories:
+
+- **How recent the last purchase in the subcategory was**: 0.18% (0–3 days), 0.16%, 0.21%, 0.18%, 0.14% (31–60 days). Flat.
+- **The product's price against what the shopper usually pays in that subcategory**: 0.14–0.21% across the range. Flat.
+- **How popular the product is inside its subcategory**: top-1 0.18%, ranks 2–3 0.13%, 4–10 0.21%, 11+ 0.16%. Flat —
+  for a known shopper the best seller of the subcategory is no better than its tenth product.
+- **How many times they bought in the subcategory** does matter, as already known: 0.10% with one purchase, 0.27–0.29% with five or more.
+
+## Two ideas from the first version of this note, checked and withdrawn
+
+- **The `home` page.** It converts 0.56% for known shoppers against 1.7–2.1% on the other pages, and I
+  suggested the lists there were generic. They are not: on `home` v5 already puts 62% of the impressions in
+  purchase-history subcategories (60% on product pages) and the same share of best sellers (23%). The page
+  itself converts less — it did in the 60-day log too (0.14% against 1.7%). No easy points there.
+- **Impression discounting for repeat visits.** A returning shopper gets a list that repeats 6.9 of 10
+  products, and repeat requests convert less (1.61% against 1.93% for first requests under v5). But on those
+  requests the repeated products sell *more* than the fresh ones — 0.192% per impression (9 / 4,687) against
+  0.094% (2 / 2,133), and 0.114% against 0.049% even when the previous list got no click. Repetition is not
+  what costs the purchases; discounting repeated products would remove the better half of the list.
 
 ## What to do, in order
 
-1. **Answer every request** (+0.12, and the 10 reliability points of the final). A new server instance with
-   hedged requests started at 15:35 CET and its first minutes are clean (1 unanswered in 273).
+1. **Answer every request** (+0.12, and the 10 reliability points of the final). The instance started at
+   15:35 CET with hedged requests is clean so far, and the laptop's upload fell from 100–130 KB/s to 20 KB/s
+   once the call, the browser and OneDrive were closed.
 2. **No exploration arm in the final** (+0.22 against today's board). Keep it now: it is what makes the next
    model trainable and testable.
-3. **`home` for known shoppers** (≈ +0.13). Check what v5 puts there: with no session, the 500 candidates
-   should come from the shopper's purchase subcategories (their top products, not yet bought) and abandoned
-   carts, not from global popularity.
-4. **Impression discounting for repeat visits** (≈ +0.11): lower the score of a product each time it was shown
-   to the same shopper without a click, so the list rotates. It is a standard technique with a simple form —
-   a decay in the number of past impressions and the time since the last one [1].
-5. **Medium-history shoppers**: the purchase-share features are noisy with few purchases; shrink them towards
-   the shopper's category-level shares or towards shoppers of the same device and region.
-
-Items 1 and 2 are operations and add up to more than the model gap. Items 3 and 4 together are worth about
-0.24 — enough, on today's numbers, to pass the reference.
-
-## For the final
-
-- Items 3–5 use the shopper's history. For shoppers first seen in the final that history is whatever the live
-  stream gave us, so the `home` rule must work from live purchases and carts alone.
-- Repeat visits exist for new shoppers too, and their share grows through the two hours: impression
-  discounting generalises as it is.
-- New shoppers are where we already beat the reference; nothing here should touch that path.
+3. **Add the shopper's brand history to the model** (≈ +0.2): purchases per brand in the shopper state, a
+   share and a count as features, and a retrieval lift for brands bought, as was done for subcategories.
+4. Shoppers with a medium history (10–19 purchases: 1.36% with v5, the same as with the rules): the brand
+   feature is the first thing to try for them too, since it is defined after a single purchase.
 
 ## How it was measured
 
-One light query joining `shop.requests`, `team_06.feedback` and `team_06.submissions` since 13:40 CET, joined
-locally to the cached 60-day purchase counts per shopper. Purchases are realised ones; the leaderboard counts
-expected purchases, which agree on average.
-
-## Source
-
-1. Lee, Lakshmanan, Tiwari, Shah, *Modeling impression discounting in large-scale recommender systems*, KDD
-   2014 — <https://www.aminer.org/pub/5550453645ce0a409eb549ac/modeling-impression-discounting-in-large-scale-recommender-systems>
+Light queries joining `shop.requests`, `team_06.feedback` and `team_06.submissions`, joined locally to the
+cached 60-day purchases per shopper (subcategory, brand, price, date). Purchases are realised ones; the
+leaderboard counts expected purchases, which agree on average. Not controlled for: a shopper with more
+purchases has bought more brands, so part of the brand effect may be the purchase-count effect — the model
+will separate them once the feature exists.
