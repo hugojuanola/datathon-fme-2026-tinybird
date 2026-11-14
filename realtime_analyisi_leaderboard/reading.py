@@ -58,7 +58,7 @@ def main() -> None:
                  f"known shoppers {num(last, 'known_conv_pct'):.2f}% ({last['known_requests']}).")
     # which code produced these numbers: the last commit that touched the model, and anything not committed yet
     head = git("log", "-1", "--format=%h — %s (%cd)", "--date=format:%H:%M", "--", *MODEL_PATHS)
-    dirty = [ln[3:] for ln in git("status", "--porcelain", "--", *MODEL_PATHS).splitlines() if ln.strip()]
+    dirty = [ln.split(maxsplit=1)[1] for ln in git("status", "--porcelain", "--", *MODEL_PATHS).splitlines() if len(ln.split()) > 1]
     unpushed = git("log", "origin/javier..HEAD", "--oneline", "--", *MODEL_PATHS).splitlines()
     lines.append(f"- **Architecture and model in the repository**: last commit on `reco/`, `offline/` or the findings: `{head}`. "
                  + ("Everything there is committed" if not dirty else "Not committed yet: " + ", ".join(f"`{d}`" for d in dirty))
