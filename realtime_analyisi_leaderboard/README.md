@@ -28,6 +28,8 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## How to read a tick
 
+- **`conv_15m`, `ref_conv_15m`, `missing_to_ref_15m`** — the same official board over the last 15 minutes
+  instead of the last hour: where we are now, without the hour's inertia. Noisier (2,700 requests).
 - **`pct_of_way_to_ref`** — how far our conversion is between the baseline (0) and the organisers' reference
   (100). The real score uses the unpublished oracle instead of the reference, so this is an upper bound on it.
 - **`new_conv_pct` / `known_conv_pct`** — realised conversion of the requests *we* served, split by
@@ -40,19 +42,19 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## Current reading
 
-_Updated 14 Nov 2026, 16:27 CET._
+_Updated 14 Nov 2026, 16:45 CET._
 
-- **Leaderboard**: 1.80, rank 1 (team_19 1.63, team_26 1.58). Reference 2.11, baseline 0.72 — **78% of the way
-  from baseline to reference**. Cold conversion 2.44, above the reference's 1.92.
-- **Reliability**: every request answered since 15:43 CET, p95 1.7 s, `on_time` back to 97% on the board.
-- **`skore_money_v7` (product attributes) is live since 16:12 CET against v5, and it pulls the lever**: 75% of
-  what it shows known shoppers has high attribute affinity (v5: 43%), 10% low (v5: 38%); twice as many
-  products share an attribute with the last view. See
-  [the 16:25 note](notes/2026-11-14_1625_v7-live-mechanism.md).
-- **Its conversion is not readable yet**: after ten minutes v7 1.61% (19 / 1,181) against v5 1.82% (36 /
-  1,982 over a longer period). Readable about 17:00 CET.
-- **v6 was replaced at 16:12 CET**; it was behind on known shoppers (0.81% against 1.46%).
-- **The gap left** (0.31 points): about 0.1 is the exploration arm; the rest is known shoppers.
+- **In the last 15 minutes we are above the reference**: 2.135 against 2.011 on the official board (expected
+  purchases, 2,700 requests, 100% on time). Last 30 minutes: 2.035 against 2.048. Last hour: 2.00 against
+  2.14 — 90% of the way, 0.14 missing, and closing as the older minutes roll out.
+- **Cold conversion** 2.69 against the reference's 2.00 (hour) — well ahead.
+- **Best rival**: team_26 at 1.79 (hour) and 1.82 (15 minutes).
+- **Live since 16:25 CET**: `skore_money_v8` 60% (product attributes, no brand features), `skore_money_v5` 30%
+  as control, `skore_money_v8_explore` 10%. The arms stay fixed until about 17:25 CET.
+- **Still to confirm with our own feedback**: v8 against v5 over the same minutes, known and new shoppers
+  separately ([16:25 note](notes/2026-11-14_1625_v7-live-mechanism.md) has the mechanism check).
+- **The board can be read for any window** of 15 minutes or more: `tick.py` now reports the last hour and the
+  last 15 minutes side by side (`https://datathon.rawtree.dev/api/state?from=<unix>&to=<unix>`).
 
 ## Notes
 
