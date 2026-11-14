@@ -651,3 +651,184 @@ the best 300 of the carousel models (identical lists on 250 requests; 34 ms).
 Outside a trend v31, v34 and v35 are the same ranker: pooled (50 %) against v32 and v33 they answer
 "does the organic factor help live?" and "does retraining v9 on more data help or hurt?". While a trend
 runs, v31 / v34 / v35 give the dose of the lift.
+
+## 21. What v9 already knows: ten checks against its own predictions, and the one that left something
+
+On the evening of 14 Nov the next team was within 0.05 purchases per 100 requests, so we went looking for
+signals the ranker does not use. One method for all of them, and it is the lesson of the section: **hold
+what the ranker already predicts equal.** The lists are those of 17:00–20:20 UTC, which v9 had not seen
+(30,893 lists, 308,928 impressions, 2,312 clicks, 724 purchases). For every impression v9 gives the
+probability of a click and of a purchase at the slot where it was shown; a group of impressions where
+observed / predicted stands apart from the rest holds information v9 does not use. For a continuous
+property: a conditional logit of which of the ten was chosen, with log(v9's prediction) next to it (its
+coefficient comes out at 0.9: the order inside a list is about right).
+
+Holding only the slot equal is not enough. That way the attribute affinity of §13 — a feature v9 has had
+all day — "explains" ×1.28 on clicks and ×1.57 on purchases; with v9's prediction held equal it is ×1.05
+(+2.0 standard errors) and ×1.00 (+0.1), as it should be for something the ranker already uses.
+
+| Signal v9 does not have | Against v9's own prediction | Verdict |
+|---|---|---|
+| "Shoppers who bought this also bought that": cosine between the buyers of two products in the 60 days, summed over what the shopper bought | Per standard deviation inside the list. Known shoppers: clicks ×1.04 (+1.5 se), purchases ×0.97 (−0.5 se); reordering the ten by it lowers the reciprocal rank of the purchase (0.381 → 0.363); next purchases in the store (§19) in the top 10: 13.6 % → 13.6 %. New shoppers (what they bought today): ×1.16 (+3.3 se) and ×1.23 (+2.8 se) | For a known shopper, 60 days of shares by subcategory, brand and attribute already carry it. For a new one they do not |
+| The same, summed over the abandoned cart | Known shoppers ×1.07 (+2.6 se) and ×0.99 (−0.2 se). New shoppers ×1.21 (+4.5 se) and ×1.34 (+4.4 se) | The strongest of the three, for new shoppers only |
+| The same, summed over the recent views | Known shoppers ×1.01 and ×0.98. New shoppers ×1.13 (+2.9 se) and ×1.06 (+0.9 se) | On clicks, for new shoppers |
+| The product was already shown to this shopper today (34 % of impressions, 46 % in slots 1–2) | Purchases observed / predicted: first time 0.95, second 1.00, third 0.90. From the third time on: clicks 0.79 ± 0.05, purchases 0.85 ± 0.10 | A mild fatigue, on clicks |
+| Abandoned cart: how many times the shopper carted the product | Once 0.80 ± 0.06, twice 1.03 ± 0.15, three times or more 1.25 ± 0.26 | Real: a product carted once is worth a fifth less than v9 thinks |
+| Abandoned cart: views of the product after carting it | None 0.86, one 1.04, two or more 0.42 ± 0.29 (2 purchases) | Already predicted, through the age of the cart |
+| The shopper had looked at the product in the 60 days and never carted it | 0.75 ± 0.10 | A look that did not end in a cart is a mild "no" |
+| Product of the request's recent views (2.5 per list; 12 % of them are in our ten) | 1.11 ± 0.14; the ones v9 scores low and were shown anyway: 4 purchases for 5.8 predicted | v9 is right to leave most of them out |
+| Product added during the event | 1.29 ± 0.12, against 0.91 ± 0.04 for the original catalogue | **v9 is short: below** |
+| Product on promotion at the time of the impression (7.5 % of impressions, at 0.83 of the catalogue price; v9's `discount` was trained on a table that stamped the last price on every row) | 1.06 ± 0.14 against 0.94 ± 0.03 at catalogue price (60 purchases). A multiplier (price / catalogue price) ^ −1.6, the elasticity of the organic stream (§16): reciprocal rank of the purchase 0.384 → 0.384 on v9, 0.406 → 0.406 on v9 × organic; the organic factor already leans ×1.08 towards promoted products | Nothing to add |
+| An id for the category, the subcategory or the brand (v9 has none, by design) | Observed / predicted per group, learned before 17:00 UTC and compared with after (trending subcategories left out during their trend): the two halves of the day agree with a correlation of +0.38 (10 categories), −0.11 (87 subcategories), +0.20 (80 brands). Multiplying v9 by the morning's ratios leaves the evening's reciprocal rank where it was (0.393 → 0.393 by subcategory, 0.388 by brand) | Nothing stable to learn: what looks like a category effect in one window is gone in the next |
+
+Everything is within a quarter of what v9 predicts. Collaborative filtering helps exactly where the
+ranker has little to go on: a new shopper's handful of events is too few for shares, and what others bought
+together with their cart says more. It is not deployed: it feeds on what the shopper carted and bought
+earlier in the day (56 % of today's lists for new shoppers had a purchase behind them), and the final lasts
+two hours. A count must stop at the request, too: counted over the
+whole day, "views after carting" looked like a ×10 signal (a shopper who did not buy from our list goes on
+looking at the product afterwards); counted up to the request it is what v9 already predicts.
+
+**Products added during the event.** After a click, a known shopper buys one of them 36.6 % of the time and
+a product of the original catalogue 25.4 %; v9 expected 25.5 % and 26.9 %. New shoppers buy both alike
+(42 % and 40 %), and v9 knows it. It does not fade with the product's age (4 to 8 hours old: 1.30; older:
+1.28). v9 was trained when 200 such products had sold little; v9b, which has seen these hours, expects 33 %
+— but brings everything else it relearned with it. The smallest change that fixes it: the score of a product
+added during the event is multiplied by 1.5 (the ratio of the two calibrations for known shoppers, 1.37 /
+0.90) when the shopper is a known one (`fresh` in `reco.recommend`). On held-out lists (since 16:14 UTC,
+904 purchases, 121 of a new product), where the purchased product would be among the ten shown —
+reciprocal rank, and how often first:
+
+| | v9 | v9, new ×1.5 | v9 × organic | v9 × organic, new ×1.5 |
+|---|---|---|---|---|
+| All requests | 0.384 · 17.8 % | 0.387 · 18.4 % | 0.406 · 20.4 % | **0.409 · 20.8 %** |
+| Known shoppers | 0.387 · 19.0 % | 0.393 · 20.0 % | 0.407 · 20.7 % | **0.413 · 21.3 %** |
+
+×1.3 gives 0.409 and ×2 gives 0.412 on the last column; applied to new shoppers as well it loses (0.404 →
+0.399), as the calibration said. A small step, and the ten shown cannot say what the lift brings into the
+list from outside: on 276 requests of known shoppers it changes 0.42 of the ten products and takes the
+products added during the event from 0.85 to 1.27 per list.
+
+**Live since 21:32 UTC** (v31, v32 and v33 answer the same requests as before, by the same hash):
+
+| Arm | Traffic | What |
+|---|---|---|
+| `skore_money_v31` | 30 % | v9 + trend lift — the version to beat |
+| `skore_money_v32` | 30 % | v9 × organic + trend lift |
+| `skore_money_v33` | 20 % | v9b + trend lift |
+| `skore_money_v36` | 20 % | v9 × organic + trend lift + new products ×1.5 for known shoppers: every piece with evidence, as one candidate |
+
+v34 (no lift) and v35 (lift ^ 0.5) were closed: the dose of the lift was settled per impression (×8.3
+measured, ×8.6 estimated, §16), and two arms of 10 % could not have told it apart in a night.
+
+**A model must not be asked about what it has never seen: the organic factor during a trend.** At 21:30 UTC
+Face Cream started trending: a small subcategory (22 products, 0.07 % of the store's purchases; during the
+trend 7–8 purchases per 5 minutes against 0.7, the detector said ×9–12). It was the first trend with the
+organic factor live, and the second session's watch caught it within 12 minutes:
+
+| 21:30–21:51 UTC | Face Cream products per list | in slot 1 | their impressions | clicks | purchases |
+|---|---|---|---|---|---|
+| v31, v33 (carousel models × lift) | 0.20 | 1 % of lists | 358 | 0 | 0 |
+| v32, v36 (× organic factor) | 1.63 – 1.79 | 13 – 15 % of lists | 2,936 | 2 | 0 |
+
+The other products of those same lists were clicked 0.8 % of the time (3.2 % in slot 1): the organic arms were
+giving a sixth of their slots to products nobody clicked, and their lists with three or more of them sold
+0.44 per 100 against 2.95 for their lists with none. For Game Consoles (11 % of the store's purchases while
+it trended) the carousel models had shown 1.2–1.4 trending products per list and they sold ×8.3: the lift is
+right, and it limits itself — eight times a tiny probability is still tiny, and v9 leaves those products
+out. The organic model is what broke. It learned which product a shopper goes on to buy *among the
+candidates the rules retrieve on an ordinary day*; Face Cream products are candidates only because the lift
+puts them there, and on products it was never asked about its answer means nothing. Reproduced offline on
+120 of the day's requests with a made-up ×10 on Face Cream: 0.24 trending products per list for v9 + lift,
+3.05 for v9 × organic + lift, 0.02 for v9 × organic without the trend.
+
+The fix (`reco.recommend.level_trending`, live at 21:51 UTC, 21 minutes after the trend began): while a
+trend runs, a trending product takes the organic factor of the products the carousel models score about as
+high — the median of the ten ranked just above it and the ten just below, among those not trending — so
+the organic model has no say on it and it keeps the place the carousel models and the lift give it. Offline
+the same test gives 0.17 per list; live, after the swap, 0.24 (v32) and 0.08 (v36) against 0.21 (v31) and
+0.20 (v33), none in slot 1. A big trend is still used: with a made-up ×8.8 on Game Consoles, 2.1 products
+per list against 2.5 for v9 + lift. For the night's reading the organic arms count from 21:52 UTC.
+
+Two things to keep from it. A model is only as good as the candidates it was trained on, and a multiplier
+that changes the candidates changes the question. And an arm must be watched in every regime it will meet:
+the organic arm had been ahead for an hour (+0.30, 1.9 standard errors) on minutes without a trend.
+
+## 22. The organic model as a second stage: it orders the ten better than the models that picked them
+
+The numbers of §20 already said it and we had read past it: on the ten products of a list, the organic
+model **alone** puts the purchased one first more often (21.3 %) than v9 (17.8 %) or v9 × organic (20.4 %).
+A model that never saw a carousel orders v9's ten better than v9 does. After §21 that is worth more than it
+looked: the full organic arm (v32) applies the factor to the best 300 candidates and so changes 3 of the 10
+products of a list, and nothing offline can say what the three newcomers are worth — they were never shown.
+Reordering the ten is exactly what the held-out lists measure, and it cannot bring a product in.
+
+In purchases, with a position-based estimate (a purchase made in slot k counts attention(new slot) /
+attention(k); attention per slot from the old carousel's log: 1.00, 0.56, 0.41, 0.32, 0.26, 0.23, 0.21, 0.18,
+0.16, 0.15; the order actually shown scores exactly the purchases counted). Held-out lists since 16:14 UTC,
+neither model had seen them: 38,627 lists, 2,864 clicks, 904 purchases.
+
+| The ten shown, ordered by | Clicks | Purchases | Known shoppers | New shoppers |
+|---|---|---|---|---|
+| v9 | 2,870 | 893 | 523 | 370 |
+| v9 × organic ^ 0.5 | +3.4 % | +3.0 % | +2.1 % | +4.3 % |
+| **v9 × organic** | +4.5 % | **+4.7 %** (pair by pair: +41.6 ± 14.2 purchases, 2.9 standard errors) | +4.3 % | +5.1 % |
+| v9 × organic ^ 2 | +5.1 % | +5.0 % (± 2.1) | +5.7 % | +3.9 % |
+| organic alone | +6.9 % | +4.7 % (± 3.0) | +5.8 % | +3.1 % |
+
+**How much depends on how fast attention falls down the list**, and that is not known exactly. With the
+old log's curve the reorder is worth +4.7 %. With the curve v9's own click model implies when the same
+product is moved down the list (1.00, 0.68, 0.48, 0.40, 0.37, 0.34, 0.32, 0.30, 0.29, 0.29 — flatter: the old
+carousel also put its better products first, so its raw clicks per slot overstate the fall) it is +2.5 % ±
+1.1; with a curve steeper than the log's, +11 %. Positive under all of them, and power 1 is the robust dose:
+"organic alone" goes from −0.9 % to +24 % with the curve, power 2 from +1.8 % to +15 %. The second session
+measured today's curve on the same lists, v9's score held equal: 1.00, 0.60, 0.48, 0.45, 0.42, 0.36, 0.33,
+0.33, 0.28, 0.27 from clicks — v9's curve, not the old log's (slots 2–10 get 1.4 times the attention the
+old log gives them). So the honest reading is the lower one, about +2.5 %.
+
+The same lists as a choice — which of the ten was chosen, given log(v9's prediction at its slot) and
+log(organic factor) — give the organic factor a coefficient of 0.34 ± 0.04 on clicks and 0.59 ± 0.07 on
+purchases, next to 0.81 and 0.82 for v9: 9 and 8 standard errors, by far the strongest information outside
+v9 found all day (the best of §21 was 4.5). The fitted power on top of v9 is 0.4 for clicks and 0.7 for
+purchases; power 1, as in v32, is within what the estimates above can tell apart. A flat-ish attention curve
+also says that which ten are shown matters about as much as their order: that is v32's bet, and v37 against
+v32 is the test.
+
+The arm is one parameter (`pool` in `reco.recommend`: how many of the carousel models' best candidates the organic factor
+may reorder; 10 = they pick the ten). On 150 of the day's requests it shows the same ten products as v9 in
+all 150 lists, a different first product in 33 %, and costs 2 ms more than v9 (the organic model scores 10
+rows instead of 300: 51 ms per list against 49, and 95 for v32).
+
+**Live since 22:23 UTC:**
+
+| Arm | Traffic | What | Question |
+|---|---|---|---|
+| `skore_money_v31` | 30 % | v9 + trend lift | the version to beat |
+| `skore_money_v37` | 20 % | v9 + lift picks the ten, v9 × organic orders them | against v31: the order alone, the same ten products |
+| `skore_money_v32` | 30 % | v9 × organic over the best 300, + lift | against v37: what the organic factor brings in from outside the ten |
+| `skore_money_v36` | 20 % | v32 + products added during the event ×1.5 for known shoppers | against v32: the lift for new products (§21) |
+
+v37 took the place of v33 (v9b, v9's features retrained on all of Saturday): over its first hour it was level
+with v9 (2.18 against 2.17 on 1,800 requests), as both offline judges had said. More of the same day's
+feedback neither helped nor hurt.
+
+**The cost in time.** With the organic model on the best 300 candidates of half the traffic, ranking took
+100 ms per request instead of 63 and p95 of the answers went from 1.8 to 2.1 s over the evening (p99 2.9 s;
+the two assistant sessions working on the same laptop added to it). On 120 requests the best 100 candidates
+give the same list as the best 300 in 115 and the same first three products in 119, in 68 ms instead of
+108: v32 and v36 ask about 100 since 22:41 UTC. v37 asks about ten and costs nothing — against v32 it
+shares the first product in 98 % of lists and the first three in 89 %; what differs is the lower slots.
+
+**A product just added waits 20 minutes** (`NEW_PRODUCT_WAIT`, every arm, live since 22:34 UTC). Found by
+the second session reading clicks by slot: in the store a new product sells from its first minute, in the
+carousel it is not clicked for its first twenty. Four batches (14:00, 18:00 and 22:00 UTC served from their
+first minute): 1 click in 1,954 impressions where the ranker expected 12; from 20 to 40 minutes 9 clicks for
+7 expected, later 1.2 to 1.6 times the other products at the same slots. The lists carried one in 11 % of
+cases (23 % with the lift for new products), around slot 5. Worth little — a couple of purchases per batch
+— and free: until it is 20 minutes old a product is treated like one out of stock. Tested on the day's
+requests around the 18:00 batch: none of its products in 200 lists before 18:20, in 59 of 200 after 18:25.
+
+Left for a retrain, not for tonight: an abandoned cart carted once is worth a fifth less than v9 thinks
+(§21). Scoring it ×0.8 would move the reciprocal rank of the purchase from 0.384 to 0.390, but the live
+state does not count carts per product, and a counter added to the state the night before the final is a
+risk the gain does not pay for.

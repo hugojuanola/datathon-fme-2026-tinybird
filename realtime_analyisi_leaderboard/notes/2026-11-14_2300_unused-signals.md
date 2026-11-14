@@ -1,4 +1,4 @@
-# Three signals our lists do not use: co-purchase, co-view and "new product" (14 Nov, 23:00 CET)
+# Three signals our lists do not use: co-purchase, co-view and "new product" (14 Nov, 22:05 CET)
 
 **In one line**: inside the lists we served, the product that was clicked or bought is, more often than
 its slot explains, (1) one that shoppers with the same purchases also bought, (2) one co-purchased with
@@ -107,3 +107,59 @@ Sources: [OTTO: co-visitation candidates and a GBDT reranker](https://towardsdat
 [OTTO, 3rd place team](https://github.com/bschifferer/Kaggle-Otto-Comp) ·
 [H&M 1st place, summary](https://goldandrabbit.github.io/2022/05/15/H&M%20Recommendation%20Competition%20Top1%20%E6%96%B9%E6%A1%88) ·
 [H&M winners used LightGBM and CatBoost rankers](https://arxiv.org/pdf/2310.03778v1.pdf)
+
+## Update, 22:40 CET — do they come back on a separate window? And region, device
+
+A finding kept only if it repeats. The properties come from the 60-day history, which ends before the
+event, so two windows of today are two independent tests: A = 15:30-18:30 UTC (2,275 clicked lists),
+B = 18:30-21:35 UTC (2,428). Coefficients on clicks (z):
+
+| Shoppers | Property | Window A | Window B | Verdict |
+|---|---|---|---|---|
+| Known | `co_hist`, per sd | +0.175 (+4.0) | +0.153 (+3.3) | **holds**; slots 3-10: +0.195 (+3.4) and +0.165 (+2.6) |
+| New | `co_view`, per sd | +0.215 (+3.9) | +0.187 (+3.6) | **holds**; slots 3-10: +0.296 (+3.9) and +0.207 (+2.8) |
+| Known | new product | +0.690 (+4.2) | +1.036 (+6.6) | **holds** |
+| New | new product | +0.901 (+3.5) | +0.509 (+2.3) | **holds** |
+| Known | `co_view`, per sd | +0.010 (+0.3) | +0.128 (+3.4) | does not repeat: dropped for known shoppers |
+| Known | attribute affinity, per log unit | +0.167 (+1.7) | +0.325 (+3.3) | same sign; already a feature |
+
+On the purchases of window B alone (742 lists) the new-product term is +1.63 (+5.0) for known shoppers;
+`co_hist` is +0.143 (+1.4) and `co_view` for new shoppers +0.159 (+1.8): the right sign, too few purchases in
+half a day to stand alone. On all the purchases since 15:30 they are +0.213 (+3.0) and +0.247 (+3.8).
+
+**Region and device** (how much the product's subcategory over-sells in the request's region or on its
+device, from the purchase history; subcategory shares differ by region with a standard deviation of 0.18
+in log, by device 0.17): nothing for known shoppers (0.00 and +0.01) and nothing for the device. For new
+shoppers the region reads +0.053 (+1.8) on all slots and +0.116 (+2.9) in slots 3-10, about the same in
+both windows: a small signal (x1.05 to x1.12 per sd) for the shoppers we know nothing else about. Third in
+line, after the two co-purchase terms.
+
+What stands, then: `co_hist` for known shoppers, `co_view` for new shoppers, and the new-product
+multiplier. The model session put the last one live at 21:33 UTC as `skore_money_v36` (`v32` with products
+added during the event x1.5), which measures it directly against `v32`.
+
+## Correction, 22:45 CET — the co-purchase terms do not survive a better control
+
+The model session repeated the test with the right control: next to the slot, the ranker's own prediction
+for each product (`log` of v9's prediction at that slot), on lists v9 had not been trained on (17:00-20:20
+UTC, 30,893 lists, 2,312 clicks, 724 purchases). Slot dummies alone do **not** absorb what the ranker knew.
+The sign was in this note already and I did not draw the conclusion: attribute affinity, a v9 feature all
+day, showed x1.28 clicks and x1.57 purchases here; with v9's prediction held equal it shows x1.05 and x1.00.
+
+With v9's prediction held equal, per sd inside the list:
+
+| Signal | This note said | With v9's prediction held equal | Verdict |
+|---|---|---|---|
+| `co_hist`, known shoppers | x1.19 clicks, x1.24 purchases | x1.04 (+1.5 se), x0.97 (-0.5) | **withdrawn**: v9 already has it through the attributes and the subcategory history; reordering by it loses |
+| `co_view`, known shoppers | x1.06, x1.14 | x1.01, x0.98 | withdrawn |
+| `co_view`, new shoppers | x1.22, x1.28 | x1.13 (+2.9), x1.06 (+0.9) | small on clicks, nothing on purchases |
+| co-purchase with what a new shopper carted or bought today | not tested here | x1.21 (+4.5) / x1.34 (+4.4) and x1.16 / x1.23 | real, but needs the shopper's carts and purchases of the day, which a two-hour final barely has: written up (findings §21), not deployed |
+| product added during the event, known shoppers | x2.1 to x4.3 purchases | x1.59 (+2.8); observed / predicted purchases 1.37 against 0.90 for the old catalogue | **stands**: live as `skore_money_v36` (x1.5, known shoppers only) |
+| product added during the event, new shoppers | x2.3 | x1.20 (+0.7); observed / predicted 1.06 | withdrawn: v9 already has it there |
+
+What this changes in the method: `signal_scan.py` with slot dummies is a screen, not a test. It finds
+candidates cheaply and it controls for the mix of requests, but a positive coefficient only says "better
+than the average product of that slot", which is also true of anything the ranker already ranks well.
+Repeating on a second window does not cure that: the same bias repeats. The test that counts holds the
+ranker's prediction equal, and after that only a live arm. Of the three signals of this note one is left,
+and it is live.

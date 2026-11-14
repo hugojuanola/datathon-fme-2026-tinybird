@@ -31,26 +31,32 @@ import zlib
 from reco.priority import foreground, stay_awake
 from reco.rawtree import LOGS, ROOT, insert, query
 from reco.features import trend_names, trend_vector
-from reco.recommend import Ranker, is_valid, recommend, safe_list
+from reco.recommend import Ranker, is_valid, new_shopper, recommend, safe_list
 from reco.state import State
 
 # (model_version written with each answer and shown on the public leaderboard, policy, ranker in models/,
-#  what it adds to the ranker — {"trend": exponent or "model", "organic": power, "price": elasticity}, see
-#  recommend —, % of the traffic). A ranker "A|B" routes by kind of request: A answers the cold ones, B the rest.
+#  what it adds to the ranker — {"trend": exponent or "model", "organic": power, "pool": how many candidates
+#  the organic factor may reorder, "fresh": multiplier, "price": elasticity}, see recommend —, % of the
+#  traffic). A ranker "A|B" routes by kind of request: A answers the cold ones, B the rest.
 #
 # The night of 14 to 15 Nov. One ranker for every request (weighting live feedback x20 for cold requests did
 # not help on any of three measurements). v9 is the best proven; a trending product sells x8.3 in our
 # carousel, which is what the detector estimates, so the lift is applied in full (exponent 1).
 #   v31  v9 + lift                      the version to beat
 #   v32  v9 x organic + lift            + what shoppers go on to buy in the store (offline/organic.py)
-#   v33  v9b + lift                     v9's features retrained on all of Saturday
-#   v34  v9, no lift  /  v35  v9, lift ^ 0.5     the dose of the lift, read while a trend runs
-# Outside a trend v31, v34 and v35 are the same ranker: pool them against v32 and v33.
+#   v37  v9 + lift picks the ten, v9 x organic orders them: the same ten products as v31, in another order. No
+#        product enters a list on the organic model's word, and it is exactly what the held-out lists
+#        measured (+2.5 % to +4.7 % purchases, findings §22). v37 against v31 is the order alone; v32 against v37 is
+#        what the organic factor brings into the list from outside
+#   v36  v9 x organic + lift, and products added during the event x1.5 for known shoppers (findings §21)
+# v31 and v32 answer the same requests as before (same hash buckets), so their series go on. v37 took the
+# place of v33 (v9b, v9's features retrained on all of Saturday: level with v9 over its first hour, as it
+# was offline), v36 that of v34 (no lift) and v35 (lift ^ 0.5): the dose of the lift was settled per
+# impression (x8.3 measured, x8.6 estimated), which two arms of 10 % could not have told apart in a night.
 ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 30),
         ("skore_money_v32", "model", "v9o", {"trend": 1.0, "organic": 1.0}, 30),
-        ("skore_money_v33", "model", "v9b", {"trend": 1.0}, 20),
-        ("skore_money_v34", "model", "v9", {}, 10),
-        ("skore_money_v35", "model", "v9", {"trend": 0.5}, 10))
+        ("skore_money_v37", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10}, 20),
+        ("skore_money_v36", "model", "v9o", {"trend": 1.0, "organic": 1.0, "fresh": 1.5}, 20))
 POLLERS = 4
 POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
 SENDERS = 4
@@ -81,7 +87,7 @@ def arm_of(request_id: str) -> tuple[str, str, str, dict]:
 def is_cold(state: State, req: dict) -> bool:
     """The organisers' definition of a cold request: a new shopper, or a product added during the event among
     the recent views. These are the requests the old carousel log knows nothing about."""
-    if str(req.get("is_new")).lower() in ("true", "1"):
+    if new_shopper(req):
         return True
     cat = state.catalog
     return any(bool(cat.is_new[cat.pos[p]]) for p in req["rv"] if p in cat.pos)

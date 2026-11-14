@@ -48,7 +48,7 @@ connection being busy with something else (docs/findings.md §8). So the checkli
    ```
 
    Healthy log line (one per minute, `$SKORE_LOGS_DIR/serve.log`):
-   `answered=… failed_polls=0 failed_inserts=0 … poll_ms avg≈200 … rank_ms/request avg≈50`.
+   `answered=… failed_polls=0 failed_inserts=0 … poll_ms avg≈200 … rank_ms/request avg≈60` (≈80 with v32 or v36).
 
 ## 10:00–12:00
 
@@ -65,12 +65,29 @@ connection being busy with something else (docs/findings.md §8). So the checkli
   the final: every request should get the best list we have. Reading the night and setting the arm:
 
   ```bash
-  python scripts/arms.py 20:45 07:30          # UTC: Saturday 21:45 CET to Sunday 08:30 CET, every arm side by side
+  python scripts/arms.py 22:25 07:30 | python realtime_analyisi_leaderboard/pool_arms.py "v9=31" "organic orders v9's ten=37" "v9 x organic=32" "organic, new x1.5=36"
   ```
 
-  then leave a single line in `ARMS` (`reco/serve.py`) with the winner at 100 %, for example
-  `ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 100),)` (or the line of v32 / v33 if it won), commit it, and replace the
-  running server as in step 2 (`scripts\swap_server.ps1`). The best proven version and the line that puts it
+  (UTC: Saturday 23:25 CET to Sunday 08:30 CET; the last column is each arm against v31, in standard errors.
+  The three arms with the organic model can also be pooled against v31: `"v9=31" "organic=32,36,37"`.)
+  The rule: **v31 stays unless another arm is at least 2 standard errors above it over the whole night and
+  not below it in the minutes with a trend** (45 minutes from :30 of every odd UTC hour: `arms.py 23:30
+  00:15`, `01:30 02:15`, …). Then leave a single line in `ARMS` (`reco/serve.py`) with the winner at 100 %,
+  commit it, and replace the running server as in step 2 (`scripts\swap_server.ps1`):
+
+  | Winner | `ARMS = (…,)` |
+  |---|---|
+  | v31 | `("skore_money_v31", "model", "v9", {"trend": 1.0}, 100)` |
+  | v37 | `("skore_money_v37", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10}, 100)` |
+  | v32 | `("skore_money_v32", "model", "v9o", {"trend": 1.0, "organic": 1.0}, 100)` |
+  | v36 | `("skore_money_v36", "model", "v9o", {"trend": 1.0, "organic": 1.0, "fresh": 1.5}, 100)` |
+
+  If two of the arms with the organic model pass the rule, prefer v37: it shows the same ten products as
+  v31 and only changes their order, which is what was measured offline (findings §22), and it costs no
+  time. v32 and v36 ask the third model about 100 candidates: about 80 ms per request instead of 60
+  (`rank_ms/request` in the log). With 300 candidates, on half the traffic, p95 of the answers had gone from
+  1.8 to 2.1 s on Saturday night: latency is the second thing to look at before choosing one of them
+  (`queries/health.sql`: p95 under 2,000 ms). The best proven version and the line that puts it
   back are in [`best_model.md`](../best_model.md).
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products
   and trends. What carries over, by construction: features are counts, shares and matches (never ids);

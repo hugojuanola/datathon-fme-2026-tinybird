@@ -82,3 +82,83 @@ leads the night overall (+0.39 over the reference on 6,551 requests).
 - **Reference**: in the trend window it read 2.14 overall; we read 2.61 across all arms.
 - **Technique**: a boost that reorders a slate has a displacement cost whenever the top slot dominates;
   the usual remedies are to cap the boosted items per slate or to protect the first slot.
+
+## Update, 22:45 CET — Face Cream (21:30 UTC): a trend in views, not in purchases (first 12 minutes)
+
+All arms now carry the lift at full strength (`v31` v9, `v32` v9 x organic, `v33` v9b, `v36` = `v32` with
+new products x1.5). The second trend of the evening is not like the first.
+
+| Organic stream, per 5 minutes | Before | During | Ratio |
+|---|---|---|---|
+| Face Cream views | 35-70 | 274-292 | x5.5 |
+| Face Cream carts | 2-4 | 20 | x7 |
+| Face Cream purchases | 2-3 | 6-7 | x2.5 (0.8 % of all purchases) |
+| Game Consoles purchases (19:30 UTC) | 10 | 100 | x10 (11 % of all purchases) |
+
+The detector reports a lift of 11.1 for Face Cream: it is carried by views and carts on a very small base.
+
+On our carousel, 21:30-21:42 UTC: 1,820 Face Cream impressions, **2 clicks, 0 purchases**. Other products
+at the same slots get about 11 clicks and 2 to 3 purchases on that many impressions.
+
+| Arm | Face Cream products per list | Lists with one | Lists with one in slot 1 | Impressions / clicks / purchases |
+|---|---|---|---|---|
+| `v31` (v9) | 0.25 | 17 % | 1.1 % | 130 / 0 / 0 |
+| `v33` (v9b) | 0.27 | 17 % | 1.5 % | 108 / 1 / 0 |
+| `v32` (v9 x organic) | 1.74 | 57 % | 13.6 % | 964 / 1 / 0 |
+| `v36` (organic, new x1.5) | 1.82 | 57 % | 16.0 % | 618 / 0 / 0 |
+
+v9 multiplied by the lift still leaves these products out of most lists, because it rates them far below
+the tenth candidate for most shoppers; the clicks agree with it. The organic factor sees the same spike of
+views as the detector and fills more than half of the lists. Sent to the model session at 21:45 UTC with
+the suggestion that the lift follow the purchase ratio, with a floor on the number of purchases. The whole
+window per arm, with the organisers' metric, follows when the trend ends.
+
+## Correction, 23:00 CET — Face Cream was a real trend; the flaw was in the organic factor, and it is fixed
+
+Two things in the section above were wrong or incomplete, both set right by the model session.
+
+- **It is a trend in purchases too.** My x2.5 compared the trend with the half hour before it, when Face
+  Cream was already selling 3.5 times its usual share. Against the day (96 purchases in the 12 hours
+  before, 0.67 per five minutes) it is x11 to x12, as the detector said; views x5.5, carts x17. It is a very
+  small subcategory: x11 of very little.
+- **The cause was the organic model, not the detector.** It learned which product a shopper buys next among
+  the candidates the rules retrieve on an ordinary day. Face Cream products were candidates only because the
+  lift put them there, so its answer for them meant nothing, and it sent them to the top. Reproduced offline
+  on 120 requests with a made-up x10: v9 with the lift 0.24 trending products per list, v9 x organic with the
+  lift 3.05 (slot 1 in 24 % of lists), v9 x organic without a trend 0.02.
+
+What stands from the section above is what the carousel showed: 1,820 impressions, 2 clicks, no purchase,
+with `v32` and `v36` filling more than half of their lists. That is what made it worth acting on before the
+trend ended.
+
+**The fix**, live since 21:51:01 UTC (`reco.recommend.level_trending`, commit 938b995): while a trend runs,
+a trending product takes the organic factor of the products v9 scores about as high, so the organic model
+has no say on it and it keeps the place v9 x lift gives it. Live after the fix: `v31` 0.21 trending products
+per list, `v32` 0.24, `v33` 0.20, `v36` 0.08, none in slot 1. Before: `v32` 2.24 per list (slot 1 in 19 %).
+
+For the reads from here on: `v32` and `v36` count from 21:52 UTC; their 21:30-21:51 window is the flaw, not
+the organic factor. In every trend, the first thing to look at is the number of trending products per list
+by arm: the arms should be within a factor of two of each other.
+
+## Update, 23:25 CET — Face Cream, the whole window, and the arms by regime
+
+**The store.** Face Cream purchases per five minutes from 21:30 to 22:15 UTC: 6, 7, 8, 11, 14, 9, 5, 15, 9
+(0.67 on an ordinary five minutes of the day: about x14); views 204 to 292 (about x5). It stopped at 22:15
+on the dot and the detector let go at 22:16:33.
+
+**After the fix (21:52-22:15 UTC), per arm**: Face Cream products per list 0.30 (`v31`), 0.20 (`v32`), 0.22
+(`v36`), 0.30 (`v33`); in slot 1 in 1 to 3 % of the lists. In line with each other, as they should be.
+The first Face Cream product of a list (688 impressions, mean slot 5.0) sold 2.91 per 1,000 against 2.47 for
+the other products at those slots: placed where v9 x lift puts them, they sell like their neighbours, which
+is what a right score looks like. (Before the fix: 1,820 impressions, 2 clicks, no purchase.)
+
+**The arms by regime**, organisers' expected metric (`scripts/arms.py | pool_arms.py`). The organic arms
+count from 21:55 UTC.
+
+| Minutes (UTC) | Regime | `v31` v9 | `v32` v9 x organic | `v36` organic, new x1.5 | `v33` v9b | Reference |
+|---|---|---|---|---|---|---|
+| 20:35-21:30 | no trend (v9 = v31 + v34 + v35) | 2.162 on 4,811 | 2.440 on 3,097 (+1.9 se) | not live | 2.293 on 1,986 | 2.022 |
+| 21:55-22:15 | trend, Face Cream | 2.054 on 1,052 | 2.249 on 1,057 (+0.7 se) | 2.052 on 732 | 1.980 on 757 | 1.906 |
+| 21:55-22:20 | all minutes since the fix | 2.088 on 1,340 | 2.209 on 1,315 (+0.5 se) | 2.176 on 908 | 2.069 on 935 | 1.908 |
+
+Nothing to read yet after the fix: 25 minutes. The organic arms together are +0.12 over `v31` (+0.6 se).
