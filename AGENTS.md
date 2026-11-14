@@ -188,8 +188,9 @@ added during the event x1.5 for known shoppers: every piece with evidence, as on
 Since 22:51 CET, in v32 and v36 a trending product takes the organic factor of its neighbours in v9's order.
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
 versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
-organic model and the arms of the night, §21 nine signals checked against what v9 already predicts, and the
-lift for new products). A second session writes a live read of the board and
+organic model and the arms of the night, §21 ten signals checked against what v9 already predicts, the lift
+for new products and the organic factor during a trend). The store's calendar (trends, promotions, new
+products) is in [`docs/data.md`](docs/data.md). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
 Where we stand (18:19 CET, last hour): first of the teams with 2.18 expected purchases per 100 requests;

@@ -166,12 +166,20 @@ One record per change: the **full product after the change** plus `ts` and `chan
 |---|---|---|
 | `out_of_stock` | 87 | **Every 5 minutes on the dot**, 3 products go out |
 | `back_in_stock` | 51 | Every 5 minutes, 3 products come back (from 10:00 UTC) |
-| `new_product` | 100 | One batch at 10:00 UTC (1 h after the stream opened) |
-| `price_change` | 620 | One batch at 10:30 UTC; essentially all are **drops of ≈18–20%** |
+| `new_product` | 400 | **100 every 4 hours**: 10:00, 14:00, 18:00, 22:00 UTC (the first one 1 h after the stream opened) |
+| `price_change` | 4,596 | **A promotion every 3 hours**: at 10:30, 13:30, 16:30, 19:30 UTC 500–665 products drop ≈17–20 %, and two hours later (12:30, 15:30, 18:30, 21:30) the same number go back to the catalogue price; mostly different products each time |
 
 ≈36 products are out of stock at any moment. Out-of-stock test (from the starter): latest of
 `out_of_stock` / `back_in_stock` per product is `out_of_stock`. Expect the final round to bring its own
 new products, price changes and trends.
+
+**The store runs on a calendar** (measured 14 Nov, 09:00–22:07 UTC, on `shop.catalog_updates` and the
+stream). Trends: one subcategory for 45 minutes from :30 of the odd UTC hours (09:30, 11:30, 13:30, 15:30,
+19:30, 21:30; none seen at 17:30). Promotions: every 3 hours from 10:30, for 2 hours. New products: every
+4 hours from 10:00. If it keeps running, the final (09:00–11:00 UTC) holds the 07:30 promotion until 09:30,
+a trend 09:30–10:15, 100 new products at 10:00 and a promotion from 10:30: a trend for 45 of its 120
+minutes, a promotion for 60, a fresh batch of products for the last hour. We use it to read the arms by
+regime, never as a rule in the recommender: the subcategories and products of the final are new.
 
 ## `team_06.submissions` — what we write
 

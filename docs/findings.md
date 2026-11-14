@@ -652,7 +652,7 @@ Outside a trend v31, v34 and v35 are the same ranker: pooled (50 %) against v32 
 "does the organic factor help live?" and "does retraining v9 on more data help or hurt?". While a trend
 runs, v31 / v34 / v35 give the dose of the lift.
 
-## 21. What v9 already knows: nine checks against its own predictions, and the one that left something
+## 21. What v9 already knows: ten checks against its own predictions, and the one that left something
 
 On the evening of 14 Nov the next team was within 0.05 purchases per 100 requests, so we went looking for
 signals the ranker does not use. One method for all of them, and it is the lesson of the section: **hold
@@ -678,6 +678,7 @@ all day — "explains" ×1.28 on clicks and ×1.57 on purchases; with v9's predi
 | The shopper had looked at the product in the 60 days and never carted it | 0.75 ± 0.10 | A look that did not end in a cart is a mild "no" |
 | Product of the request's recent views (2.5 per list; 12 % of them are in our ten) | 1.11 ± 0.14; the ones v9 scores low and were shown anyway: 4 purchases for 5.8 predicted | v9 is right to leave most of them out |
 | Product added during the event | 1.29 ± 0.12, against 0.91 ± 0.04 for the original catalogue | **v9 is short: below** |
+| Product on promotion at the time of the impression (7.5 % of impressions, at 0.83 of the catalogue price; v9's `discount` was trained on a table that stamped the last price on every row) | 1.06 ± 0.14 against 0.94 ± 0.03 at catalogue price (60 purchases). A multiplier (price / catalogue price) ^ −1.6, the elasticity of the organic stream (§16): reciprocal rank of the purchase 0.384 → 0.384 on v9, 0.406 → 0.406 on v9 × organic; the organic factor already leans ×1.08 towards promoted products | Nothing to add |
 | An id for the category, the subcategory or the brand (v9 has none, by design) | Observed / predicted per group, learned before 17:00 UTC and compared with after (trending subcategories left out during their trend): the two halves of the day agree with a correlation of +0.38 (10 categories), −0.11 (87 subcategories), +0.20 (80 brands). Multiplying v9 by the morning's ratios leaves the evening's reciprocal rank where it was (0.393 → 0.393 by subcategory, 0.388 by brand) | Nothing stable to learn: what looks like a category effect in one window is gone in the next |
 
 Everything is within a quarter of what v9 predicts. Collaborative filtering helps exactly where the
