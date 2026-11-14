@@ -139,3 +139,26 @@ per list, `v32` 0.24, `v33` 0.20, `v36` 0.08, none in slot 1. Before: `v32` 2.24
 For the reads from here on: `v32` and `v36` count from 21:52 UTC; their 21:30-21:51 window is the flaw, not
 the organic factor. In every trend, the first thing to look at is the number of trending products per list
 by arm: the arms should be within a factor of two of each other.
+
+## Update, 23:25 CET — Face Cream, the whole window, and the arms by regime
+
+**The store.** Face Cream purchases per five minutes from 21:30 to 22:15 UTC: 6, 7, 8, 11, 14, 9, 5, 15, 9
+(0.67 on an ordinary five minutes of the day: about x14); views 204 to 292 (about x5). It stopped at 22:15
+on the dot and the detector let go at 22:16:33.
+
+**After the fix (21:52-22:15 UTC), per arm**: Face Cream products per list 0.30 (`v31`), 0.20 (`v32`), 0.22
+(`v36`), 0.30 (`v33`); in slot 1 in 1 to 3 % of the lists. In line with each other, as they should be.
+The first Face Cream product of a list (688 impressions, mean slot 5.0) sold 2.91 per 1,000 against 2.47 for
+the other products at those slots: placed where v9 x lift puts them, they sell like their neighbours, which
+is what a right score looks like. (Before the fix: 1,820 impressions, 2 clicks, no purchase.)
+
+**The arms by regime**, organisers' expected metric (`scripts/arms.py | pool_arms.py`). The organic arms
+count from 21:55 UTC.
+
+| Minutes (UTC) | Regime | `v31` v9 | `v32` v9 x organic | `v36` organic, new x1.5 | `v33` v9b | Reference |
+|---|---|---|---|---|---|---|
+| 20:35-21:30 | no trend (v9 = v31 + v34 + v35) | 2.162 on 4,811 | 2.440 on 3,097 (+1.9 se) | not live | 2.293 on 1,986 | 2.022 |
+| 21:55-22:15 | trend, Face Cream | 2.054 on 1,052 | 2.249 on 1,057 (+0.7 se) | 2.052 on 732 | 1.980 on 757 | 1.906 |
+| 21:55-22:20 | all minutes since the fix | 2.088 on 1,340 | 2.209 on 1,315 (+0.5 se) | 2.176 on 908 | 2.069 on 935 | 1.908 |
+
+Nothing to read yet after the fix: 25 minutes. The organic arms together are +0.12 over `v31` (+0.6 se).

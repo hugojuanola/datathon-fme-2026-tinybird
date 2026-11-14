@@ -110,3 +110,34 @@ number rises by about 0.14), and whatever a large trend gives.
 One thing can close it at once: answers lost. Four minutes without answering, as at 19:53 CET, cost 723
 requests; in a two-hour final that is 3.3 % of the requests answered by the fallback instead of us, about
 0.06 of conversion — the whole of today's gap — plus the reliability points.
+
+## Update, 23:30 CET — a new product is not clicked in its first 20 minutes on the carousel
+
+Read at the batch of 22:00 UTC and checked on the two earlier batches we served from their first minute
+(14:00 and 18:00 UTC). New products on our carousel by time since they were added; "expected" is what any
+product gets at the same slots:
+
+| Time since added | Impressions | Clicks (expected) | Purchases (expected) | Clicks / expected | Purchases / expected |
+|---|---|---|---|---|---|
+| 0-10 minutes | 525 | 0 (3.2) | 0 (0.9) | 0.00 | 0.00 |
+| 10-20 minutes | 663 | 1 (4.0) | 0 (1.2) | 0.25 | 0.00 |
+| 20-40 minutes | 1,101 | 9 (6.8) | 3 (2.0) | 1.33 | 1.51 |
+| 40-90 minutes | 3,374 | 35 (21.5) | 10 (6.4) | 1.63 | 1.56 |
+| 1.5-4 hours | 15,373 | 127 (103.0) | 40 (31.2) | 1.23 | 1.28 |
+| 4 hours or more | 48,703 | 536 (377.6) | 184 (119.6) | 1.42 | 1.54 |
+
+One click on 1,188 impressions where 7.2 were expected: about one chance in 150 if these were ordinary
+products, and each of the three batches says the same (0 of 79, 1 of 376, 0 of 733 impressions). Of the
+1,006 lists that held such a product, 49 got a click and 9 a purchase: one click and no purchase went to it.
+From the twentieth minute on, new products are what the model session measured: 1.3 to 1.6 times an
+ordinary product at the same slot.
+
+In the store it is not so: the same products are viewed, carted and bought from their first minute at the
+rate they keep afterwards (about 700 views and 37 purchases per ten minutes for a batch of 100).
+
+What it is worth: little. A just-added product takes one slot, around the middle of the list, in 11 to 23 %
+of our lists (the most in `v36`, whose x1.5 pushes them) for twenty minutes every four hours: about 0.03
+purchases per 100 requests during those twenty minutes. It is a free one all the same, and the final has a
+batch at 10:00 UTC if the calendar holds: a product younger than twenty minutes should be left out of the
+lists, and the new-product lift should start at twenty minutes. Passed on as a candidate; it is a read of
+slots, not yet of v9's own prediction, and on small numbers.
