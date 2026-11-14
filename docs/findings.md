@@ -310,3 +310,195 @@ The ranker is the best of the three with full history, with thin history and wit
 **Retrieval is not a bottleneck.** On 400 live requests, ranking the 1,000 retrieved candidates gives the
 same top 10 as ranking all 5,200 products in 99.9 % of positions (same first product in 100 %); 39 ms per
 request against 200 ms.
+
+## 15. Judging an A/B: the organisers' own metric, and how noisy it is
+
+The leaderboard API reports, per `model_version` and time window, the **expected** purchases per 100
+requests under the hidden model — the number the final is scored on, without the coin flip of realised
+purchases (`python scripts/arms.py HH:MM HH:MM`, UTC; it also splits cold and warm requests). Every version
+we deploy is an arm with its own `model_version`, split by a hash of the request id, so arms that run over
+the same minutes see the same kind of traffic.
+
+**How much is noise.** Requests are very unequal (a `home` page is worth about 0.1 expected purchases per
+100, an abandoned cart 10 or more), so even the expected metric needs volume:
+
+| Check | Result |
+|---|---|
+| Two arms running the *same* code, 16:45–17:12 UTC, about 1,550 requests each | 2.331 vs 2.207 on the expected metric; **15 vs 29 realised purchases** |
+| The same arm in consecutive quarters of an hour (about 850 requests) | v9: 2.11 → 2.45 · v9w: 2.45 → 2.22 |
+
+A difference of 0.3 between two arms after 15 minutes means nothing; 0.12 after half an hour is what two
+identical arms show. We decide on effects several times that size, or on hours of traffic (the overnight
+runs), and never on realised purchases alone.
+
+**What the afternoon of 14 Nov says** (expected purchases per 100 requests; reference 2.06–2.08, baseline
+0.60–0.67 over the same hours):
+
+| Version | What it is | Requests | All | Cold | Warm |
+|---|---|---|---|---|---|
+| v4 | rules only | 2,024 | 1.45 | 2.01 | 1.16 |
+| v5 | first learned ranker | 12,910 | 1.81 | 2.57 | 1.41 |
+| v6 | + new products, price, cart age | 1,383 | 1.70 | 2.48 | 1.31 |
+| v7 | + description attributes (§13) | 1,432 | 2.42 | 2.88 | 2.17 |
+| v8 | v7 without brand history | 2,665 | 2.35 | 3.22 | 1.89 |
+| v9 | v8 + attribute pair, purchases in the subcategory | 2,822 | 2.37 | 2.84 | 2.11 |
+| v9w | v9, live feedback weighted ×20 instead of ×5 | 2,533 | 2.32 | 3.21 | 1.87 |
+| v9d | one model for "purchase" instead of click × purchase-given-click | 1,668 | 2.12 | 2.96 | 1.69 |
+| exploration arms | top 4 shuffled, 6 drawn from ranks 5–14 | 2,718 | 1.2–2.3 | | |
+
+- The step that matters is **v5 → v7: the attributes of the description** (+0.6, far outside the noise,
+  on both kinds of request). It is the largest effect we have measured.
+- v7, v8, v9, v9w and v10 are within noise of each other as a whole. What does repeat: weighting our live
+  feedback more (v9w) is better on cold requests (3.21 vs 2.84) and worse on warm ones (1.87 vs 2.11) —
+  the old carousel's log knows the known shoppers, the live stream is the only place that knows the new
+  ones. Hence the routing in `reco/serve.py`: a ranker written `"v9w|v9"` sends cold requests to the first
+  model and the rest to the second.
+- One model predicting the purchase directly (v9d) is worse than the product of the two models: clicks are
+  three times more frequent than purchases and carry most of the learning.
+- Exploration costs a quarter to a third of the conversion of the requests it touches (v8 2.35 → 1.76,
+  v5 1.81 → 1.21): it stays off in the final.
+
+Against the field in the last hour before this note (17:19 UTC): us 2.18, the next team 1.83, the
+reference 2.04; cold 2.76 against 1.73 for the reference.
+
+## 16. The store moves: trends, price changes, new products (`python -m offline.store_moves`)
+
+The brief announces them for the final and the 60-day history has none, so their shape can only be read
+from today's organic stream. Every aggregate below is computed in RawTree (per minute or per 10 minutes, by
+subcategory, category, brand and product) and the report takes 8 seconds.
+
+**Trends.** One subcategory at a time sells many times its usual share, for 45 minutes, starting at :30 of
+every odd UTC hour:
+
+| Subcategory | When (UTC) | Purchases | Views | Usual share of purchases |
+|---|---|---|---|---|
+| Aquariums | 09:30–10:15 | ×8.7 | ×4.2 | 0.32 % |
+| Kettles | 11:30–12:15 | ×11.9 | ×4.2 | 0.99 % |
+| Cutting Boards | 13:30–14:15 | ×9.7 | ×3.0 | 0.39 % |
+| Bike Helmets | 15:30–16:15 | ×7.8 | ×3.6 | 0.94 % |
+
+- Nothing moves at category or brand level, and no single product does: it is the subcategory.
+- Inside it every product rises alike: a product's share of the subcategory during the trend and during the
+  rest of the day correlate 0.89–0.95. So one multiplier per subcategory is the right shape.
+- It is a step, not a ramp: full strength from the first minute to the last.
+- **Our own carousel shows it too**, before any version knew about trends: the products of a trending
+  subcategory that happened to be shown were clicked 1.68 % of the time against 0.48 % for everything else,
+  and bought 0.67 % against 0.15 % (891 impressions). For Bike Helmets the ranker's predictions were beaten
+  by ×1.9 (clicks) and ×2.2 (purchases) during the trend and missed by ×0.6 and ×0.4 the rest of the day.
+  A shopper who was looking at something else still bought them at 0.51 % per impression.
+
+**The detector** (`reco.features.Trends`, run by the server every second and by the training replay).
+Views are 20 times more numerous than purchases, so they say *when*: a group is trending when its views of
+the last 2–3 minutes are at least twice its usual share (with 40 views or more). Purchases say *how much*:
+the lift is the ratio of purchases to what the usual share predicts over 5 minutes, shrunk towards what the
+views imply (purchases rise like views to the power 1.8) with 3 pseudo-purchases. Replayed minute by minute
+on the stream of 14 Nov (488 minutes, 179 groups):
+
+| Trend | Seen after | Dropped after its end | Lift, first 3 minutes | Lift afterwards |
+|---|---|---|---|---|
+| Aquariums | 3 min | 1 min | 6.3 | 8.9 |
+| Kettles | 2 min | 1 min | 7.6 | 12.0 |
+| Cutting Boards | 3 min | about 4 min | 5.6 | 7.1 |
+| Bike Helmets | 2 min | 2 min | 5.0 | 8.1 |
+
+False alarms: 5 group-minutes out of 87,352, all below ×3 and gone within two minutes. Replayed again
+**every second**, as the server really runs it, from the server's own journal of the stream (9.5 hours,
+`python -m offline.store_moves seconds`): each trend is seen 49–120 seconds after it starts and dropped one
+to three minutes after it ends; purchases alone at ×2.5 fired on noise for 174 seconds of the day (three
+short ones showed up live at 18:20 UTC: purchases come in baskets), so that path now needs ×4 with 12
+purchases and the false alarms are 19 seconds in 9.5 hours. (A first version
+that used purchases alone saw the trends as fast but held on 5–9 minutes after they ended and
+underestimated them: lifts of 4–8.) The same statistic also watches categories and brands — a trend in the
+final could have another shape — and those levels only speak when no subcategory explains the move, because
+a trending subcategory drags its category and its brands up with it.
+
+**Price changes.** Promotions of about 19 % on some 600 products, for two hours, then back (10:30–12:30,
+13:30–15:30, 16:30–). The discounted products take ×1.2 to ×1.5 of their previous share of purchases in one
+batch and no more than before in another (the batches overlap with trends, which blurs it): an elasticity
+around 1, a small effect next to a trend. The training table used to stamp the *latest* price on every live
+row, so no model could have learned it; the replay now applies each price change at its time
+(`offline/build_dataset.py`), and `recommend()` has an optional elasticity that no arm uses yet.
+
+**New products.** 100 at 10:00 and 100 at 14:00 UTC, spread over half the subcategories. They take their
+fair share of purchases from the first ten minutes (1.9 % of the catalogue, 2.0–2.8 % of the purchases): to
+the shoppers they are ordinary products, so the ranker must not wait for them to accumulate history — which
+is what the attribute features and the exposure-corrected popularity are for (§13, §14).
+
+## 17. The night of 14 Nov: one experiment for two questions
+
+By the evening no ranker of the attribute family (v7 to v16) had separated from another at the precision a
+few hours give. The clearest warning came at 17:25–17:40 UTC: three arms that were behaving identically (no
+trend was running, so the two "trend" arms did nothing different from the control) read **1.92, 2.40 and
+2.59** on the expected metric with about 900 requests each. A quarter of an hour with three arms decides
+nothing; a night with about 100,000 requests does.
+
+| Ranker set-up | Lift off (6 % each) | Lift ^ 0.75 (19 % each) |
+|---|---|---|
+| `v9` for every request | `skore_money_v21` | `skore_money_v22` |
+| `v9w` for cold requests, `v9` for the rest | `skore_money_v23` | `skore_money_v24` |
+| `v16` for every request | `skore_money_v25` | `skore_money_v26` |
+| `v16w` for cold requests, `v16` for the rest | `skore_money_v27` | `skore_money_v28` |
+
+- **Which rankers** is read from all the traffic, pooling the two columns (they only differ while a trend is
+  running): new against old is (v25 + v26 + v27 + v28) against (v21 + v22 + v23 + v24), routed against single
+  is the second and fourth rows against the first and third. About 25,000 requests per set-up by the morning:
+  differences of 3–4 % become visible.
+- **The trend lift** is read from the minutes a trend is running: even against odd versions.
+- Three quarters of every set-up already apply the lift, because it is our best guess if nobody is there to
+  choose before the final: the organic stream says purchases ×8–12, our carousel said ×2–5 on the few
+  hundred impressions it had (§16), and a lift of ×5–6 (the detector's ×8–12 to the power 0.75) is close to
+  right across that range.
+- Read it with `python scripts/arms.py 17:45 07:30` (UTC); the final is served by a single arm
+  ([`docs/final-round.md`](final-round.md)).
+
+**`v16` / `v16w`** (`python -m offline.train v16`, `python -m offline.train v16w 20`): all of the day's
+feedback up to 17:35 UTC (770,204 live rows on top of the log), the 57 features, live rows with the price
+the shopper really saw and the detector's reading at that moment. Held-out live feedback (last quarter:
+19,279 requests, 439 purchases), bought product ranked first / in the top 3 among the 10 shown, for the
+fits that had not seen that quarter:
+
+| | v9 | v16 (live ×5) | v16w (live ×20) |
+|---|---|---|---|
+| All requests | 20.5 % / 48.0 % | **22.2 % / 49.1 %** | 21.3 % / 47.3 % |
+| Known shoppers (258 purchases) | 22.4 % / 47.7 % | **24.2 % / 47.7 %** | 22.4 % / 46.3 % |
+| New shoppers (181 purchases) | 18.0 % / 48.4 % | 19.5 % / **50.9 %** | **19.8 %** / 48.7 % |
+
+Small steps, all inside the noise of 439 purchases — which is why they go to the live test instead of
+straight to the final. Two things this table taught us on the way:
+
+- Weighting live rows ×20 does **not** help new shoppers offline (19.8 % vs 19.5 %), while live it looked
+  better on cold requests (3.21 vs 2.84, §15). Neither is conclusive: routing is in the experiment as a
+  question, not as a fact.
+- A ranker refitted on all the data looks far better on the same held-out quarter than its own validation
+  fit (v16 on new shoppers: 32.0 % ranked first against 19.5 %): the table is only meaningful for fits that
+  did not see the period, and rankers trained at different hours cannot be compared on it.
+
+**Checked and ruled out the same evening** (each a few seconds of SQL or of local feedback):
+
+- *Is a product's popularity today different from its 60-day history, beyond the trends?* No: the ratio of
+  today's share to the historical share in the first and in the second half of the day correlate 0.10
+  (purchases, 331 products) and 0.05 (views, 4,785 products). The history is the right prior; nothing to
+  gain from a "popular this hour" feature.
+- *Are abandoned carts ranked well?* For known shoppers they are a third of the impressions and 57 % of the
+  purchases. The ranker's predictions match what happened by age of the cart, by slot, by category of the
+  session and by attribute affinity (observed over predicted between 0.85 and 1.1 everywhere), and the
+  carted product that gets bought is in slot 1 almost half of the time.
+- *Does the request say more than we use?* No: page, device, region, recent views, new-shopper flag. All used.
+
+## 18. Reliability, second look (14 Nov, evening)
+
+On the hourly board our share of answers on time was 96–99 % against 99.8 % for the best teams. The losses
+come in bursts of one to four minutes in which every call to RawTree (polls, inserts, catalogue and event
+refresh) slows from 0.2 s to more than 1 s or times out together, while ranking keeps its 45 ms: it is the
+path to RawTree, not our process. What we checked:
+
+| Suspect | Test | Verdict |
+|---|---|---|
+| Our own analysis jobs on the laptop | Ran a heavy one (12 M-row read, model scoring) on purpose for 45 s | No effect: polls 213–221 ms, no failures. The machine has 16 threads and 14 GB free |
+| Uploads (git push of several MB, assistant steps) | Pushed 5 MB during a quiet minute | No effect |
+| RawTree rate limits | 10,000 queries/s per database, we send about 15 | Not it |
+| The 5-minute stock mark | Bursts at 16:05 and 16:25 UTC sit on marks, the one at 16:47–16:51 does not | Not the cause; requests right after a mark wait at most 1.6 s for the new stock |
+| The Wi-Fi link | `scripts/netmon.py`: ping to the router 11–27 ms on average with spikes of 100–360 ms in *good* minutes (a wired link gives about 1 ms) | The weakest part of the path, and the one we can change: a cable for the final |
+
+The monitor keeps logging one line per second, so the next burst will show whether the router stopped
+answering (Wi-Fi) or only RawTree did (the line or the internet).

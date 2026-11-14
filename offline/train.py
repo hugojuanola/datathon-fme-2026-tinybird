@@ -2,6 +2,8 @@
 
     python -m offline.build_dataset [log|live]
     python -m offline.train NAME         # → models/NAME/{click,conv}.txt + a validation report
+    python -m offline.train NAME 20      # the same with a live row counting as 20 log rows (default 5): the
+                                         # ranker for cold requests, which only the live stream knows
 
 Two small gradient-boosted models, multiplied at serving time:
 
@@ -48,6 +50,10 @@ def load(live_weight: float = LIVE_WEIGHT) -> tuple[pd.DataFrame, pd.Series]:
     df = pd.concat([pd.read_parquet(DATA / "train_log.parquet"), pd.read_parquet(DATA / "train_live.parquet")],
                    ignore_index=True)
     df = df[~df.bought_before].reset_index(drop=True)
+    for name in FEATURES:       # a feature newer than a table: absent there means "nothing special" (no trend)
+        if name not in df:
+            df[name] = 0.0
+    df["trend"] = df["trend"].fillna(0.0)
     live = df.source == "live"
     live_cut = df.ts_ms[live].quantile(1 - LIVE_VALID)
     valid = np.where(live, df.ts_ms >= live_cut, df.ts_ms >= CUT_LOG)
@@ -92,9 +98,10 @@ def ranking_quality(rows: pd.DataFrame, s: np.ndarray) -> dict:
 def main() -> None:
     background()   # never compete with the live loop for the CPU
     name = sys.argv[1] if len(sys.argv) > 1 else "candidate"
-    df, valid = load()
+    live_weight = float(sys.argv[2]) if len(sys.argv) > 2 else LIVE_WEIGHT
+    df, valid = load(live_weight)
     held = df[valid & (df.source == "live")]
-    print(f"{name}: {len(FEATURES)} features, {len(df):,} rows ({(df.source == 'live').sum():,} live, weight ×{LIVE_WEIGHT:g}); "
+    print(f"{name}: {len(FEATURES)} features, {len(df):,} rows ({(df.source == 'live').sum():,} live, weight ×{live_weight:g}); "
           f"held-out live: {held.request.nunique():,} requests, {int(held.click.sum())} clicks, {int(held.buy.sum())} purchases")
 
     clicked = df.click
@@ -111,8 +118,8 @@ def main() -> None:
         print(f"\nheld-out live feedback, {label}: {rows.request.nunique():,} requests, {int(rows.buy.sum())} purchases")
         print(table.round(3).to_string())
 
-    click_all = refit(df, "click", FEATURES, int(click.best_iteration * 1.1))
-    conv_all = refit(df[clicked], "buy", conv_features, int(conv.best_iteration * 1.1))
+    click_all = refit(df, "click", FEATURES, max(int(click.best_iteration * 1.1), 30))
+    conv_all = refit(df[clicked], "buy", conv_features, max(int(conv.best_iteration * 1.1), 20))
     (MODELS / name).mkdir(parents=True, exist_ok=True)
     click_all.save_model(MODELS / name / "click.txt")
     conv_all.save_model(MODELS / name / "conv.txt")

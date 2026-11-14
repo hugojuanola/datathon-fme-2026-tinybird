@@ -30,14 +30,21 @@ import zlib
 
 from reco.priority import foreground, stay_awake
 from reco.rawtree import LOGS, ROOT, insert, query
+from reco.features import trend_names, trend_vector
 from reco.recommend import Ranker, is_valid, recommend, safe_list
 from reco.state import State
 
 # (model_version written with each answer and shown on the public leaderboard, policy, ranker in models/,
-#  how much of a live trend to apply (0 = ignore trends: see recommend), % of the traffic).
-#  A ranker "A|B" routes by kind of request: A answers the cold ones (see is_cold), B the rest.
-ARMS = (("skore_money_v11", "model", "v9w|v9", 0.0, 33), ("skore_money_v14", "model", "v9w|v9", 1.0, 34),
-        ("skore_money_v13", "model", "v9w|v10", 0.0, 33))
+#  the store moves it reacts to — {"trend": exponent or "model", "price": elasticity}, see recommend —,
+#  % of the traffic). A ranker "A|B" routes by kind of request: A answers the cold ones (see is_cold), B the rest.
+#
+# The night of 14 Nov: four ranker set-ups x trend lift off / on, so that both questions are read from the
+# same requests (rankers: all the traffic, pooling off and on; the lift: the minutes a trend is running).
+# Three quarters of every set-up already apply the lift: it is our best guess if nobody is there to choose.
+ARMS = (("skore_money_v21", "model", "v9", {}, 6),              ("skore_money_v22", "model", "v9", {"trend": 0.75}, 19),
+        ("skore_money_v23", "model", "v9w|v9", {}, 6),          ("skore_money_v24", "model", "v9w|v9", {"trend": 0.75}, 19),
+        ("skore_money_v25", "model", "v16", {}, 6),             ("skore_money_v26", "model", "v16", {"trend": 0.75}, 19),
+        ("skore_money_v27", "model", "v16w|v16", {}, 6),        ("skore_money_v28", "model", "v16w|v16", {"trend": 0.75}, 19))
 POLLERS = 4
 POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
 SENDERS = 4
@@ -55,13 +62,13 @@ WHERE ts > now64(3) - INTERVAL 4 SECOND
 ORDER BY ts"""
 
 
-def arm_of(request_id: str) -> tuple[str, str, str, float]:
+def arm_of(request_id: str) -> tuple[str, str, str, dict]:
     """Deterministic split on the request id, so every variant sees the same kind of traffic."""
     bucket = zlib.crc32(b"arm:" + request_id.encode()) % 100
-    for version, policy, ranker, trend, share in ARMS:
+    for version, policy, ranker, moves, share in ARMS:
         bucket -= share
         if bucket < 0:
-            return version, policy, ranker, trend
+            return version, policy, ranker, moves
     return ARMS[0][:4]
 
 
@@ -76,7 +83,7 @@ def is_cold(state: State, req: dict) -> bool:
 
 def answer(state: State, rankers: dict[str, Ranker], req: dict) -> tuple[dict, dict]:
     """One submission row and one log row for a request. Never raises, never returns an invalid list."""
-    version, policy, name, trend = arm_of(req["id"])
+    version, policy, name, moves = arm_of(req["id"])
     cold = None
     if "|" in name:
         try:
@@ -89,7 +96,7 @@ def answer(state: State, rankers: dict[str, Ranker], req: dict) -> tuple[dict, d
     items: list[str] = []
     for attempt in ([policy, "rules"] if policy != "rules" and ranker else ["rules"]):
         try:
-            items, why = recommend(state, ranker, req, attempt, trend=trend)
+            items, why = recommend(state, ranker, req, attempt, **moves)
             if is_valid(state, items):
                 policy = attempt
                 break
@@ -103,8 +110,7 @@ def answer(state: State, rankers: dict[str, Ranker], req: dict) -> tuple[dict, d
            "model_version": version, "policy": policy, "ranker": name, "cold": cold, "items": items, "tiers": why}
     trending = state.trend
     if trending:    # what the detector saw when this request was answered, whether or not this arm used it
-        names = state.catalog.sub_names
-        log["trending"] = {names[s]: round(v, 1) for s, v in trending.items() if s < len(names)}
+        log["trending"] = trend_names(state.catalog, trending)
     return {"request_id": req["id"], "items": items, "model_version": version}, log
 
 
@@ -113,13 +119,13 @@ def selftest(state: State, rankers: dict[str, Ranker]) -> None:
     try:
         rows = query(NEW_REQUESTS, timeout=5)[:12]
         cat = state.catalog
-        fake = {int(max(cat.by_sub, key=lambda s: len(cat.by_sub[s]))): 5.0}
-        for version, policy, name, trend, _ in ARMS:
+        fake = trend_vector(cat, {int(max(cat.by_sub, key=lambda s: len(cat.by_sub[s]))): 5.0})
+        for version, policy, name, moves, _ in ARMS:
             for label, trending in (("live trend", None), ("made-up trend", fake)):
                 valid = shown = 0
                 for r in rows:
                     ranker = rankers.get(name.split("|")[0 if is_cold(state, r) else -1])
-                    items, why = recommend(state, ranker, r, policy if ranker else "rules", trend=trend, trending=trending)
+                    items, why = recommend(state, ranker, r, policy if ranker else "rules", trend_lift=trending, **moves)
                     valid += is_valid(state, items)
                     shown += why.count("t")
                 print(f"selftest {version} ({label}): {valid}/{len(rows)} valid lists, {shown} trending products shown",
@@ -235,7 +241,7 @@ def main() -> None:
     rank_ms: list[float] = []
     poll_ms: list[float] = []
     report_at = time.time() + 30
-    print(f"serving {[f'{v} {share}%' + (f' trend^{t:g}' if t else '') for v, _, _, t, share in ARMS]} with rankers {sorted(rankers)} "
+    print(f"serving {[f'{v} {share}%' + (f' {moves}' if moves else '') for v, _, _, moves, share in ARMS]} with rankers {sorted(rankers)} "
           f"({'DRY RUN' if dry else 'LIVE'})", flush=True)
     while True:
         try:
@@ -294,6 +300,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    if "--log" in sys.argv:     # write the log ourselves: the same plain UTF-8 whatever shell started us
+        sys.stdout = sys.stderr = open(sys.argv[sys.argv.index("--log") + 1], "a", buffering=1,
+                                       encoding="utf-8", errors="replace")
     while True:  # if anything escapes the loop, start again rather than leave shoppers to the fallback
         try:
             main()

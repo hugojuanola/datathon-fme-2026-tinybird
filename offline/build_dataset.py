@@ -23,7 +23,8 @@ import time
 import numpy as np
 import pandas as pd
 
-from reco.features import DEVICES, FEATURES, PAGES, REGIONS, Catalog, Shopper, featurize
+from reco.features import (DEVICES, FEATURES, PAGES, REGIONS, Catalog, F, Shopper, Trends, featurize, group_keys,
+                           trend_vector, usual_shares)
 from reco.rawtree import DATA, ROOT
 from reco.priority import background
 
@@ -66,15 +67,16 @@ def load_catalogs(fresh_names: bool = False) -> tuple[Catalog, Catalog]:
     exposure = np.full(len(pids), h[2].sum() + len(buys), dtype=float)
     for p, t in added.items():      # a new product has only been exposed to the purchases since it appeared
         exposure[pids.index(p)] = len(buys) - np.searchsorted(buys, t)
-    price = products.price_eur.to_numpy(float).copy()
-    latest = updates.sort_values("ts_ms").drop_duplicates("product_id", keep="last")
+    base_price = products.price_eur.to_numpy(float)
     pos = {p: i for i, p in enumerate(pids)}
-    for p, v in zip(latest.product_id, latest.price_eur):
-        price[pos[p]] = v
     added_at = np.array([added.get(p, 0) for p in pids], dtype=float)
-    cat_live = Catalog(*args, price, *(h + l), exposure=exposure,
-                       names=cat_hist.names, base_price=products.price_eur.to_numpy(float), added=added_at,
-                       description=text)
+    cat_live = Catalog(*args, base_price.copy(), *(h + l), exposure=exposure,
+                       names=cat_hist.names, base_price=base_price, added=added_at, description=text)
+    # every price change of the day, in time order: (unix seconds, product index, price). The replay applies
+    # them as it goes, so a live row carries the price the shopper actually saw (promotions come and go).
+    changes = updates[updates.change == "price_change"].sort_values("ts_ms")
+    cat_live.price_moves = [(int(t) // 1000, pos[p], float(v))
+                            for t, p, v in zip(changes.ts_ms, changes.product_id, changes.price_eur) if p in pos]
     return cat_hist, cat_live
 
 
@@ -100,10 +102,19 @@ def live_feedback() -> pd.DataFrame:
 
 
 def replay(cat: Catalog, shoppers: dict[str, Shopper], events: pd.DataFrame, requests: pd.DataFrame,
-           keep: np.ndarray, out: list) -> None:
-    """Apply `events` in time order; for each kept request emit the feature rows of its 10 shown products."""
+           keep: np.ndarray, out: list, live: bool = False) -> None:
+    """Apply `events` in time order; for each kept request emit the feature rows of its 10 shown products.
+
+    live: the store moves while the rows are replayed, as it did for the server: prices change when
+    shop.catalog_updates said so, and the trend detector reads the same organic purchases (the history has
+    neither price changes nor trends).
+    """
     pos, sub_of, log_price, brand_of = cat.pos, cat.sub.tolist(), cat.log_price.tolist(), cat.brand.tolist()
     attrs_of = cat.attr_ids
+    moves, k = (list(getattr(cat, "price_moves", [])) if live else []), 0
+    base_log = cat.log_price - cat.discount                      # log of the catalogue price
+    trends, usual, groups_of = Trends(), usual_shares(cat), group_keys(cat)
+    trend, trend_at = None, 0
     ev_ts = events.ts.tolist()
     ev_type = events.ev.tolist()
     ev_user = [shoppers.setdefault(u, Shopper()) for u in events.user_id.tolist()]
@@ -118,14 +129,27 @@ def replay(cat: Catalog, shoppers: dict[str, Shopper], events: pd.DataFrame, req
             if item >= 0:
                 if kind == "v":
                     u.view(sub_of[item], attrs_of[item])
+                    if live:
+                        trends.add(ev_ts[j] // 60, groups_of[item], False)
                 elif kind == "a":
                     u.cart(item, ev_ts[j], attrs_of[item], sub_of[item])
                 else:
                     u.buy(item, sub_of[item], log_price[item], attrs_of[item], brand_of[item])
+                    if live:
+                        trends.add(ev_ts[j] // 60, groups_of[item], True)
             j += 1
 
     for i, r in enumerate(requests.itertuples(index=False)):
         apply_until(r.ts_ms // 1000)
+        while k < len(moves) and moves[k][0] <= r.ts_ms // 1000:      # prices as they were at this moment
+            _, item, price = moves[k]
+            cat.log_price[item] = log_price[item] = float(np.log(max(price, 0.5)))
+            cat.discount[item] = cat.log_price[item] - base_log[item]
+            cat.static[item, F["log_price"]], cat.static[item, F["discount"]] = cat.log_price[item], cat.discount[item]
+            k += 1
+        if live and r.ts_ms // 1000 - trend_at >= 5:                  # the detector, as the server runs it
+            trend, trend_at = trend_vector(cat, trends.lifts(*usual)), r.ts_ms // 1000
+            trends.forget()
         shopper = shoppers.get(r.user_id)
         if shopper is None:
             shopper = shoppers[r.user_id] = Shopper()
@@ -134,7 +158,7 @@ def replay(cat: Catalog, shoppers: dict[str, Shopper], events: pd.DataFrame, req
             idx = np.array(shown)
             recent = [pos[p] for p in r.rv.split(",") if p in pos] if r.rv else []
             x = featurize(cat, shopper, PAGES[r.page], DEVICES[r.device], REGIONS[r.region], recent, idx,
-                          r.ts_ms / 1000, slots)
+                          r.ts_ms / 1000, slots, trend)
             clicked = pos.get(r.clicked, -2)
             bought = pos.get(r.purchased, -2)
             out.append((x, idx == clicked, idx == bought, np.array([k in shopper.bought for k in shown]), i, r.ts_ms, idx))
@@ -185,7 +209,7 @@ def build_live(cat: Catalog, shoppers: dict[str, Shopper]) -> None:
     t0 = time.time()
     feedback = live_feedback()
     out: list = []
-    replay(cat, shoppers, live_events(), feedback, np.ones(len(feedback), bool), out)
+    replay(cat, shoppers, live_events(), feedback, np.ones(len(feedback), bool), out, live=True)
     live = assemble(out, np.ones(len(feedback)), "live",
                     {"served_by": feedback.served_by.to_numpy(), "is_new": feedback.is_new.to_numpy()})
     live.to_parquet(DATA / "train_live.parquet", index=False)

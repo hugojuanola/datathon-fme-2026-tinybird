@@ -36,8 +36,12 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`starter/`](starter/) | Official starter kit, unmodified: baseline loop, SQL examples, offline-eval notebook |
 | [`scripts/rt.py`](scripts/rt.py) | Run SQL against RawTree from the shell (stdlib, read-only by default) |
 | [`scripts/leaderboard.py`](scripts/leaderboard.py) | Print the public leaderboard |
+| [`scripts/arms.py`](scripts/arms.py) | **How we judge an A/B**: expected purchases per 100 requests per `model_version` (the organisers' own metric), cold and warm, over any window |
+| [`scripts/netmon.py`](scripts/netmon.py) | Router ping and RawTree connect time once per second: tells Wi-Fi from the rest when answers are lost |
+| [`scripts/swap_server.ps1`](scripts/swap_server.ps1), [`scripts/run_server.ps1`](scripts/run_server.ps1), [`docs/final-round.md`](docs/final-round.md) | Start or replace the live server without a gap, as a process of its own (it does not die with a terminal or an assistant session), and the runbook for the final |
+| [`best_model.md`](best_model.md) | The best proven version, the line that puts it back, what is being measured against it, and the log of improvements |
 | [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (event-sourced live state), `features.py` (the one definition of every model feature, shared by training and serving), `recommend.py` (policies: rules, and rules-retrieve + model-rank), `rawtree.py` (client), `priority.py` |
-| [`offline/`](offline/) | Offline work: `pull_data.py` (export history / live stream), `build_dataset.py` (training table by replaying the store in time order), `train.py` (LightGBM click + conversion models, validated on the future), `evaluate.py` (policies on the held-out last week), `build_cache.py` (start-up cache for the server) |
+| [`offline/`](offline/) | Offline work: `pull_data.py` (export history / live stream), `build_dataset.py` (training table by replaying the store in time order), `train.py` (LightGBM click + conversion models, validated on the future), `evaluate.py` (policies on the held-out last week), `build_cache.py` (start-up cache for the server), `store_moves.py` (trends, price changes and new products in the organic stream, aggregated in RawTree, and the live trend detector replayed on them) |
 | [`models/`](models/) | The trained ranker (`click.txt`, `conv.txt`: LightGBM text models, readable) |
 | [`docs/findings.md`](docs/findings.md) | What drives a purchase, measured: the evidence behind the ranking policy |
 | [`queries/`](queries/) | Our reusable SQL: `health.sql` (is the live system healthy?), `variants.sql` (A/B by `model_version`), `tiers.sql` (which ranking tier sells) |
@@ -59,12 +63,12 @@ python -m venv <somewhere outside any synced folder> && <venv>/Scripts/pip insta
 <venv>/Scripts/python -u -m reco.serve >> $SKORE_LOGS_DIR/serve.log 2>&1   # our recommender, LIVE (one instance only)
 ```
 
-Deploying a new version **without a gap** (never two instances answering at once):
+Deploying a new version **without a gap** (never two instances answering at once), one command:
 
 ```bash
-<venv>/Scripts/python -u -m reco.serve --standby >> $SKORE_LOGS_DIR/serve.log 2>&1   # loads, then waits
-# when the log says "standby: ready": stop the old process, check it is gone, then
-touch $SKORE_LOGS_DIR/GO                                                            # the new one starts answering
+powershell -ExecutionPolicy Bypass -File scripts/swap_server.ps1
+# starts the new server in standby as a process of its own, waits for "standby: ready" and a clean
+# self-test in the log, stops the old one, creates $SKORE_LOGS_DIR/GO. If the new one is not fit, nothing changes.
 ```
 
 Retraining (all offline scripts lower their own priority so they do not starve the server):
@@ -72,7 +76,9 @@ Retraining (all offline scripts lower their own priority so they do not starve t
 ```bash
 <venv>/Scripts/python -m offline.pull_data live      # refresh the live stream export (events + our feedback)
 <venv>/Scripts/python -m offline.build_dataset       # training table: one row per (request, product shown)
-<venv>/Scripts/python -m offline.train               # models/ + validation report (last week of log, last quarter of live)
+<venv>/Scripts/python -m offline.train NAME          # models/NAME + validation report (last week of log, last quarter of live)
+<venv>/Scripts/python -m offline.train NAME 20       # same, a live row counting as 20 log rows: the ranker for cold requests
+<venv>/Scripts/python -m offline.store_moves         # how the store moved today, and how the trend detector saw it (8 s)
 <venv>/Scripts/python -m offline.evaluate            # policies on the held-out week, through the live code
 ```
 
@@ -160,29 +166,44 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 16:15 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
-answering in about 1.0 s (p95 about 1.5 s) when the connection is quiet. Arms, tagged in `model_version`:
+As of Sat 14 Nov 2026 18:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
-- `skore_money_v8`, 60 % — the current best ranker (`models/v8`, reproducible with `python -m offline.train v8`):
-  the rules retrieve 1,000 candidates, two LightGBM models rank them by `P(click) x P(purchase | click)` over
-  the 48 features of `reco/features.py`. Its main ingredient is the shopper's taste for the **attributes in
-  the product descriptions** (findings 13).
-- `skore_money_v5`, 30 % — the first ranker (`models/v5`), kept as the control of the A/B.
-- `skore_money_v8_explore`, 10 % — v8's list with the top 4 shuffled and 6 of its ranks 5-14: clean data to
-  train and judge the next model. **Practice round only: set it to 0 before the final.**
+1. **Retrieve** — the rules (`score_rules`): popularity x measured lifts, 1,000 candidates.
+2. **Rank** — two LightGBM models, `P(click) x P(purchase | click)`, over the features of
+   `reco/features.py` (counts, shares and matches: never an id). Requests are routed by kind: a ranker
+   written `"v9w|v9"` sends the cold ones (new shopper, or a product added during the event among the recent
+   views) to `models/v9w` (our live feedback weighted x20) and the rest to `models/v9` (x5).
+3. **Store moves** — the trend detector (`reco.features.Trends`, fed from `shop.events` every second)
+   multiplies the scores of a trending subcategory by its lift to the power the arm sets.
+4. **Hard rules** — never a product the shopper already bought, never one out of stock.
 
-Every arm blocks products the shopper already bought and products out of stock. Evidence for every piece,
-offline validation, live A/B results and the reliability incident: [`docs/findings.md`](docs/findings.md).
-A second session writes a live read of the leaderboard and of each arm (new vs known shoppers) in
-[`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
+Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`): the overnight experiment, live since 18:45 CET.
+Four ranker set-ups (`v9` · `v9w|v9` · `v16` · `v16w|v16`), each with the trend lift off (6 % of the traffic:
+`skore_money_v21`, `v23`, `v25`, `v27`) and on at lift ^ 0.75 (19 %: `v22`, `v24`, `v26`, `v28`). No exploration.
+Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
+versions scored, §16 trends / prices / new products, §17 the overnight experiment, §18 reliability). A second session writes a live read of the board and
+of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (16:00 CET): rank 1 of the teams, conversion 1.68 vs 2.17 for the organisers' reference;
-v8 was validated offline only minutes before this note, so its live effect is not measured yet.
+Where we stand (18:19 CET, last hour): first of the teams with 2.18 expected purchases per 100 requests;
+next team 1.83, organisers' reference 2.04. Cold requests 2.76 vs 1.73 for the reference. The weak number
+is `on_time`, 96.4 % (others 99.8 %): answers are lost in bursts of the home connection.
 
-Open for the final: (1) where the server runs — the laptop's home connection lost answers whenever anything
-else used it (rule 9); (2) exploration off; (3) retrain on all data once the last A/B is read.
+Open for the final (findings §17 has the design; the humans decide, before Sunday 09:30 CET):
+1. **Read the night**: `python scripts/arms.py 17:45 07:30` (UTC). Which ranker set-up, pooling lift off and
+   on; and, if a trend ran, whether the lift helped (even against odd versions over those minutes). Four
+   trends ran on Saturday (09:30, 11:30, 13:30, 15:30 UTC) before any version reacted to them; none had come
+   back by 18:45 CET.
+2. **A single arm** for the final with the winner (`scripts/swap_server.ps1` after editing `ARMS`):
+   [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is already a sound mix.
+   The best proven version and how to put it back: [`best_model.md`](best_model.md).
+3. **The connection.** A network cable to the router, nothing else using the line, no assistant session
+   open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi from the rest.
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
 (outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:
-OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). Update this section when
-that changes.
+OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). Since 18:58 CET the live
+server is a process of its own started by `scripts/swap_server.ps1` (no window; `python` with `reco.serve` in
+Task Manager): it survives closing the assistant app. Never start one as a child of an assistant session. Commit at every deploy,
+with the `model_version` in the message, so the repository always matches what is serving. Update this
+section when that changes.
