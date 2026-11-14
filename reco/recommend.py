@@ -44,6 +44,8 @@ CANDIDATES = 1000        # products handed from the rules to the model
 LIFT_SHARED_ATTR = (1.0, 2.0, 4.5)   # retrieval only: 0 / 1 / 2 description attributes shared with the last
                                      # viewed product (live, slot-adjusted: 0.75 / 1.7 / 4.3 of the average)
 ORGANIC_TOP = 300        # candidates (the best by the carousel models) the organic model is asked about
+NEIGHBOURS = 10          # a trending product takes the organic factor of this many products ranked just above
+                         # and just below it
 EXPLORE_HEAD = 4         # exploration: the model's best 4 are shown in slots 1-4, in random order
 EXPLORE_POOL = 14        # …and slots 5-10 are 6 products drawn at random from its ranks 5-14
 
@@ -123,6 +125,28 @@ def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrie
     return score
 
 
+def level_trending(want: np.ndarray, p: np.ndarray, trending: np.ndarray) -> np.ndarray:
+    """The organic factors `want` of some candidates, with those of the trending products replaced by the
+    median factor of the products the ranker scores about as high (NEIGHBOURS just above and just below,
+    among the ones that are not trending).
+
+    The organic model learned which product a shopper goes on to buy among the candidates of an ordinary
+    day. A product that is a candidate only because its subcategory is trending is one it was never asked
+    about, and its answer means nothing: on 14 Nov (Face Cream, 21:30 UTC) the arms with the organic factor
+    put 1.7 products of the trending subcategory in every list where the carousel models alone put 0.1, and
+    1,600 such impressions brought 1 click. So on those products the organic model has no say: they keep
+    the place the carousel models and the trend give them."""
+    plain = np.flatnonzero(~trending)
+    if not len(plain):
+        return want
+    plain = plain[np.argsort(-p[plain], kind="stable")]     # the others, best first
+    place = np.searchsorted(-p[plain], -p[trending])         # where each trending product falls among them
+    out = want.copy()
+    for i, k in zip(np.flatnonzero(trending), place):
+        out[i] = np.median(want[plain[max(k - NEIGHBOURS, 0):k + NEIGHBOURS]])
+    return out
+
+
 def new_shopper(req: dict) -> bool:
     """The request says so (is_new_user): a shopper the 60-day history knows nothing about."""
     return str(req.get("is_new")).lower() in ("true", "1")
@@ -190,8 +214,11 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
             # the organic model is the slow one (1,500 trees), and beyond the best few hundred candidates it
             # cannot change the first 10: on 250 requests, applying it to the best 200 gave the same lists
             best = np.argpartition(-p, ORGANIC_TOP - 1)[:ORGANIC_TOP] if len(p) > ORGANIC_TOP else np.arange(len(p))
+            want = ranker.propensity(x[best]) ** organic
+            if hot is not None and hot[top[best]].any():
+                want = level_trending(want, p[best], hot[top[best]])
             blended = np.zeros(len(p))
-            blended[best] = p[best] * ranker.propensity(x[best]) ** organic
+            blended[best] = p[best] * want
             p = blended
         order = np.argsort(-p, kind="stable")
         if policy == "explore":     # reproducible: the same request always gets the same sample
