@@ -165,7 +165,7 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 22:45 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+As of Sat 14 Nov 2026 23:30 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
 answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 1. **Retrieve** — the rules (`score_rules`): popularity x measured lifts, 1,000 candidates.
@@ -182,14 +182,15 @@ answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), one ranker for every request:
 `skore_money_v31` (30 %) v9 + full trend lift, the version to beat · `v32` (30 %) v9 x the organic model
-(`models/v9o`, `offline/organic.py`) + lift · `v33` (20 %) v9b, v9's features retrained on all of Saturday,
-+ lift — these three live since 21:32 CET — · `v36` (20 %, since 22:32 CET) v32 with the score of a product
-added during the event x1.5 for known shoppers: every piece with evidence, as one candidate. No exploration.
+(`models/v9o`, `offline/organic.py`) over the best 300 candidates, + lift — both live since 21:32 CET — ·
+`v37` (20 %, since 23:23 CET) v9 + lift picks the ten and v9 x organic only orders them: the same ten products
+as v31, and the one use of the organic model measured offline (+4.7 % purchases, findings §22) · `v36` (20 %,
+since 22:32 CET) v32 with the score of a product added during the event x1.5 for known shoppers. No exploration.
 Since 22:51 CET, in v32 and v36 a trending product takes the organic factor of its neighbours in v9's order.
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
 versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
 organic model and the arms of the night, §21 ten signals checked against what v9 already predicts, the lift
-for new products and the organic factor during a trend). The store's calendar (trends, promotions, new
+for new products and the organic factor during a trend, §22 the organic model as a second stage). The store's calendar (trends, promotions, new
 products) is in [`docs/data.md`](docs/data.md). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
@@ -198,9 +199,10 @@ next team 1.83, organisers' reference 2.04. Cold requests 2.76 vs 1.73 for the r
 is `on_time`, 96.4 % (others 99.8 %): answers are lost in bursts of the home connection.
 
 Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
-1. **Read the night**: `python scripts/arms.py 21:55 07:30` (UTC), or the table in `best_model.md`. v31 is
-   the version to beat: against it, v32 (does the organic factor help live?), v33 (does retraining on more
-   data help?) and v36 (v32 plus the lift for new products). Read the minutes with a trend apart (45 minutes
+1. **Read the night**: `python scripts/arms.py 22:25 07:30` (UTC), or the table in `best_model.md`. v31 is
+   the version to beat: against it, v37 (the organic factor ordering v9's ten: the candidate with the
+   cleanest evidence), v32 (the organic factor also choosing among the best 300) and v36 (v32 plus the lift
+   for new products). Read the minutes with a trend apart (45 minutes
    from :30 of every odd UTC hour). Before 21:52 UTC the organic arms had a flaw during a trend (they filled
    lists with products of the trending subcategory, findings §21): fixed, and every arm should now show
    about the same number of trending products per list (`tiers == "t"` in `served-*.jsonl`).

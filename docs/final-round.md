@@ -65,10 +65,11 @@ connection being busy with something else (docs/findings.md §8). So the checkli
   the final: every request should get the best list we have. Reading the night and setting the arm:
 
   ```bash
-  python scripts/arms.py 21:55 07:30 | python realtime_analyisi_leaderboard/pool_arms.py "v9=31" "v9 x organic=32" "organic, new x1.5=36" "v9b=33"
+  python scripts/arms.py 22:25 07:30 | python realtime_analyisi_leaderboard/pool_arms.py "v9=31" "organic orders v9's ten=37" "v9 x organic=32" "organic, new x1.5=36"
   ```
 
-  (UTC: Saturday 22:55 CET to Sunday 08:30 CET; the last column is each arm against v31, in standard errors.)
+  (UTC: Saturday 23:25 CET to Sunday 08:30 CET; the last column is each arm against v31, in standard errors.
+  The three arms with the organic model can also be pooled against v31: `"v9=31" "organic=32,36,37"`.)
   The rule: **v31 stays unless another arm is at least 2 standard errors above it over the whole night and
   not below it in the minutes with a trend** (45 minutes from :30 of every odd UTC hour: `arms.py 23:30
   00:15`, `01:30 02:15`, …). Then leave a single line in `ARMS` (`reco/serve.py`) with the winner at 100 %,
@@ -77,12 +78,14 @@ connection being busy with something else (docs/findings.md §8). So the checkli
   | Winner | `ARMS = (…,)` |
   |---|---|
   | v31 | `("skore_money_v31", "model", "v9", {"trend": 1.0}, 100)` |
+  | v37 | `("skore_money_v37", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10}, 100)` |
   | v32 | `("skore_money_v32", "model", "v9o", {"trend": 1.0, "organic": 1.0}, 100)` |
   | v36 | `("skore_money_v36", "model", "v9o", {"trend": 1.0, "organic": 1.0, "fresh": 1.5}, 100)` |
-  | v33 | `("skore_money_v33", "model", "v9b", {"trend": 1.0}, 100)` |
 
-  v32 and v36 use a third model: about 110 ms per request instead of 60 (`rank_ms/request` in the log), and
-  p95 of the answers about 1.9 s. The best proven version and the line that puts it
+  If two of the arms with the organic model pass the rule, prefer v37: it shows the same ten products as
+  v31 and only changes their order, which is what was measured offline (findings §22), and it costs no
+  time. v32 and v36 ask the third model about 300 candidates: about 110 ms per request instead of 60
+  (`rank_ms/request` in the log), and p95 of the answers about 1.9 s. The best proven version and the line that puts it
   back are in [`best_model.md`](../best_model.md).
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products
   and trends. What carries over, by construction: features are counts, shares and matches (never ids);

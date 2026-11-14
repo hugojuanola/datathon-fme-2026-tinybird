@@ -753,3 +753,49 @@ per list against 2.5 for v9 + lift. For the night's reading the organic arms cou
 Two things to keep from it. A model is only as good as the candidates it was trained on, and a multiplier
 that changes the candidates changes the question. And an arm must be watched in every regime it will meet:
 the organic arm had been ahead for an hour (+0.30, 1.9 standard errors) on minutes without a trend.
+
+## 22. The organic model as a second stage: it orders the ten better than the models that picked them
+
+The numbers of §20 already said it and we had read past it: on the ten products of a list, the organic
+model **alone** puts the purchased one first more often (21.3 %) than v9 (17.8 %) or v9 × organic (20.4 %).
+A model that never saw a carousel orders v9's ten better than v9 does. After §21 that is worth more than it
+looked: the full organic arm (v32) applies the factor to the best 300 candidates and so changes 3 of the 10
+products of a list, and nothing offline can say what the three newcomers are worth — they were never shown.
+Reordering the ten is exactly what the held-out lists measure, and it cannot bring a product in.
+
+In purchases, with a position-based estimate (a purchase made in slot k counts attention(new slot) /
+attention(k); attention per slot from the old carousel's log: 1.00, 0.56, 0.41, 0.32, 0.26, 0.23, 0.21, 0.18,
+0.16, 0.15; the order actually shown scores exactly the purchases counted). Held-out lists since 16:14 UTC,
+neither model had seen them: 38,627 lists, 2,864 clicks, 904 purchases.
+
+| The ten shown, ordered by | Clicks | Purchases | Known shoppers | New shoppers |
+|---|---|---|---|---|
+| v9 | 2,870 | 893 | 523 | 370 |
+| v9 × organic ^ 0.5 | +3.4 % | +3.0 % | +2.1 % | +4.3 % |
+| **v9 × organic** | +4.5 % | **+4.7 %** (pair by pair: +41.6 ± 14.2 purchases, 2.9 standard errors) | +4.3 % | +5.1 % |
+| v9 × organic ^ 2 | +5.1 % | +5.0 % (± 2.1) | +5.7 % | +3.9 % |
+| organic alone | +6.9 % | +4.7 % (± 3.0) | +5.8 % | +3.1 % |
+
+From power 1 on, the estimate is flat within its error: power 1 stays, the same as in v32. The arm is one
+parameter (`pool` in `reco.recommend`: how many of the carousel models' best candidates the organic factor
+may reorder; 10 = they pick the ten). On 150 of the day's requests it shows the same ten products as v9 in
+all 150 lists, a different first product in 33 %, and costs 2 ms more than v9 (the organic model scores 10
+rows instead of 300: 51 ms per list against 49, and 95 for v32).
+
+**Live since 22:23 UTC:**
+
+| Arm | Traffic | What | Question |
+|---|---|---|---|
+| `skore_money_v31` | 30 % | v9 + trend lift | the version to beat |
+| `skore_money_v37` | 20 % | v9 + lift picks the ten, v9 × organic orders them | against v31: the order alone, the same ten products |
+| `skore_money_v32` | 30 % | v9 × organic over the best 300, + lift | against v37: what the organic factor brings in from outside the ten |
+| `skore_money_v36` | 20 % | v32 + products added during the event ×1.5 for known shoppers | against v32: the lift for new products (§21) |
+
+v37 took the place of v33 (v9b, v9's features retrained on all of Saturday): over its first hour it was level
+with v9 (2.18 against 2.17 on 1,800 requests), as both offline judges had said. More of the same day's
+feedback neither helped nor hurt.
+
+Left for a retrain, not for tonight: an abandoned cart carted once is worth a fifth less than v9 thinks
+(§21). Scoring it ×0.8 would move the reciprocal rank of the purchase from 0.384 to 0.390, but the live
+state does not count carts per product, and a counter added to the state the night before the final is a
+risk the gain does not pay for.
