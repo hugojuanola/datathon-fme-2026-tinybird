@@ -65,11 +65,11 @@ connection being busy with something else (docs/findings.md §8). So the checkli
   the final: every request should get the best list we have. Reading the night and setting the arm:
 
   ```bash
-  python scripts/arms.py 20:45 07:30          # UTC: Saturday 21:45 CET to Sunday 08:30 CET, every arm side by side
+  python scripts/arms.py 21:35 07:30          # UTC: Saturday 22:35 CET to Sunday 08:30 CET, every arm side by side
   ```
 
   then leave a single line in `ARMS` (`reco/serve.py`) with the winner at 100 %, for example
-  `ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 100),)` (or the line of v32 / v33 if it won), commit it, and replace the
+  `ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 100),)` (or the line of v32 / v33 / v36 if it won), commit it, and replace the
   running server as in step 2 (`scripts\swap_server.ps1`). The best proven version and the line that puts it
   back are in [`best_model.md`](../best_model.md).
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products
