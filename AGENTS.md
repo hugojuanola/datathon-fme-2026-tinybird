@@ -164,7 +164,7 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 18:40 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+As of Sat 14 Nov 2026 18:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
 answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 1. **Retrieve** — the rules (`score_rules`): popularity x measured lifts, 1,000 candidates.
@@ -176,24 +176,26 @@ answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
    multiplies the scores of a trending subcategory by its lift to the power the arm sets.
 4. **Hard rules** — never a product the shopper already bought, never one out of stock.
 
-Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), all on the same rankers: `skore_money_v11`
-ignores trends (control), `skore_money_v14` applies lift ^ 1.0, `skore_money_v15` lift ^ 0.6. No exploration.
+Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`): the overnight experiment, live since 18:45 CET.
+Four ranker set-ups (`v9` · `v9w|v9` · `v16` · `v16w|v16`), each with the trend lift off (6 % of the traffic:
+`skore_money_v21`, `v23`, `v25`, `v27`) and on at lift ^ 0.75 (19 %: `v22`, `v24`, `v26`, `v28`). No exploration.
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
-versions scored, §16 trends / prices / new products). A second session writes a live read of the board and
+versions scored, §16 trends / prices / new products, §17 the overnight experiment, §18 reliability). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
 Where we stand (18:19 CET, last hour): first of the teams with 2.18 expected purchases per 100 requests;
 next team 1.83, organisers' reference 2.04. Cold requests 2.76 vs 1.73 for the reference. The weak number
 is `on_time`, 96.4 % (others 99.8 %): answers are lost in bursts of the home connection.
 
-Open for the final:
-1. **Dose of the trend lift.** Four trends ran today (09:30, 11:30, 13:30, 15:30 UTC) before any version
-   reacted to them; none has come since the detector went live. The arms are waiting for the next one.
-2. **Which rankers.** `models/v16` / `v16w` (all of today's data, real prices, the trend as a feature)
-   against v9 / v9w, over the night, read with `scripts/arms.py` in the morning.
+Open for the final (findings §17 has the design; the humans decide, before Sunday 09:30 CET):
+1. **Read the night**: `python scripts/arms.py 17:45 07:30` (UTC). Which ranker set-up, pooling lift off and
+   on; and, if a trend ran, whether the lift helped (even against odd versions over those minutes). Four
+   trends ran on Saturday (09:30, 11:30, 13:30, 15:30 UTC) before any version reacted to them; none had come
+   back by 18:45 CET.
+2. **A single arm** for the final with the winner, started in its own window:
+   [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is already a sound mix.
 3. **The connection.** A network cable to the router, nothing else using the line, no assistant session
    open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi from the rest.
-4. **A single arm** for the final, started in its own window: [`docs/final-round.md`](docs/final-round.md).
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
 (outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:

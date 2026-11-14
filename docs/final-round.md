@@ -59,11 +59,11 @@ connection being busy with something else (docs/findings.md §8). So the checkli
   the final: every request should get the best list we have. Reading the night and setting the arm:
 
   ```bash
-  python scripts/arms.py 21:00 07:30          # UTC: yesterday 22:00 CET to today 08:30 CET, every arm side by side
+  python scripts/arms.py 17:45 07:30          # UTC: Saturday 18:45 CET to Sunday 08:30 CET, every arm side by side
   ```
 
   then leave a single line in `ARMS` (`reco/serve.py`) with the winner at 100 %, for example
-  `ARMS = (("skore_money_v14", "model", "v9w|v9", {"trend": 1.0}, 100),)`, commit it, and replace the
+  `ARMS = (("skore_money_v26", "model", "v16", {"trend": 0.75}, 100),)`, commit it, and replace the
   running server with `-Standby` as in step 2. The standby prints a self-test of the arm before it can take
   over: every line must read `N/N valid lists`.
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products

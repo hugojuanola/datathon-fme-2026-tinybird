@@ -418,3 +418,82 @@ row, so no model could have learned it; the replay now applies each price change
 fair share of purchases from the first ten minutes (1.9 % of the catalogue, 2.0–2.8 % of the purchases): to
 the shoppers they are ordinary products, so the ranker must not wait for them to accumulate history — which
 is what the attribute features and the exposure-corrected popularity are for (§13, §14).
+
+## 17. The night of 14 Nov: one experiment for two questions
+
+By the evening no ranker of the attribute family (v7 to v16) had separated from another at the precision a
+few hours give. The clearest warning came at 17:25–17:40 UTC: three arms that were behaving identically (no
+trend was running, so the two "trend" arms did nothing different from the control) read **1.92, 2.40 and
+2.59** on the expected metric with about 900 requests each. A quarter of an hour with three arms decides
+nothing; a night with about 100,000 requests does.
+
+| Ranker set-up | Lift off (6 % each) | Lift ^ 0.75 (19 % each) |
+|---|---|---|
+| `v9` for every request | `skore_money_v21` | `skore_money_v22` |
+| `v9w` for cold requests, `v9` for the rest | `skore_money_v23` | `skore_money_v24` |
+| `v16` for every request | `skore_money_v25` | `skore_money_v26` |
+| `v16w` for cold requests, `v16` for the rest | `skore_money_v27` | `skore_money_v28` |
+
+- **Which rankers** is read from all the traffic, pooling the two columns (they only differ while a trend is
+  running): new against old is (v25 + v26 + v27 + v28) against (v21 + v22 + v23 + v24), routed against single
+  is the second and fourth rows against the first and third. About 25,000 requests per set-up by the morning:
+  differences of 3–4 % become visible.
+- **The trend lift** is read from the minutes a trend is running: even against odd versions.
+- Three quarters of every set-up already apply the lift, because it is our best guess if nobody is there to
+  choose before the final: the organic stream says purchases ×8–12, our carousel said ×2–5 on the few
+  hundred impressions it had (§16), and a lift of ×5–6 (the detector's ×8–12 to the power 0.75) is close to
+  right across that range.
+- Read it with `python scripts/arms.py 17:45 07:30` (UTC); the final is served by a single arm
+  ([`docs/final-round.md`](final-round.md)).
+
+**`v16` / `v16w`** (`python -m offline.train v16`, `python -m offline.train v16w 20`): all of the day's
+feedback up to 17:35 UTC (770,204 live rows on top of the log), the 57 features, live rows with the price
+the shopper really saw and the detector's reading at that moment. Held-out live feedback (last quarter:
+19,279 requests, 439 purchases), bought product ranked first / in the top 3 among the 10 shown, for the
+fits that had not seen that quarter:
+
+| | v9 | v16 (live ×5) | v16w (live ×20) |
+|---|---|---|---|
+| All requests | 20.5 % / 48.0 % | **22.2 % / 49.1 %** | 21.3 % / 47.3 % |
+| Known shoppers (258 purchases) | 22.4 % / 47.7 % | **24.2 % / 47.7 %** | 22.4 % / 46.3 % |
+| New shoppers (181 purchases) | 18.0 % / 48.4 % | 19.5 % / **50.9 %** | **19.8 %** / 48.7 % |
+
+Small steps, all inside the noise of 439 purchases — which is why they go to the live test instead of
+straight to the final. Two things this table taught us on the way:
+
+- Weighting live rows ×20 does **not** help new shoppers offline (19.8 % vs 19.5 %), while live it looked
+  better on cold requests (3.21 vs 2.84, §15). Neither is conclusive: routing is in the experiment as a
+  question, not as a fact.
+- A ranker refitted on all the data looks far better on the same held-out quarter than its own validation
+  fit (v16 on new shoppers: 32.0 % ranked first against 19.5 %): the table is only meaningful for fits that
+  did not see the period, and rankers trained at different hours cannot be compared on it.
+
+**Checked and ruled out the same evening** (each a few seconds of SQL or of local feedback):
+
+- *Is a product's popularity today different from its 60-day history, beyond the trends?* No: the ratio of
+  today's share to the historical share in the first and in the second half of the day correlate 0.10
+  (purchases, 331 products) and 0.05 (views, 4,785 products). The history is the right prior; nothing to
+  gain from a "popular this hour" feature.
+- *Are abandoned carts ranked well?* For known shoppers they are a third of the impressions and 57 % of the
+  purchases. The ranker's predictions match what happened by age of the cart, by slot, by category of the
+  session and by attribute affinity (observed over predicted between 0.85 and 1.1 everywhere), and the
+  carted product that gets bought is in slot 1 almost half of the time.
+- *Does the request say more than we use?* No: page, device, region, recent views, new-shopper flag. All used.
+
+## 18. Reliability, second look (14 Nov, evening)
+
+On the hourly board our share of answers on time was 96–99 % against 99.8 % for the best teams. The losses
+come in bursts of one to four minutes in which every call to RawTree (polls, inserts, catalogue and event
+refresh) slows from 0.2 s to more than 1 s or times out together, while ranking keeps its 45 ms: it is the
+path to RawTree, not our process. What we checked:
+
+| Suspect | Test | Verdict |
+|---|---|---|
+| Our own analysis jobs on the laptop | Ran a heavy one (12 M-row read, model scoring) on purpose for 45 s | No effect: polls 213–221 ms, no failures. The machine has 16 threads and 14 GB free |
+| Uploads (git push of several MB, assistant steps) | Pushed 5 MB during a quiet minute | No effect |
+| RawTree rate limits | 10,000 queries/s per database, we send about 15 | Not it |
+| The 5-minute stock mark | Bursts at 16:05 and 16:25 UTC sit on marks, the one at 16:47–16:51 does not | Not the cause; requests right after a mark wait at most 1.6 s for the new stock |
+| The Wi-Fi link | `scripts/netmon.py`: ping to the router 11–27 ms on average with spikes of 100–360 ms in *good* minutes (a wired link gives about 1 ms) | The weakest part of the path, and the one we can change: a cable for the final |
+
+The monitor keeps logging one line per second, so the next burst will show whether the router stopped
+answering (Wi-Fi) or only RawTree did (the line or the internet).
