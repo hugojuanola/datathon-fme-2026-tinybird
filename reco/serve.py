@@ -18,7 +18,7 @@ from reco.rawtree import ROOT, insert, query
 from reco.recommend import arm_of, is_valid, recommend, safe_list
 from reco.state import State
 
-VERSION = "v1"          # shown on the public leaderboard: keep it opaque
+VERSION = "v4"          # shown on the public leaderboard: keep it opaque
 POLL_EVERY = 0.25       # seconds between polls of shop.requests
 MAX_AGE_MS = 2800       # an answer must land within 3000 ms of the request ts: do not bother after this
 

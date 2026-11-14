@@ -17,6 +17,8 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 
+import numpy as np
+
 from reco.rawtree import TEAM, query, query_tsv
 
 
@@ -28,6 +30,16 @@ class Product:
     price: float
     base_price: float   # price at the start of the stream: price / base_price < 1 means a discount
     is_new: bool        # added during the event (cold-start product)
+
+
+@dataclass(slots=True, frozen=True)
+class Index:
+    """An immutable snapshot of the catalogue as arrays, swapped in atomically by the refreshers."""
+    pids: list[str]                       # position -> product id
+    pos: dict[str, int]                   # product id -> position
+    pop: np.ndarray                       # popularity: share of all-time purchases + share of live purchases
+    by_cat: dict[str, np.ndarray]         # category -> positions
+    by_sub: dict[str, np.ndarray]         # subcategory -> positions
 
 
 USER_ITEMS = """
@@ -51,8 +63,7 @@ class State:
         self.hist_pop: dict[str, float] = {}          # share of all-time purchases
         self.live_pop: dict[str, float] = {}          # share of purchases in the live window
         self.best: list[str] = []                     # all products, most popular first
-        self.by_sub: dict[str, list[str]] = {}
-        self.by_cat: dict[str, list[str]] = {}
+        self.index: Index | None = None
         self.carted: dict[str, dict[str, int]] = defaultdict(dict)   # user -> {product: last ts (s)}
         self.purchased: dict[str, set[str]] = defaultdict(set)       # user -> products already bought
         self.request_user: dict[str, tuple[str, float]] = {}         # request_id -> (user, seen at)
@@ -154,13 +165,15 @@ class State:
         self._rank()
 
     def _rank(self) -> None:
-        pop = {p: self.hist_pop.get(p, 0.0) + self.live_pop.get(p, 0.0) for p in self.products}
-        best = sorted(pop, key=lambda p: (pop[p], p), reverse=True)
-        by_sub, by_cat = defaultdict(list), defaultdict(list)
-        for p in best:
-            by_sub[self.products[p].subcategory].append(p)
-            by_cat[self.products[p].category].append(p)
-        self.best, self.by_sub, self.by_cat = best, dict(by_sub), dict(by_cat)
+        pids = list(self.products)
+        pop = np.array([self.hist_pop.get(p, 0.0) + self.live_pop.get(p, 0.0) for p in pids])
+        by_cat, by_sub = defaultdict(list), defaultdict(list)
+        for i, p in enumerate(pids):
+            by_cat[self.products[p].category].append(i)
+            by_sub[self.products[p].subcategory].append(i)
+        self.index = Index(pids, {p: i for i, p in enumerate(pids)}, pop,
+                           {c: np.array(v) for c, v in by_cat.items()}, {c: np.array(v) for c, v in by_sub.items()})
+        self.best = [pids[i] for i in np.lexsort((np.arange(len(pids)), -pop))]
 
     # ---------------------------------------------------------------- threads
     def start(self) -> None:

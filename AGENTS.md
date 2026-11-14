@@ -37,7 +37,7 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`scripts/rt.py`](scripts/rt.py) | Run SQL against RawTree from the shell (stdlib, read-only by default) |
 | [`scripts/leaderboard.py`](scripts/leaderboard.py) | Print the public leaderboard |
 | [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (live state from RawTree), `recommend.py` (ranking policy), `rawtree.py` (client) |
-| [`offline/`](offline/) | Offline work: `pull_data.py` exports the history to `data/` (git-ignored) |
+| [`offline/`](offline/) | Offline work: `pull_data.py` exports the history to `data/` (git-ignored); `evaluate.py` validates the policy on the held-out last week |
 | [`docs/findings.md`](docs/findings.md) | What drives a purchase, measured: the evidence behind the ranking policy |
 | [`queries/`](queries/) | Our reusable SQL: `health.sql` (is the live system healthy?), `variants.sql` (A/B by `model_version`), `tiers.sql` (which ranking tier sells) |
 | `.env` | `TEAM_ID` and `RAWTREE_API_KEY`. **Git-ignored. Not in the repo.** Template: [`.env.example`](.env.example) |
@@ -134,10 +134,12 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 13:30 CET (branch `javier`): **`reco/serve.py` v1 is running live** from Javier's
-laptop (started 13:24 CET), answering every request in ≈1 s. It is a rule cascade — products just viewed,
-then products carted but never bought, then a popularity fill — with a three-way A/B on the fill
-(`model_version` `v1s` / `v1c` / `v1g`). The measurements behind it are in [`docs/findings.md`](docs/findings.md).
-Next: a learned ranker for the fill, validated offline on `data/` (`python -m offline.pull_data`).
-Only one `reco.serve` may run at a time (rule 4): check `queries/health.sql` before starting another.
-Update this section when that changes.
+As of Sat 14 Nov 2026 13:45 CET (branch `javier`): **`reco/serve.py` v4 is running live** from Javier's
+laptop, answering every request in ≈1.1 s (p95 ≈ 1.8 s). The policy (`reco/recommend.py`) scores every
+product as `popularity × lifts` (category and subcategory of the last view, abandoned cart, just viewed),
+never shows a product the shopper already bought, and A/B-tests the "just viewed" lift (`model_version`
+`v4a` = ×3, `v4b` = ×1.5). Evidence and offline validation: [`docs/findings.md`](docs/findings.md).
+First live read: ≈2.6 % conversion for the ×3 arm vs 0.79 % baseline (small sample).
+Next: replace the hand-set lifts with a learned ranker (LightGBM on the log + live feedback), gated by
+`python -m offline.evaluate`. Only one `reco.serve` may run at a time (rule 4): check
+`queries/health.sql` before starting another. Update this section when that changes.
