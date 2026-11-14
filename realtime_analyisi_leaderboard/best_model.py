@@ -151,18 +151,22 @@ def main() -> None:
     if not ranked:
         print("no version with enough requests yet")
         return
-    best = ranked[0]
-    tied = [r for r in ranked[1:] if best["margin"] - r["margin"] < NOISE]
-    best_cold = max(ranked, key=lambda r: r["cold_margin"])
-    best_warm = max(ranked, key=lambda r: r["warm_margin"])
-    cet = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime("%d %b %Y, %H:%M")
-
     path = ROOT / "best_model.md"
     record = []
     if path.exists():
         old = path.read_text(encoding="utf-8")
         if "## Record" in old:
             record = [ln for ln in old.split("## Record", 1)[1].splitlines() if ln.startswith("- ")]
+    best = ranked[0]
+    # The record changes hands only on a lead the measurement can tell apart: the holder keeps it against a
+    # challenger ahead by less than NOISE (a 6 % arm with two lucky quarter-hours is worth that much).
+    holder = next((r for r in ranked if record and f"`{r['name']}` takes the record" in record[-1]), None)
+    if holder is not None and best["margin"] - holder["margin"] < NOISE:
+        best = holder
+    tied = [r for r in ranked if r is not best and best["margin"] - r["margin"] < NOISE]
+    best_cold = max(ranked, key=lambda r: r["cold_margin"])
+    best_warm = max(ranked, key=lambda r: r["warm_margin"])
+    cet = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime("%d %b %Y, %H:%M")
     leader = f"`{best['name']}`"
     if not record or leader not in record[-1]:
         record.append(f"- {cet} CET — {leader} takes the record: {best['conv']:.2f} expected purchases per 100 requests on "

@@ -79,6 +79,28 @@ def main() -> None:
                   f"{by_slot(t, 'click'):7.1f} /{by_slot(o, 'click'):6.1f} {by_slot(t, 'buy'):8.2f} /{by_slot(o, 'buy'):5.2f} | "
                   f"{100 * d.buy.sum() / n:8.2f} {100 * t.buy.sum() / n:8.2f} {100 * o.buy.sum() / n:8.2f}   ({int(t.click.sum())} clicks, {int(t.buy.sum())} purchases on trend products)")
 
+    # The table compares products across requests. This stays inside each list: of the clicks (purchases)
+    # made in lists that hold a trend product, the share that went to it, against what the slots alone
+    # predict. Above the prediction = the trend products sit too low in those lists; below = too high.
+    print("\ninside a list that holds a trend product, during the trend: share of the clicks / purchases that went to it, against the slots' prediction")
+    live = imp[imp.during]
+    for flag, name in (("click", "clicks"), ("buy", "purchases")):
+        weight = live.groupby("slot")[flag].mean()
+        for lift in (False, True):
+            d = live[live.lift == lift]
+            d = d[d.groupby("rid").trend.transform("any") & d.rid.isin(d.loc[d[flag] == 1, "rid"])].copy()
+            n = d.rid.nunique()
+            if n < 15:
+                continue
+            d["w"] = d.slot.map(weight)
+            d["w"] /= d.groupby("rid").w.transform("sum")
+            expected = float((d.w * d.trend).sum() / n)
+            actual = float(d.loc[d[flag] == 1, "trend"].mean())
+            se = (expected * (1 - expected) / n) ** 0.5
+            top = d[d.trend].groupby("rid").slot.min()
+            print(f"   {name + (', lift (even)' if lift else ', no lift (odd)'):<28} {n:>5} lists: actual {100 * actual:5.1f}%  by slot {100 * expected:5.1f}%  "
+                  f"({(actual - expected) / max(se, 1e-9):+.1f} se); best slot of a trend product in them, median {top.median():.0f}")
+
 
 if __name__ == "__main__":
     main()
