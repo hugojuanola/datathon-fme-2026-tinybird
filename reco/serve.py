@@ -10,10 +10,12 @@ Design goals, in order: never die, never send an invalid answer, answer fast, be
 Speed and resilience. RawTree usually answers in ~0.2 s, but now and then a call takes seconds. So
 nothing waits for a single call:
 
-    3 pollers   read shop.requests on staggered schedules (one poll every 0.2 s overall); a slow response
+    4 pollers   read shop.requests on staggered schedules (one poll every 0.15 s overall); a slow response
                 delays only its own poll, the next one is already on its way
-    1 ranker    this thread: de-duplicates what the pollers bring, ranks (≈10 ms per request)
-    2 senders   insert the answers; a slow insert does not hold the next batch
+    1 ranker    this thread: de-duplicates what the pollers bring, ranks (≈25 ms per request)
+    4 senders   insert the answers, each on its own connection. An insert that has not come back after
+                0.6 s is sent again on another connection (measured: a duplicate answer is harmless, and
+                the home uplink sometimes stalls a single connection for seconds)
 
 Typical latency from the request ts is ~1 s of the 3 s allowed.
 """
@@ -31,11 +33,13 @@ from reco.rawtree import LOGS, ROOT, insert, query
 from reco.recommend import Ranker, is_valid, recommend, safe_list
 from reco.state import State
 
-# (model_version written with each answer and shown on the public leaderboard, policy, % of the traffic)
-ARMS = (("skore_money_v5", "model", 80), ("skore_money_v5_explore", "explore", 20))
-POLLERS = 3
-POLL_EVERY = 0.2        # seconds between polls of shop.requests, all pollers together
-SENDERS = 2
+# (model_version written with each answer and shown on the public leaderboard, policy, ranker in models/,
+#  % of the traffic)
+ARMS = (("skore_money_v5", "model", "v5", 30), ("skore_money_v7", "model", "v7", 60), ("skore_money_v7_explore", "explore", "v7", 10))
+POLLERS = 4
+POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
+SENDERS = 4
+HEDGE_AFTER = 0.6       # seconds before an insert that has not come back is sent again on another connection
 MAX_AGE_MS = 2800       # an answer must land within 3000 ms of the request ts: do not bother after this
 HOLD_UNTIL_MS = 1600    # a request right after a 5-minute mark waits (at most this long) for the new stock list
 
@@ -49,19 +53,20 @@ WHERE ts > now64(3) - INTERVAL 4 SECOND
 ORDER BY ts"""
 
 
-def arm_of(request_id: str) -> tuple[str, str]:
+def arm_of(request_id: str) -> tuple[str, str, str]:
     """Deterministic split on the request id, so every variant sees the same kind of traffic."""
     bucket = zlib.crc32(b"arm:" + request_id.encode()) % 100
-    for version, policy, share in ARMS:
+    for version, policy, ranker, share in ARMS:
         bucket -= share
         if bucket < 0:
-            return version, policy
-    return ARMS[0][:2]
+            return version, policy, ranker
+    return ARMS[0][:3]
 
 
-def answer(state: State, ranker: Ranker | None, req: dict) -> tuple[dict, dict]:
+def answer(state: State, rankers: dict[str, Ranker], req: dict) -> tuple[dict, dict]:
     """One submission row and one log row for a request. Never raises, never returns an invalid list."""
-    version, policy = arm_of(req["id"])
+    version, policy, name = arm_of(req["id"])
+    ranker = rankers.get(name)
     items: list[str] = []
     for attempt in ([policy, "rules"] if policy != "rules" and ranker else ["rules"]):
         try:
@@ -94,21 +99,42 @@ def poller(out: queue.Queue, offset: float) -> None:
         time.sleep(max(0.0, period - (time.time() - t0)))
 
 
-def sender(q: queue.Queue) -> None:
-    """Insert the answers. Batches that pile up while an insert is in flight go out together."""
+class Batch:
+    """Answers on their way to RawTree. `done` is set by whichever copy gets there first."""
+    __slots__ = ("rows", "t0", "done", "copies")
+
+    def __init__(self, rows: list[dict]) -> None:
+        self.rows, self.t0, self.done, self.copies = rows, time.time(), threading.Event(), 0
+
+
+def sender(q: queue.Queue, stats: dict) -> None:
+    """Insert answers on this thread's own connection."""
     while True:
-        rows = q.get()
-        while not q.empty():
-            try:
-                rows = rows + q.get_nowait()
-            except queue.Empty:
-                break
-        for attempt in (1, 2):  # one immediate retry: a duplicate answer is harmless, a missing one is not
-            try:
-                insert("submissions", rows, timeout=2.0)
-                break
-            except Exception as e:
-                print(f"insert failed (attempt {attempt}): {str(e)[:200]}", flush=True)
+        batch = q.get()
+        if batch.done.is_set() or time.time() - batch.t0 > 3.0:
+            continue                    # another copy already made it, or it is too late to matter
+        batch.copies += 1
+        try:
+            insert("submissions", batch.rows, timeout=2.0)
+            batch.done.set()
+        except Exception as e:
+            stats["failed_inserts"] += 1
+            if not batch.done.is_set():
+                q.put(batch)            # try again, on whichever connection is free first
+            if stats["failed_inserts"] % 20 == 1:
+                print(f"insert failed ({stats['failed_inserts']} so far): {str(e)[:160]}", flush=True)
+
+
+def hedger(inflight: queue.Queue, q: queue.Queue, stats: dict) -> None:
+    """Send a second copy of any batch that has not been confirmed after HEDGE_AFTER seconds."""
+    while True:
+        batch = inflight.get()
+        wait = batch.t0 + HEDGE_AFTER - time.time()
+        if wait > 0:
+            time.sleep(wait)            # batches arrive in time order, so sleeping in sequence is exact
+        if not batch.done.is_set():
+            stats["hedged"] += 1
+            q.put(batch)
 
 
 def log_writer(q: queue.Queue, dry: bool) -> None:
@@ -130,11 +156,12 @@ def main() -> None:
     LOGS.mkdir(parents=True, exist_ok=True)
     go = LOGS / "GO"
     go.unlink(missing_ok=True)
-    try:
-        ranker = Ranker(ROOT / "models")
-    except Exception as e:  # no model, or a stale one: serve everything with the rules
-        print(f"no ranker ({str(e)[:200]}): every arm uses the rules", flush=True)
-        ranker = None
+    rankers: dict[str, Ranker] = {}
+    for name in sorted({arm[2] for arm in ARMS if arm[1] != "rules"}):
+        try:
+            rankers[name] = Ranker(ROOT / "models" / name)
+        except Exception as e:  # no model, or a stale one: that arm falls back to the rules
+            print(f"ranker {name} unavailable ({str(e)[:200]}): its arms use the rules", flush=True)
     state = State()
     state.keep_journal = not dry
     state.load()
@@ -147,11 +174,14 @@ def main() -> None:
 
     polls: queue.Queue = queue.Queue()
     answers: queue.Queue = queue.Queue()
+    inflight: queue.Queue = queue.Queue()
     logs: queue.Queue = queue.Queue()
+    stats = {"failed_inserts": 0, "hedged": 0}
     for k in range(POLLERS):
         threading.Thread(target=poller, args=(polls, k * POLL_EVERY), daemon=True).start()
     for _ in range(SENDERS):
-        threading.Thread(target=sender, args=(answers,), daemon=True).start()
+        threading.Thread(target=sender, args=(answers, stats), daemon=True).start()
+    threading.Thread(target=hedger, args=(inflight, answers, stats), daemon=True).start()
     threading.Thread(target=log_writer, args=(logs, dry), daemon=True).start()
 
     seen: dict[str, float] = {}
@@ -159,7 +189,8 @@ def main() -> None:
     rank_ms: list[float] = []
     poll_ms: list[float] = []
     report_at = time.time() + 30
-    print(f"serving {[f'{v} {share}%' for v, _, share in ARMS]} ({'DRY RUN' if dry else 'LIVE'})", flush=True)
+    print(f"serving {[f'{v} {share}%' for v, _, _, share in ARMS]} with rankers {sorted(rankers)} "
+          f"({'DRY RUN' if dry else 'LIVE'})", flush=True)
     while True:
         try:
             try:
@@ -188,20 +219,23 @@ def main() -> None:
                     todo.append(r)
             if todo:
                 t1 = time.time()
-                pairs = [answer(state, ranker, r) for r in todo]
+                pairs = [answer(state, rankers, r) for r in todo]
                 rank_ms.append(1000 * (time.time() - t1) / len(todo))
                 if dry:
                     for row, log in pairs[:2]:
                         print(row["model_version"], list(zip(row["items"], log["tiers"])), flush=True)
                 else:
-                    answers.put([p[0] for p in pairs])
+                    batch = Batch([p[0] for p in pairs])
+                    answers.put(batch)
+                    inflight.put(batch)
                 answered += len(pairs)
                 logs.put([p[1] for p in pairs])
             if len(seen) > 5000:
                 seen = {k: v for k, v in seen.items() if v > now - 60}
             if now > report_at:
                 print(f"{time.strftime('%H:%M:%S')} answered={answered} skipped_late={late} held={held} "
-                      f"failed_polls={failed_polls} poll_ms avg={sum(poll_ms) / max(len(poll_ms), 1):.0f} "
+                      f"failed_polls={failed_polls} failed_inserts={stats['failed_inserts']} hedged={stats['hedged']} "
+                      f"poll_ms avg={sum(poll_ms) / max(len(poll_ms), 1):.0f} "
                       f"max={max(poll_ms, default=0):.0f} rank_ms/request avg={sum(rank_ms) / max(len(rank_ms), 1):.0f} "
                       f"max={max(rank_ms, default=0):.0f} unavailable={len(state.unavailable)} "
                       f"shoppers={len(state.shoppers)}", flush=True)

@@ -34,6 +34,7 @@ from reco.rawtree import DATA, TEAM, query, query_rows, query_tsv
 STOCK_PERIOD_MS = 300_000   # stock changes land every 5 minutes on the dot…
 STOCK_VISIBLE_MS = 800      # …and become queryable about this long after (measured 14 Nov 13:00 UTC)
 PAGE = 50_000               # live events per catch-up query
+CACHE_VERSION = 5           # bump when Shopper changes shape: an old cache must not be unpickled into it
 CACHE = DATA / "cache"
 JOURNAL = CACHE / "journal"
 
@@ -45,6 +46,8 @@ class Product:
     brand: str
     price: float
     added: int = 0      # unix seconds when it was added during the event; 0 = in the original catalogue
+    base_price: float = 0.0   # price when first seen: price / base_price < 1 is a discount
+    description: str = ""
 
 
 EVENTS_PAGE = """
@@ -96,6 +99,8 @@ class State:
         self.events_cursor = 0                    # ms of the newest live event applied
         self._recent: dict[tuple, int] = {}       # events of the last seconds, to apply each exactly once
         self._sub_of: list[int] = []
+        self._brand_of: list[int] = []
+        self._attrs_of: list[tuple] = []
         self._log_price_of: list[float] = []
         self._journal = None
         self.keep_journal = True                  # False for dry runs: they must not leave journal segments
@@ -105,15 +110,16 @@ class State:
     def load(self) -> None:
         t0 = time.time()
         for r in query("""SELECT product_id::String AS p, category::String AS c, subcategory::String AS s,
-                                 brand::String AS b, price_eur::Float64 AS price FROM shop.catalog ORDER BY p"""):
-            self._add_product(r["p"], Product(r["c"], r["s"], r["b"], r["price"]))
+                                 brand::String AS b, price_eur::Float64 AS price, description::String AS d
+                          FROM shop.catalog ORDER BY p"""):
+            self._add_product(r["p"], Product(r["c"], r["s"], r["b"], r["price"], description=r["d"]))
         self.refresh_catalog()
         self.clock_offset = int(query("SELECT toUnixTimestamp64Milli(now64(3)) AS t")[0]["t"]) / 1000 - time.time()
 
         cache = self._read_cache()
         if cache:
             self.hist_counts, self.shoppers = cache["counts"], cache["shoppers"]
-            self._snapshot((cache["cat_names"], cache["sub_names"], cache["brand_names"]))
+            self._snapshot(tuple(cache["names"]))
         else:
             print("no usable history cache: aggregating the history in RawTree (slow)", flush=True)
             self.hist_counts = {r["p"]: (float(r["v"]), float(r["a"]), float(r["n"])) for r in query(PRODUCT_COUNTS)}
@@ -131,13 +137,14 @@ class State:
                            INNER JOIN shop.requests AS r ON r.request_id::String = f.request_id::String
                            WHERE f.purchased != '' AND f.request_id != '__init__'"""):
             if r["p"] in self.pos:
-                self.shopper(r["u"]).sold(self.pos[r["p"]])
+                self.shopper(r["u"]).sold(self.pos[r["p"]], self._sub_of[self.pos[r["p"]]])
         self._snapshot()
         print(f"state loaded in {time.time() - t0:.1f}s (history {history_s:.1f}s, journal {replayed:,} events, "
               f"fetched {fetched:,}): {len(self.pids)} products, {len(self.unavailable)} unavailable, "
               f"{len(self.shoppers)} shoppers", flush=True)
 
     def _add_product(self, pid: str, product: Product) -> None:
+        product.base_price = product.price
         self.products[pid] = product
         self.pos[pid] = len(self.pids)
         self.pids.append(pid)
@@ -152,9 +159,13 @@ class State:
         path = CACHE / "history.pkl"
         if not path.exists():
             return None
-        with open(path, "rb") as f:
-            cache = pickle.load(f)
-        if cache.get("pids") != self.pids[:len(cache.get("pids", []))] or "brand_names" not in cache:
+        try:
+            with open(path, "rb") as f:
+                cache = pickle.load(f)
+        except Exception as e:
+            print(f"history cache unreadable ({str(e)[:100]}): rebuild it with `python -m offline.build_cache`", flush=True)
+            return None
+        if cache.get("version") != CACHE_VERSION or cache.get("pids") != self.pids[:len(cache.get("pids", []))]:
             print("history cache does not match the catalogue: ignoring it", flush=True)
             return None
         return cache
@@ -177,14 +188,16 @@ class State:
             for u, p, np_, t in zip(df.u.values, df.p.values, df.np.values, df.t.values):
                 sh, i = self.shopper(u), self.pos[p]
                 if np_ > 0:
-                    sh.bought.add(i)
-                    sh.carted.pop(i, None)
+                    sh.sold(i, self._sub_of[i])
+                    sh.brand_purch[self._brand_of[i]] = sh.brand_purch.get(self._brand_of[i], 0) + int(np_)
+                    for a in self._attrs_of[i]:
+                        sh.attr_purch[a] = sh.attr_purch.get(a, 0) + int(np_)
                 elif i not in sh.bought:
                     sh.carted[i] = int(t)
         for u, p in query_rows("""SELECT user_id::String, purchased::String FROM shop.history_sessions
                                   WHERE purchased IS NOT NULL""", timeout=60):
             if p in self.pos:     # what the old carousel sold is satiated too
-                self.shopper(u).sold(self.pos[p])
+                self.shopper(u).sold(self.pos[p], self._sub_of[self.pos[p]])
 
     # ---------------------------------------------------------------- live events
     def _apply(self, t: int, ev: str, user: str, pid: str) -> None:
@@ -199,13 +212,13 @@ class State:
         if counts is None:
             counts = self.live_counts[pid] = [0.0, 0.0, 0.0]
         if ev == "v":
-            sh.view(self._sub_of[i])
+            sh.view(self._sub_of[i], self._attrs_of[i])
             counts[0] += 1
         elif ev == "a":
-            sh.cart(i, t // 1000)
+            sh.cart(i, t // 1000, self._attrs_of[i])
             counts[1] += 1
         else:
-            sh.buy(i, self._sub_of[i], self._log_price_of[i])
+            sh.buy(i, self._sub_of[i], self._log_price_of[i], self._brand_of[i], self._attrs_of[i])
             counts[2] += 1
             minute = t // 60000
             self.buy_minutes[minute] = self.buy_minutes.get(minute, 0) + 1
@@ -276,7 +289,8 @@ class State:
         """Apply catalog updates newer than the cursor: new products, prices, stock."""
         rows = query(f"""SELECT toUnixTimestamp64Milli(ts::DateTime64(3)) AS t, change::String AS change,
                                 product_id::String AS p, category::String AS c, subcategory::String AS s,
-                                brand::String AS b, price_eur::Float64 AS price, is_active::Bool AS active
+                                brand::String AS b, price_eur::Float64 AS price, is_active::Bool AS active,
+                                description::String AS d
                          FROM shop.catalog_updates
                          WHERE ts::DateTime64(3) > fromUnixTimestamp64Milli({max(0, self.catalog_cursor - 2000)})
                          ORDER BY t, p""", timeout=5)
@@ -284,7 +298,7 @@ class State:
         for r in rows:
             p, known = r["p"], self.products.get(r["p"])
             if known is None:
-                self._add_product(p, Product(r["c"], r["s"], r["b"], r["price"], int(r["t"]) // 1000))
+                self._add_product(p, Product(r["c"], r["s"], r["b"], r["price"], int(r["t"]) // 1000, description=r["d"]))
                 changed = True
             elif known.price != r["price"]:
                 known.price = r["price"]
@@ -309,13 +323,13 @@ class State:
                          WHERE purchased != '' AND ts::DateTime64(3) > now64(3) - INTERVAL 40 SECOND""", timeout=5)
         for r in rows:
             seen = self.request_user.get(r["rid"])
-            if seen and r["p"] in self.pos:
-                self.shopper(seen[0]).sold(self.pos[r["p"]])
+            if seen and r["p"] in self.pos and self.pos[r["p"]] < len(self._sub_of):
+                self.shopper(seen[0]).sold(self.pos[r["p"]], self._sub_of[self.pos[r["p"]]])
         cutoff = time.time() - 180
         for rid in [rid for rid, (_, t) in list(self.request_user.items()) if t < cutoff]:
             self.request_user.pop(rid, None)
 
-    def _snapshot(self, names: tuple[list[str], list[str], list[str]] | None = None) -> None:
+    def _snapshot(self, names: tuple | None = None) -> None:
         """A fresh Catalog: current products and prices, history + live statistics."""
         pids = list(self.pids)
         products = [self.products[p] for p in pids]
@@ -329,11 +343,15 @@ class State:
                 exposure[i] = sum(n for m, n in minutes if m >= product.added // 60)
         prev = self.catalog
         if names is None and prev is not None:
-            names = (prev.cat_names, prev.sub_names, prev.brand_names)
+            names = prev.names
         cat = Catalog(pids, [p.category for p in products], [p.subcategory for p in products],
                       [p.brand for p in products], np.array([p.price for p in products]),
-                      counts[0], counts[1], counts[2], exposure=exposure, names=names)
-        self._sub_of, self._log_price_of = cat.sub.tolist(), cat.log_price.tolist()
+                      counts[0], counts[1], counts[2], exposure=exposure, names=names,
+                      base_price=np.array([p.base_price for p in products]),
+                      added=np.array([p.added for p in products], dtype=float),
+                      description=[p.description for p in products])
+        self._attrs_of = cat.attr_ids
+        self._sub_of, self._log_price_of, self._brand_of = cat.sub.tolist(), cat.log_price.tolist(), cat.brand.tolist()
         self.best = [pids[i] for i in np.lexsort((np.arange(len(pids)), -cat.share))]
         self.catalog = cat
         self._snapshot_at = time.time()

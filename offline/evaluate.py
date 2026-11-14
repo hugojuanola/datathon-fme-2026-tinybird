@@ -2,7 +2,7 @@
 
     python -m offline.pull_data      # once
     python -m offline.train          # the models are fitted on the days BEFORE the cut
-    python -m offline.evaluate
+    python -m offline.evaluate [ranker name in models/, default v5]
 
 The store is replayed up to the cut (same code as the training set and the live server), then every policy
 ranks the whole catalogue for the requests AFTER it, through `reco.recommend` — the code that runs live.
@@ -17,6 +17,8 @@ Two things the log cannot tell, and live feedback has to:
     the cases that exist live.
 """
 from __future__ import annotations
+
+import sys
 
 import numpy as np
 import pandas as pd
@@ -43,11 +45,11 @@ def state_at_cut() -> State:
     state = State()
     base = pd.read_parquet(DATA / "catalog.parquet")
     for r in base.itertuples():
-        state._add_product(r.product_id, Product(r.category, r.subcategory, r.brand, r.price_eur))
-    replay(cat, state.shoppers, events, sold, np.zeros(len(sold), bool), 0.0, [])
+        state._add_product(r.product_id, Product(r.category, r.subcategory, r.brand, r.price_eur, description=r.description))
+    replay(cat, state.shoppers, events, sold, np.zeros(len(sold), bool), [])
     counts = events.groupby(["product_id", "ev"]).size().unstack(fill_value=0)
     state.hist_counts = {p: (float(r.get("v", 0)), float(r.get("a", 0)), float(r.get("p", 0))) for p, r in counts.iterrows()}
-    state._snapshot((cat.cat_names, cat.sub_names, cat.brand_names))
+    state._snapshot(cat.names)
     return state
 
 
@@ -76,15 +78,16 @@ def main() -> None:
     background()   # never compete with the live loop for the CPU
     state = state_at_cut()
     test = test_set(state)
-    ranker = Ranker(ROOT / "models")
+    ranker = Ranker(ROOT / "models" / (sys.argv[1] if len(sys.argv) > 1 else "v5"))
     print(f"test: {len(test):,} clicks, {(test.purchased != '').sum():,} purchases after the cut "
           f"(products the shopper had not bought before); {(test.page == 'home').mean():.1%} on the home page\n")
     requests = [{"user": r.user_id, "rv": r.rv.split(",") if r.rv else [], "page": r.page, "device": r.device,
-                 "region": r.region} for r in test.itertuples()]
+                 "region": r.region, "ts_ms": r.ts_ms} for r in test.itertuples()]
     best = state.best[:10]
     rows = [evaluate("baseline (best sellers)", [best] * len(test), test)]
     rows.append(evaluate("rules (v4)", [recommend(state, None, r, "rules")[0] for r in requests], test))
-    rows.append(evaluate("model (v5): rules retrieve, model ranks", [recommend(state, ranker, r, "model")[0] for r in requests], test))
+    rows.append(evaluate(f"model {ranker.name}: rules retrieve, model ranks",
+                         [recommend(state, ranker, r, "model")[0] for r in requests], test))
     print((100 * pd.DataFrame(rows).set_index("policy")).round(1).to_string())
 
 

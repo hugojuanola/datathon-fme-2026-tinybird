@@ -1,7 +1,7 @@
 """Train the ranker and validate it on data it has not seen, in time order.
 
     python -m offline.build_dataset [log|live]
-    python -m offline.train [live_weight]   # → models/click.txt, models/conv.txt + a validation report
+    python -m offline.train NAME [live_weight]   # → models/NAME/{click,conv}.txt + a validation report
 
 Two small gradient-boosted models, multiplied at serving time:
 
@@ -69,7 +69,8 @@ def report(name: str, y: np.ndarray, p: np.ndarray, groups: np.ndarray, is_proba
 
 def main() -> None:
     background()   # never compete with the live loop for the CPU
-    live_weight = float(sys.argv[1]) if len(sys.argv) > 1 else 5.0
+    name = sys.argv[1] if len(sys.argv) > 1 else "candidate"
+    live_weight = float(sys.argv[2]) if len(sys.argv) > 2 else 5.0
     df, valid = load(live_weight)
     print(f"{len(df):,} rows ({(df.source == 'live').sum():,} live), live weight ×{live_weight:g}\n")
 
@@ -79,9 +80,9 @@ def main() -> None:
     conv = fit(df[clicked], valid[clicked], "buy", conv_features, rounds=600)
     buy = fit(df, valid, "buy", FEATURES)
 
-    MODELS.mkdir(exist_ok=True)
-    click.save_model(MODELS / "click.txt", num_iteration=click.best_iteration)
-    conv.save_model(MODELS / "conv.txt", num_iteration=conv.best_iteration)
+    (MODELS / name).mkdir(parents=True, exist_ok=True)
+    click.save_model(MODELS / name / "click.txt", num_iteration=click.best_iteration)
+    conv.save_model(MODELS / name / "conv.txt", num_iteration=conv.best_iteration)
 
     p_click = click.predict(df[FEATURES])
     p_conv = conv.predict(df[conv_features])

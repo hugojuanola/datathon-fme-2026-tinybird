@@ -8,12 +8,14 @@ outside any model:
 
     rules   score = popularity × measured lifts, for every product in the catalogue. Transparent, no
             training: the control arm, the fallback, and the first stage of the model policy.
-    explore the model's best 20 products, 10 of them at random, in random order. A small share of the
-            traffic: it shows the model what happens when it is NOT obeyed, which is the only unbiased
-            way to check it (and the next model) — a model that only ever sees the outcome of its own
-            choices cannot find its own mistakes. On during practice, off during the final.
+    explore the model's list, slightly shuffled: its best 4 products in random order in slots 1-4, then
+            6 of its next 10 at random. A small share of the traffic: it shows what happens when the
+            model is NOT obeyed, which is the only unbiased way to check it (and the next model) — a
+            model that only ever sees the outcome of its own choices cannot find its own mistakes.
+            Shuffling only near the top keeps it cheap: the first version (10 random products out of
+            the best 20) converted 0.83 % against 1.94 % for the model. Practice round only.
     model   two stages, the standard shape of an industrial recommender:
-              1. retrieve  the 500 best products by the rules (0.1 ms)
+              1. retrieve  the 1,000 best products by the rules (0.2 ms)
               2. rank      them by P(click) × P(purchase | click), two gradient-boosted models over the
                            features of reco/features.py (the product, how it matches the session, how it
                            matches the shopper)
@@ -27,7 +29,7 @@ from pathlib import Path
 
 import numpy as np
 
-from reco.features import DEVICES, F, FEATURES, PAGES, REGIONS, Catalog, Shopper, featurize
+from reco.features import ATTR_PRIOR, DEVICES, F, FEATURES, PAGES, REGIONS, Catalog, Shopper, featurize
 from reco.state import State
 
 # lifts of the rules policy: each is a measured ratio of purchase rates (docs/findings.md)
@@ -38,24 +40,42 @@ LIFT_CART_SAME = 2.2     # carted, never bought, session's category  (live: 0.58
 LIFT_VIEWED = 3.0        # in this session's recent views            (live A/B: ×3 beat ×1.5, ×10 and ×30)
 LIFT_BOUGHT_SUB = 5.0    # retrieval only: the shopper bought in that subcategory before (live: 5.6× with
 LIFT_BOUGHT_SUB_3 = 10.0 # 1-2 purchases, 14× with 3+). The model decides how much it is really worth.
-CANDIDATES = 500         # products handed from the rules to the model
-EXPLORE_POOL = 20        # the exploration arm samples its 10 products from the model's best 20
+LIFT_BOUGHT_BRAND = 2.0  # retrieval only: the shopper bought that brand before (live: 2.2-2.5×)
+CANDIDATES = 1000        # products handed from the rules to the model
+LIFT_SHARED_ATTR = (1.0, 2.0, 4.5)   # retrieval only: 0 / 1 / 2 description attributes shared with the last
+                                     # viewed product (live, slot-adjusted: 0.75 / 1.7 / 4.3 of the average)
+EXPLORE_HEAD = 4         # exploration: the model's best 4 are shown in slots 1-4, in random order
+EXPLORE_POOL = 14        # …and slots 5-10 are 6 products drawn at random from its ranks 5-14
 
 
 class Ranker:
-    """The two LightGBM models, loaded from models/."""
+    """One trained ranker: the two LightGBM models of models/<name>/.
+
+    Each model file lists the features it was trained on, so rankers trained on different feature sets
+    can run side by side in an A/B: every one picks its own columns out of the same feature matrix.
+    """
+    CONSTANTS = {"is_live": 1.0}   # features older models expect and newer feature sets dropped
 
     def __init__(self, folder: Path) -> None:
         import lightgbm as lgb
 
+        self.name = folder.name
         self.click = lgb.Booster(model_file=str(folder / "click.txt"))
         self.conv = lgb.Booster(model_file=str(folder / "conv.txt"))
-        if self.click.feature_name() != FEATURES:
-            raise ValueError("models/click.txt was trained with a different feature list: retrain")
-        self.conv_columns = [F[name] for name in self.conv.feature_name()]
+        extra = [n for n in self.CONSTANTS if n in self.click.feature_name() + self.conv.feature_name()]
+        self.extra = np.array([self.CONSTANTS[n] for n in extra], dtype=np.float32)
+        where = {**F, **{n: len(FEATURES) + i for i, n in enumerate(extra)}}
+        missing = [n for n in self.click.feature_name() + self.conv.feature_name() if n not in where]
+        if missing:
+            raise ValueError(f"{folder}: trained with features this code does not compute: {sorted(set(missing))}")
+        self.click_columns = [where[n] for n in self.click.feature_name()]
+        self.conv_columns = [where[n] for n in self.conv.feature_name()]
 
     def score(self, x: np.ndarray) -> np.ndarray:
-        return self.click.predict(x, num_threads=2) * self.conv.predict(x[:, self.conv_columns], num_threads=2)
+        if len(self.extra):
+            x = np.hstack([x, np.broadcast_to(self.extra, (len(x), len(self.extra)))])
+        return (self.click.predict(x[:, self.click_columns], num_threads=2)
+                * self.conv.predict(x[:, self.conv_columns], num_threads=2))
 
 
 def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrieval: bool = False) -> np.ndarray:
@@ -71,10 +91,27 @@ def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrie
                 score[i] *= LIFT_CART_SAME if same else LIFT_CART
     if recent:
         score[list(set(recent))] *= LIFT_VIEWED
+    if retrieval and last is not None and cat.attr.shape[1]:
+        score *= np.take(LIFT_SHARED_ATTR, np.minimum(cat.attr @ cat.attr[last], 2).astype(int))
     if retrieval and shopper and shopper.sub_purch:
         for sub, n in list(shopper.sub_purch.items()):
             if sub in cat.by_sub:
                 score[cat.by_sub[sub]] *= LIFT_BOUGHT_SUB_3 if n >= 3 else LIFT_BOUGHT_SUB
+        if shopper.brand_purch:
+            score[np.isin(cat.brand, list(shopper.brand_purch))] *= LIFT_BOUGHT_BRAND
+    if retrieval and shopper and cat.attr.shape[1]:
+        # products whose description attributes the shopper goes for (purchases and carts count fully,
+        # views a quarter): works from the first few events of a brand-new shopper
+        seen_attr, events = np.zeros(cat.attr.shape[1]), 0.0
+        for evidence, n_events, weight in ((shopper.attr_purch, shopper.purchases, 1.0), (shopper.attr_cart, shopper.carts, 1.0),
+                                           (shopper.attr_view, shopper.views, 0.25)):
+            for a, c in dict(evidence).items():
+                if a < len(seen_attr):
+                    seen_attr[a] += weight * c
+            events += weight * n_events
+        if events > 0:
+            lift = (seen_attr + ATTR_PRIOR * cat.attr_share) / (events + ATTR_PRIOR) / cat.attr_share
+            score *= np.where(cat.attr_n > 0, np.clip((cat.attr @ lift) / np.maximum(cat.attr_n, 1), 0.5, 3.0), 1.0)
     return score
 
 
@@ -98,11 +135,12 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str,
         k = min(candidates or CANDIDATES, n - len(set(blocked)))
         top = np.argpartition(-score, k - 1)[:k]
         x = featurize(cat, shopper, PAGES.get(req["page"], 2), DEVICES.get(req["device"], 0),
-                      REGIONS.get(req["region"], -1), recent, top, slot=1.0, is_live=1.0)
+                      REGIONS.get(req["region"], -1), recent, top, int(req["ts_ms"]) / 1000, slot=1.0)
         order = np.argsort(-ranker.score(x), kind="stable")
         if policy == "explore":     # reproducible: the same request always gets the same sample
             rng = np.random.default_rng(zlib.crc32(req.get("id", "").encode()))
-            order = rng.permutation(order[:EXPLORE_POOL])
+            order = np.concatenate([rng.permutation(order[:EXPLORE_HEAD]),
+                                    rng.permutation(order[EXPLORE_HEAD:EXPLORE_POOL])])
         top = top[order[:10]]
     else:
         top = np.argpartition(-score, 10)[:10]

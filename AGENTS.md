@@ -53,15 +53,15 @@ python3 scripts/rt.py "SELECT count() FROM shop.requests"                 # any 
 python3 scripts/rt.py -f queries/health.sql --stats                       # from a file, with rows/bytes read
 python3 scripts/leaderboard.py                                            # where we stand
 
-python -m venv .venv && .venv/Scripts/pip install requests numpy pandas pyarrow duckdb lightgbm scikit-learn
-.venv/Scripts/python -m reco.serve --dry                                  # our recommender, printing instead of inserting
-.venv/Scripts/python -u -m reco.serve >> $SKORE_LOGS_DIR/serve.log 2>&1   # our recommender, LIVE (one instance only)
+python -m venv <somewhere outside any synced folder> && <venv>/Scripts/pip install requests numpy pandas pyarrow scipy lightgbm scikit-learn
+<venv>/Scripts/python -m reco.serve --dry                                  # our recommender, printing instead of inserting
+<venv>/Scripts/python -u -m reco.serve >> $SKORE_LOGS_DIR/serve.log 2>&1   # our recommender, LIVE (one instance only)
 ```
 
 Deploying a new version **without a gap** (never two instances answering at once):
 
 ```bash
-.venv/Scripts/python -u -m reco.serve --standby >> $SKORE_LOGS_DIR/serve.log 2>&1   # loads, then waits
+<venv>/Scripts/python -u -m reco.serve --standby >> $SKORE_LOGS_DIR/serve.log 2>&1   # loads, then waits
 # when the log says "standby: ready": stop the old process, check it is gone, then
 touch $SKORE_LOGS_DIR/GO                                                            # the new one starts answering
 ```
@@ -69,10 +69,10 @@ touch $SKORE_LOGS_DIR/GO                                                        
 Retraining (all offline scripts lower their own priority so they do not starve the server):
 
 ```bash
-.venv/Scripts/python -m offline.pull_data live      # refresh the live stream export (events + our feedback)
-.venv/Scripts/python -m offline.build_dataset       # training table: one row per (request, product shown)
-.venv/Scripts/python -m offline.train               # models/ + validation report (last week of log, last quarter of live)
-.venv/Scripts/python -m offline.evaluate            # policies on the held-out week, through the live code
+<venv>/Scripts/python -m offline.pull_data live      # refresh the live stream export (events + our feedback)
+<venv>/Scripts/python -m offline.build_dataset       # training table: one row per (request, product shown)
+<venv>/Scripts/python -m offline.train               # models/ + validation report (last week of log, last quarter of live)
+<venv>/Scripts/python -m offline.evaluate            # policies on the held-out week, through the live code
 ```
 
 Is the system healthy? (last 10 minutes of our feedback: who served, conversion, latency)
@@ -159,23 +159,28 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 14:40 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop
-(started 14:34 CET with `--standby`, 7 s hand-over gap), answering in ≈1.05 s (p95 ≈ 1.4 s). It runs an A/B,
-half the traffic each, tagged in `model_version`:
+As of Sat 14 Nov 2026 16:15 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+answering in about 1.0 s (p95 about 1.5 s) when the connection is quiet. Arms, tagged in `model_version`:
 
-- `skore_money_v4` — **rules**: `popularity × lifts` (category and subcategory of the last view, abandoned
-  cart, just viewed). The control arm, and the fallback if the model fails.
-- `skore_money_v5` — **model**: the rules retrieve 500 candidates, then two LightGBM models rank them by
-  `P(click) × P(purchase | click)` using `reco/features.py` (≈10 ms per request).
+- `skore_money_v7`, 60 % — the current best ranker (`models/v7`): the rules retrieve 1,000 candidates, two
+  LightGBM models rank them by `P(click) x P(purchase | click)` over the 50 features of `reco/features.py`.
+  Its main addition is the shopper's taste for the **attributes in the product descriptions**.
+- `skore_money_v5`, 30 % — the previous ranker (`models/v5`), kept as the control of the A/B.
+- `skore_money_v7_explore`, 10 % — v7's list with the top 4 shuffled and 6 of its ranks 5-14: clean data to
+  train and judge the next model. **Practice round only: set it to 0 before the final.**
 
-Both never show a product the shopper already bought or one that is out of stock. Evidence, offline
-validation and the reliability incident: [`docs/findings.md`](docs/findings.md). A second session writes a
-live read of the leaderboard and of each variant (new vs known shoppers) every ~10 min in
+Every arm blocks products the shopper already bought and products out of stock. Evidence for every piece,
+offline validation, live A/B results and the reliability incident: [`docs/findings.md`](docs/findings.md).
+A second session writes a live read of the leaderboard and of each arm (new vs known shoppers) in
 [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (14:21 CET): rank 1 of the teams, conversion 1.38 vs 2.04 for the organisers' reference.
-The whole gap is on known shoppers (1.1 % vs ≈2.1 %; new shoppers match the reference), who buy in the
-subcategories they bought from before: that is what v5's shopper features target.
+Where we stand (16:00 CET): rank 1 of the teams, conversion 1.68 vs 2.17 for the organisers' reference;
+v7 was validated offline only minutes before this note, so its live effect is not measured yet.
+
+Open for the final: (1) where the server runs — the laptop's home connection lost answers whenever anything
+else used it (rule 9); (2) exploration off; (3) retrain on all data once the last A/B is read.
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
-(outside OneDrive). Only one `reco.serve` may answer at a time (rule 4). Update this section when that changes.
+(outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:
+OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). Update this section when
+that changes.

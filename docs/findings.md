@@ -229,3 +229,66 @@ model's best 20, in random order. It costs conversion on those requests and buys
 cannot give: outcomes for products the model would not have put first (so its mistakes become visible), and
 slots that are independent of relevance (so position bias can be separated from quality). The practice
 round is not scored: that is when to pay for it. Off before the final.
+
+## 13. Shoppers buy by the attributes in the description (the biggest lever found)
+
+Every description names exactly two of 20 attributes ("organic ingredients", "a luxury feel", "designed for
+kids", "great value for money"…) — true for the 5,000 original products and for the 200 added during the
+event. Two of the four description templates name them unambiguously ("From X (Sub): A, B." and "Sub by X,
+featuring A. Comes with B."); the vocabulary is taken from those and matched in every description
+(`reco/features.py`, `attribute_phrases`).
+
+**Test on the 60-day history.** For 20,000 first-time organic purchases in the last week, compare the
+product bought with a popularity-matched product of the *same subcategory* that was not bought, and score
+both by how well their attributes match the shopper's past. AUC (0.50 = no information):
+
+| Evidence used for the shopper's taste | All | No earlier purchase | 1–2 purchases | 3–9 | 10+ |
+|---|---|---|---|---|---|
+| attributes of what they bought | 0.687 | 0.500 | 0.611 | 0.658 | 0.717 |
+| attributes of what they carted | 0.710 | 0.576 | 0.645 | 0.694 | 0.730 |
+| attributes of what they viewed | 0.659 | 0.623 | 0.632 | 0.649 | 0.668 |
+| for comparison: item-item co-purchase similarity | 0.629 | | | | |
+| for comparison: brands they bought | 0.498 | | | | |
+| for comparison: closeness to their usual price | 0.525 | | | | |
+
+- The attributes say more than "who bought X also bought Y", and brand says nothing inside a subcategory.
+- Views are enough: a shopper who has never bought anything already has a readable taste (0.62). That is
+  what a shopper first seen in the final will have within minutes.
+- Two products are co-purchased 14× more than chance inside a subcategory with no shared attribute, 23× with
+  one, 30× with two (2.2× / 4.8× / 5.8× across subcategories).
+- Attributes also carry popularity: "great value for money" products sell 347 purchases each against ≈100 on
+  average — the only popularity hint a brand-new product has (`attr_prior`).
+
+**Confirmed on the live carousel** by the watch session, independently and adjusted for slot
+(`realtime_analyisi_leaderboard/notes/2026-11-14_1612_attributes-confirmed-on-carousel.md`): purchases per
+impression go from 0.030 % to 0.303 % from the lowest to the highest attribute-affinity band (0.25× to 2.2×
+what the same slots sell on average); sharing both attributes with the last viewed product sells 4.2–4.5×
+the average. 44 % of the impressions we were giving known shoppers were in the two lowest bands.
+
+**What the system does with it.** Each shopper keeps three attribute profiles (purchases, carts, views),
+updated from the live stream. Features: how much more than everybody the shopper goes for the product's two
+attributes, per kind of evidence (`u_attr_p`, `u_attr_c`, `u_attr_v`, and the worse of the two attributes);
+attributes shared with the last viewed product (`recent_attr`); and `attr_prior`. Retrieval lifts products
+by the same match, so a well-matched product from a subcategory the shopper never bought can reach the ranker.
+
+## 14. Rankers v6 and v7: held-out comparison
+
+Held-out live feedback (last quarter of our feedback at training time: 12,640 requests, 673 clicks,
+197 purchases), slot hidden from the models, slot-debiased. "Bought product ranked first / in the top 3
+among the 10 shown":
+
+| | v5 | v6 | v7 |
+|---|---|---|---|
+| All requests | 18.0 % / 40.9 % | 19.7 % / 49.3 % | **25.7 % / 52.6 %** |
+| Known shoppers (99 purchases) | 15.7 % / 40.7 % | 20.3 % / 49.2 % | **29.4 % / 61.8 %** |
+| New shoppers (98 purchases) | 20.1 % / 41.1 % | 19.2 % / 49.3 % | 22.3 % / 44.2 % |
+| Clicks, all requests (reciprocal rank) | 0.311 | 0.337 | **0.389** |
+
+- **v6** = v5 + products added during the event (`is_new_item`, `item_age`, `recent_new`: on our feedback
+  they sold 2.5× what v5 predicted, 3.6 % per impression when the shopper had just viewed one), price drops
+  (`discount`), age of an abandoned cart (`u_cart_age`, 4 % of the click model's gain), how much of a
+  subcategory the shopper already owns, and brand history. In ablations the new-product and cart features
+  helped; brand history did not (consistent with 0.498 above) and stays only because it is harmless.
+- **v7** = v6 + the attribute features of §13. `u_attr_c` alone is 10 % of the click model's gain, third
+  after the shopper's category share and buy rate.
+- v7 went live on 14 Nov at 15:12 UTC (60 % of the traffic, v5 kept at 30 % as the control).
