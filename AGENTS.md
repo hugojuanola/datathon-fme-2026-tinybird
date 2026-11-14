@@ -40,6 +40,7 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`offline/`](offline/) | Offline work: `pull_data.py` exports the history to `data/` (git-ignored); `evaluate.py` validates the policy on the held-out last week |
 | [`docs/findings.md`](docs/findings.md) | What drives a purchase, measured: the evidence behind the ranking policy |
 | [`queries/`](queries/) | Our reusable SQL: `health.sql` (is the live system healthy?), `variants.sql` (A/B by `model_version`), `tiers.sql` (which ranking tier sells) |
+| [`avanced_data_analysis/`](avanced_data_analysis/README.md) | Exploratory analysis: distributions, outliers, PCA/UMAP/clustering, SHAP importance — what drives purchases, with figures and the request→feedback workflow diagram |
 | `.env` | `TEAM_ID` and `RAWTREE_API_KEY`. **Git-ignored. Not in the repo.** Template: [`.env.example`](.env.example) |
 
 ## Setup and everyday commands

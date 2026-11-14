@@ -1,0 +1,324 @@
+{
+ "popularity": {
+  "top1pct_share": 0.19542104495037946,
+  "top10pct_share": 0.625016418563923,
+  "gini": 0.7535240601284297,
+  "products_never_bought": 191
+ },
+ "users": {
+  "n": 59841,
+  "views_median": 105.0,
+  "views_p99": 1084.0,
+  "purchases_median": 4.0,
+  "zero_purchases": 0.13438946541668756
+ },
+ "live": {
+  "new_user_share": 0.30048954642577014,
+  "home_share": 0.1960078976550456
+ },
+ "outliers": {
+  "price_tukey_log": 137,
+  "price_max": 643.99,
+  "products_isoforest": 100,
+  "users_mad": 143,
+  "top_seller_share": 0.011420023350846468
+ },
+ "time": {
+  "peak_hour_utc": 3,
+  "trough_hour_utc": 9,
+  "peak_to_trough": 10.07580900656257,
+  "max_category_weekly_lift": 1.026801237739908,
+  "min_category_weekly_lift": 0.9606431280729848
+ },
+ "context_spread_max_over_min": {
+  "page": 11.885532927473802,
+  "page_var_explained": 0.0028651703439155863,
+  "n_recent": 14.249985795053052,
+  "n_recent_var_explained": 0.0032188324098704397,
+  "device": 1.2562813018906673,
+  "device_var_explained": 0.00012543238657286768,
+  "region": 2.1942550986562814,
+  "region_var_explained": 0.0007105953541427687,
+  "hour": 1.2945992939057225,
+  "hour_var_explained": 1.3570861218920974e-05,
+  "dow": 1.0299674133356862,
+  "dow_var_explained": 1.4898388194777048e-06
+ },
+ "page": {
+  "category": {
+   "share_requests": 0.240093,
+   "share_purchases": 0.29266032153423877,
+   "conversion_pct": 1.709754136938603
+  },
+  "home": {
+   "share_requests": 0.2002745,
+   "share_purchases": 0.020675150607778133,
+   "conversion_pct": 0.14480126027027904
+  },
+  "product": {
+   "share_requests": 0.5596325,
+   "share_purchases": 0.6866645278579832,
+   "conversion_pct": 1.7210401468821057
+  }
+ },
+ "region_category_lift": {
+  "max": 1.1843419399328312,
+  "min": 0.7153456249920604,
+  "argmax": [
+   "País Vasco",
+   "Pets"
+  ]
+ },
+ "device_category_lift": {
+  "max": 1.3835202239898587,
+  "min": 0.6303660537995083
+ },
+ "sample": {
+  "requests": 200404,
+  "impressions": 2004040,
+  "ctr_per_impression": 0.003760403983952416,
+  "buy_per_impression": 0.0013901918125386718
+ },
+ "relation_mix_when_recent": {
+  "same category, other subcat.": 0.8307695668455873,
+  "same subcategory": 0.1692304331544127
+ },
+ "relation_ctr_pct": {
+  "no recent view (home)": 0.07764284292255624,
+  "same category, other subcat.": 0.3932207362708941,
+  "same subcategory": 0.7339354800638782
+ },
+ "relation_buy_pct": {
+  "no recent view (home)": 0.014433605415090582,
+  "same category, other subcat.": 0.13725912976058913,
+  "same subcategory": 0.3322994309233941
+ },
+ "in_recent": {
+  "share": 0.014085632255648484,
+  "ctr_in": 2.946650124069479,
+  "ctr_out": 0.4152232925136994
+ },
+ "satiation": {
+  "share_impr_bought_before": 0.038004231452466015,
+  "ctr_bought_before": 3.040886531341089,
+  "ctr_not_bought": 0.27076402137479655,
+  "buy_bought_before": 1.6871930884167958,
+  "buy_not_bought": 0.07785762377079877,
+  "organic_repeat_pair_share": 0.10956599102583939
+ },
+ "slot_ctr_ratio_1_vs_10": 6.683385579937304,
+ "affinity_ctr_top_vs_bottom": 19.427721171680076,
+ "price": {
+  "buy_given_click_by_price_octile": {
+   "2€": 52.972027972027966,
+   "7€": 32.30769230769231,
+   "9€": 39.50617283950617,
+   "14€": 31.66855845629966,
+   "17€": 39.796954314720814,
+   "26€": 32.34295415959253,
+   "43€": 23.964497041420117,
+   "128€": 37.87375415282392
+  },
+  "ctr_cheapest_vs_priciest_decile": 1.8305086609843277
+ },
+ "same_sub_count_conversion": {
+  "0": 1.0449039520371957,
+  "1": 1.480163005292988,
+  "2": 1.8530141367046238,
+  "3": 2.3247431969724275,
+  "4": 2.4228731692115923,
+  "5": 2.5510204081632653,
+  "6": 3.267273701124799,
+  "7": 2.7247956403269753
+ },
+ "product_pca": {
+  "explained": [
+   0.43293447807008234,
+   0.12832226151999634,
+   0.12640398843894765,
+   0.12394749086466356
+  ],
+  "pc1_loadings": {
+   "log price": -0.10830224694330784,
+   "log views": 0.45167911244079184,
+   "log purchases": 0.5132742462067325,
+   "cart rate": 0.5027039749473649,
+   "buy | cart": 0.1171716139268148,
+   "view→buy": 0.5040326268771985,
+   "trend (last/first wk)": -0.005585451624439151,
+   "age (days)": -0.01689944105482285
+  },
+  "pc2_loadings": {
+   "log price": 0.5829181482031319,
+   "log views": 0.12323682017691225,
+   "log purchases": 0.09665741561652437,
+   "cart rate": -0.14085198024062753,
+   "buy | cart": 0.7511679362452173,
+   "view→buy": -0.11745029303604844,
+   "trend (last/first wk)": -0.18167974789011224,
+   "age (days)": 0.06915064530555835
+  },
+  "spearman_price_vs_purchases": -0.17126586685076112,
+  "spearman_price_vs_viewbuy": -0.1920602977024544
+ },
+ "shopper_clusters": {
+  "k": 2,
+  "silhouette": {
+   "2": 0.2181214494199027,
+   "3": 0.1419612007319219,
+   "4": 0.15837748375332766,
+   "5": 0.14883890465009791,
+   "6": 0.15080103267340975,
+   "7": 0.1537618142464847,
+   "8": 0.1475418821500413,
+   "9": 0.1551636273655949,
+   "10": 0.14529618722767904,
+   "11": 0.151287479466552,
+   "12": 0.15252425727647873
+  },
+  "pca_components_for_90pct": 11,
+  "pca_explained_first3": [
+   0.17173518801182322,
+   0.1275092296342719,
+   0.09999192350247674
+  ],
+  "names": {
+   "0": "C0 · category entropy",
+   "1": "C1 · cart rate"
+  },
+  "size_pct": {
+   "0": 78.10364131615448,
+   "1": 21.896358683845524
+  },
+  "conversion_pct": {
+   "0": 0.5700658641835112,
+   "1": 7.030721583425296
+  },
+  "median_entropy": 0.7635540707099411,
+  "median_top_category_share": 0.34328358208955223
+ },
+ "buyer_persistence": {
+  "0": {
+   "n": 7999,
+   "conversion_pct": 0.3125390673834229
+  },
+  "1-2": {
+   "n": 16210,
+   "conversion_pct": 0.5737199259716225
+  },
+  "3-5": {
+   "n": 16041,
+   "conversion_pct": 0.9101676952808428
+  },
+  "6-10": {
+   "n": 14630,
+   "conversion_pct": 1.3328776486671223
+  },
+  "11+": {
+   "n": 25230,
+   "conversion_pct": 3.64645263575109
+  }
+ },
+ "model": {
+  "click": {
+   "auc": 0.8730698472368685,
+   "train_rows": 1603240,
+   "signed_effect_logodds": {
+    "same subcategory as last view": 0.18301881803428008,
+    "same brand as last view": 0.03151560572396561,
+    "is the last viewed product": 0.043253226565301936,
+    "is in recent_views": 0.5245210510119487,
+    "shopper already bought it": 0.9847992495665899
+   },
+   "shap": {
+    "shopper affinity for item category": 0.661492998631616,
+    "shopper buy rate": 0.6111972040012558,
+    "item popularity (purchases)": 0.36137595800459443,
+    "slot (position)": 0.23517255223117725,
+    "item cart rate": 0.18815310843383315,
+    "price vs last viewed": 0.17587797010210734,
+    "shopper activity (views)": 0.10786951677684876,
+    "item category": 0.10089963712781698,
+    "page": 0.1007788179462288,
+    "shopper already bought it": 0.09052756281321465,
+    "price vs shopper's usual price": 0.06019253209312797,
+    "region": 0.05523886249334228,
+    "item trend": 0.04865019783870881,
+    "length(recent_views)": 0.04747218444659946,
+    "same subcategory as last view": 0.044026523467358615,
+    "item buy|cart rate": 0.04195956187672782,
+    "item age": 0.041604359563346904,
+    "hour of day": 0.04150868541493541,
+    "item price": 0.033505127513409116,
+    "device": 0.02520716386516822,
+    "is in recent_views": 0.013671807974510475,
+    "same brand as last view": 0.006910643897562523,
+    "is the last viewed product": 0.0005518990335717681
+   },
+   "auc_slot_only": 0.6655060563340882
+  },
+  "buy": {
+   "auc": 0.7870909038803232,
+   "train_rows": 5996,
+   "signed_effect_logodds": {
+    "same subcategory as last view": 0.11170337097446043,
+    "same brand as last view": 0.005731416800463161,
+    "is the last viewed product": 0.3309929185340388,
+    "is in recent_views": 0.34763614345096516,
+    "shopper already bought it": 0.42293148824802784
+   },
+   "shap": {
+    "shopper buy rate": 0.657686721829893,
+    "item cart rate": 0.22131287868636176,
+    "shopper already bought it": 0.19858286096556246,
+    "shopper affinity for item category": 0.1778985248018962,
+    "item popularity (purchases)": 0.10832930912296004,
+    "shopper activity (views)": 0.0906258580696815,
+    "is in recent_views": 0.05922678381160536,
+    "same subcategory as last view": 0.04347297086322569,
+    "region": 0.029665282447381657,
+    "is the last viewed product": 0.029644199098915396,
+    "price vs last viewed": 0.0269390105477847,
+    "item category": 0.01818698395698608,
+    "length(recent_views)": 0.017691384786235546,
+    "item buy|cart rate": 0.015716081269414376,
+    "item price": 0.013982535090495194,
+    "item trend": 0.010884564737219908,
+    "page": 0.0106111706381418,
+    "price vs shopper's usual price": 0.00955405216597887,
+    "item age": 0.007972929969830317,
+    "device": 0.006137278553280245,
+    "hour of day": 0.006039669446710443,
+    "slot (position)": 0.0020932388464975416,
+    "same brand as last view": 0.00167149087506857
+   }
+  }
+ },
+ "live_feedback_by_page": {
+  "category": {
+   "n": 5508,
+   "conversion_pct": 0.8169934640522876,
+   "ctr_pct": 2.795933188090051
+  },
+  "home": {
+   "n": 4322,
+   "conversion_pct": 0.25451180009254976,
+   "ctr_pct": 1.4113836186950486
+  },
+  "product": {
+   "n": 12595,
+   "conversion_pct": 0.9210003969829297,
+   "ctr_pct": 2.6200873362445414
+  }
+ },
+ "live_feedback_by_new_user": {
+  "False": {
+   "n": 15656,
+   "conversion_pct": 0.5620848237097599
+  },
+  "True": {
+   "n": 6769,
+   "conversion_pct": 1.2409513960703207
+  }
+ }
+}

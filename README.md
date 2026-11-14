@@ -21,6 +21,7 @@ answers, feedback, history — lives in [RawTree](https://rawtree.com), Tinybird
 | [`docs/sources/`](docs/sources/README.md) | Official material, verbatim |
 | [`starter/`](starter/) | Official starter kit (baseline recommender, SQL examples, offline evaluation notebook) |
 | [`scripts/`](scripts/) | `rt.py` (SQL from the shell) and `leaderboard.py` |
+| [`avanced_data_analysis/`](avanced_data_analysis/README.md) | Exploratory data analysis: what drives a purchase (figures, PCA/UMAP, clustering, SHAP) |
 
 ## Quick start
 
