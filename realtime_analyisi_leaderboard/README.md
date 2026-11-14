@@ -39,25 +39,28 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## Current reading
 
-_Updated 14 Nov 2026, 16:06 CET._
+_Updated 14 Nov 2026, 16:14 CET._
 
-- **Leaderboard**: 1.68, rank 1 again (team_19 1.64, team_09 1.48). Reference 2.17, baseline 0.79 — 64% of the
-  way from baseline to reference. Cold conversion 2.44, above the reference's 2.12.
-- **Reliability is back**: every request answered since 15:43 CET (3,161 of 3,161), p95 1.55 s. The board's
-  hourly `on_time` (92%) will recover as the bad hour rolls out.
-- **`skore_money_v6` went live at 15:55 CET** as an A/B against v5. After six minutes: known shoppers 0.26%
-  (1 / 379) against 1.67% (6 / 360) for v5; new shoppers 4.61% (7 / 152) against 2.31% (4 / 173). Too early.
-- **The brand lever is not in v6's lists**: 48% of its known-shopper impressions are of a bought brand, the
-  same as v5 (49%), and fewer are in a bought subcategory (57% against 62%). See
-  [the 16:05 note](notes/2026-11-14_1605_v6-first-read.md).
-- **The brand effect is real**: with the shopper's purchase count held fixed, a bought brand sells 2–2.7× more
-  for shoppers with 1–19 purchases — the group v5 did not improve.
-- **v5 since 15:43 CET**: known 1.40% (23 / 1,642), new 3.06% (22 / 718). Exploration is now 10% of traffic.
+- **The biggest lever so far is confirmed on the carousel: product attributes.** Each description names 2 of
+  20 attributes. Known shoppers buy 0.303% per impression of products whose attributes they like against
+  0.030% of those they do not (10×, adjusted for slot, inside and outside their subcategories); new shoppers
+  buy 2.3× / 5.6× more when the product shares 1 / 2 attributes with the one they just viewed. 44% of what we
+  show known shoppers today is in the low band. See
+  [the 16:12 note](notes/2026-11-14_1612_attributes-confirmed-on-carousel.md). The model session is training
+  v7 with it.
+- **Leaderboard**: 1.68, rank 1 (team_19 1.64, team_09 1.48). Reference 2.17, baseline 0.79. Cold conversion
+  2.44, above the reference's 2.12.
+- **Reliability is back**: every request answered since 15:43 CET, p95 1.55 s.
+- **`skore_money_v6` is in A/B against v5 since 15:55 CET**; first six minutes: behind on known shoppers
+  (1 purchase against 6), ahead on new ones (7 against 4). Too early. Its lists do not contain more
+  bought-brand products than v5's ([16:05 note](notes/2026-11-14_1605_v6-first-read.md)).
+- **Brand history** survives the slot adjustment on the carousel but is probably a stand-in for attributes.
 
 ## Notes
 
 | When (CET) | Finding |
 |---|---|
+| [14 Nov 16:12](notes/2026-11-14_1612_attributes-confirmed-on-carousel.md) | **Attributes confirmed on the live carousel**, adjusted for slot: 10× between low and high attribute affinity for known shoppers, inside and outside their subcategories; 2.3× / 5.6× for new shoppers when the product shares 1 / 2 attributes with the last view; 44% of known-shopper impressions are in the low band; worth roughly +0.45 overall |
 | [14 Nov 16:05](notes/2026-11-14_1605_v6-first-read.md) | **v6 first read**: behind v5 on known shoppers and ahead on new ones after six minutes (too early); its lists do not contain more bought-brand products than v5's, so the brand lever is not being tested yet; the brand effect holds with purchase count fixed (2–2.7× for shoppers with 1–19 purchases) |
 | [14 Nov 15:40](notes/2026-11-14_1540_path-to-the-reference.md) | **The path to the reference**: v5 converts 1.94% on what it serves; the board loses ≈0.12 to unanswered requests and ≈0.22 to exploration; the remaining model gap is on known shoppers. New lever: the brands a shopper has bought (2.2–2.5×, not in the model). Checked and withdrawn: `home` page, impression discounting |
 | [14 Nov 15:20](notes/2026-11-14_1520_conversion-drop-after-1406.md) | **v5 converts half as much since 14:06 UTC** (1.22% vs 2.35%) with unchanged lists, order, shoppers and organic stream; what was ruled out, what is left, and the test that separates the two remaining causes. Also: repeat visits convert half as much as first visits |
