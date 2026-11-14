@@ -10,6 +10,7 @@ for whoever is training or tuning the model: read `latest.md` for the numbers an
 | [`history.csv`](history.csv) | One row per tick, to see the trend |
 | [`notes/`](notes/) | One dated note per finding worth acting on, with the evidence and what to do |
 | [`ab_mechanism.py`](ab_mechanism.py) | Reads an A/B: conversion per arm for new and known shoppers, and whether each arm pulls the measured levers (attribute affinity, attributes shared with the last view, bought subcategory). `--brand` adds the brand-versus-attributes table |
+| [`best_model.py`](best_model.py) | Keeps the record of the best model: writes [`../best_model.md`](../best_model.md) with every version we served, its expected conversion and its margin over the reference in the same minutes |
 | [`tick.py`](tick.py) | Produces `latest.md` and a row of `history.csv`. Read-only and light: leaderboard API + three `SELECT`s on the last minutes of the live tables; the 60-day purchase history comes from a local cache, not from a scan |
 | [`queries/`](queries/) | The SQL behind the notes, runnable with `python scripts/rt.py -f <file>` |
 

@@ -1,66 +1,48 @@
 # Best model so far
 
-The version we go back to if a newer one does not hold. Updated at every change, with the evidence.
+_Updated 14 Nov 2026, 19:00 CET by [`realtime_analyisi_leaderboard/best_model.py`](realtime_analyisi_leaderboard/best_model.py). Numbers are the organisers' own: expected purchases per 100 requests under the hidden model, per `model_version`._
 
-**How "best" is decided.** Expected purchases per 100 requests on the organisers' own metric
-(`python scripts/arms.py HH:MM HH:MM`), against other versions **over the same minutes** and over enough
-traffic. Not the peak of a 15-minute window: the level of a window depends on who happens to arrive (the
-reference moves with us, from 1.70 to 2.22 this afternoon), and three arms that were doing exactly the same
-read 1.92, 2.40 and 2.59 in one quarter of an hour. And it must not lean on ids: the final brings shoppers,
-products and trends nobody has seen.
+**Record: `skore_money_v9`** — attributes + carts by subcategory; learned from the old log and today's feedback. 2.37 expected purchases per 100 requests on 2,822 requests, against 2.07 for the organisers' reference over the same minutes: **+0.30**.
 
-## The best proven version: `v9`
+Tied with it, within what the measurement can tell apart (0.15 points): `skore_money_v13` (+0.29), `skore_money_v9w` (+0.28), `skore_money_v15` (+0.26), `skore_money_v8` (+0.26), `skore_money_v14` (+0.24).
 
-| | |
-|---|---|
-| What it is | Rules retrieve 1,000 products → two LightGBM models rank them, `P(click) × P(purchase | click)`, 52 features without ids. Its main ingredient is the shopper's taste for the attributes named in the product descriptions |
-| Where it is | `models/v9/` (commit `56b4084`); reproducible with `python -m offline.train v9` |
-| Evidence | 2.37 expected purchases per 100 requests on 2,822 requests (15:41–16:29 UTC, 14 Nov): cold 2.84, warm 2.11. The reference over the same afternoon: 2.06. Still serving a quarter of the traffic tonight |
-| Put it back | In `reco/serve.py`: `ARMS = (("skore_money_v9", "model", "v9", {}, 100),)`, then `powershell -ExecutionPolicy Bypass -File scripts\swap_server.ps1` (no gap, self-test before taking over) |
+- **Best on cold requests** (new shopper, or a new product among the recent views — what the final is expected to bring): `skore_money_v9w`, 3.35 against the reference's 1.87.
+- **Best on the other requests** (known shoppers): `skore_money_v9`, 2.11 against 2.17.
+- **Code**: branch `javier`, last commit on `reco/` or `offline/`: `e4c8a45 — skore_money_v21-v28: the overnight experiment (four ranker set-ups x trend lift off / on)`. Model files: `models/`.
 
-Nothing is ever lost: every ranker that has served is in `models/` and in git, and every answer is tagged
-with its `model_version`.
+## Every version we have served
 
-## What is being measured against it (the night of 14 Nov)
+Ranked by the margin over the reference in the minutes each version was live (UTC). Exploration arms and versions with fewer than 1,500 requests are listed but cannot hold the record.
 
-One experiment, eight arms, the same requests ([`docs/findings.md`](docs/findings.md) §17):
+| Version | What it is | Live (UTC) | Requests | Conversion | Reference, same minutes | Margin | Cold (margin) | Other requests (margin) | € per request |
+|---|---|---|---|---|---|---|---|---|---|
+| `skore_money_v7` | + product attributes from the description (20 phrases, 2 per product) | 15:10–15:30 | 1,432 | 2.42 | 2.06 | **+0.37** | 2.88 (+1.08) | 2.17 (-0.03) | 1.28 |
+| `skore_money_v9` **← record** | attributes + carts by subcategory; learned from the old log and today's feedback | 15:40–16:30 | 2,822 | 2.37 | 2.07 | **+0.30** | 2.84 (+0.96) | 2.11 (-0.06) | 1.27 |
+| `skore_money_v13` (tied) | routed: v9w for cold requests, v10 for the rest | 16:40–17:15 | 1,724 | 2.35 | 2.06 | **+0.29** | 2.75 (+0.98) | 2.14 (-0.08) | 1.31 |
+| `skore_money_v9w` (tied) | v9 with today's feedback weighted ×20 (best on cold requests) | 15:55–16:45 | 2,613 | 2.36 | 2.08 | **+0.28** | 3.35 (+1.49) | 1.84 (-0.35) | 1.31 |
+| `skore_money_v15` (tied) | v11 + weaker trend lift (no trend ran while it was live) | 17:15–17:45 | 1,764 | 2.28 | 2.02 | **+0.26** | 3.06 (+1.09) | 1.88 (-0.18) | 1.11 |
+| `skore_money_v8` (tied) | v7 without the brand features, refit on all the data | 15:25–16:00 | 2,665 | 2.35 | 2.09 | **+0.26** | 3.22 (+1.27) | 1.88 (-0.28) | 1.24 |
+| `skore_money_v14` (tied) | v11 + trend lift (no trend ran while it was live: same behaviour as v11) | 16:40–17:45 | 3,558 | 2.28 | 2.04 | **+0.24** | 2.98 (+1.13) | 1.89 (-0.26) | 1.00 |
+| `skore_money_v11` | routed: v9w for cold requests, v9 for the rest | 16:25–17:45 | 4,457 | 2.15 | 2.07 | **+0.08** | 2.92 (+1.09) | 1.68 (-0.52) | 0.87 |
+| `skore_money_v9d` | see docs/findings.md | 15:55–16:30 | 1,753 | 2.15 | 2.07 | **+0.08** | 3.01 (+1.08) | 1.71 (-0.44) | 0.98 |
+| `v2a` | see docs/findings.md | 12:20–12:35 | 339 | 1.99 | 1.99 | **+0.00** | 2.83 (+0.84) | 1.61 (-0.38) | 0.97 |
+| `skore_money_v5` | first learned ranker: P(click) × P(purchase | click) over the rules' candidates | 13:30–15:45 | 12,910 | 1.81 | 2.10 | **-0.29** | 2.57 (+0.58) | 1.41 (-0.75) | 0.88 |
+| `v4a` | rules: popularity × measured lifts (just-viewed ×3) | 12:40–13:35 | 4,590 | 1.57 | 2.02 | **-0.46** | 2.12 (+0.28) | 1.29 (-0.82) | 0.69 |
+| `skore_money_v6` | v5 + shopper × brand history, new-product and discount features | 14:45–15:00 | 406 | 1.63 | 2.21 | **-0.58** | 2.91 (+0.65) | 0.90 (-1.28) | 0.64 |
+| `v3a` | see docs/findings.md | 12:25–12:40 | 563 | 1.50 | 2.09 | **-0.58** | 2.20 (+0.17) | 1.24 (-0.87) | 0.70 |
+| `v2b` | see docs/findings.md | 12:20–12:35 | 338 | 1.39 | 1.99 | **-0.60** | 2.23 (+0.24) | 0.98 (-1.01) | 0.87 |
+| `v4b` | rules: popularity × measured lifts (just-viewed ×1.5) | 12:40–13:35 | 4,647 | 1.42 | 2.02 | **-0.60** | 1.73 (-0.11) | 1.27 (-0.84) | 0.61 |
+| `skore_money_v4` | rules: popularity × measured lifts | 13:30–14:00 | 2,024 | 1.45 | 2.06 | **-0.61** | 2.01 (-0.01) | 1.16 (-0.91) | 0.53 |
+| `v3b` | see docs/findings.md | 12:25–12:40 | 558 | 1.17 | 2.09 | **-0.92** | 1.71 (-0.32) | 0.91 (-1.20) | 0.47 |
+| `skore_money_v5_explore` | see docs/findings.md | 13:55–15:00 | 1,722 | 1.21 | 2.14 | **-0.93** | 1.80 (-0.31) | 0.88 (-1.27) | 0.76 |
+| `baseline` | all-time best sellers (the starter baseline) | 11:30–11:45 | 1,395 | 0.75 | 2.33 | **-1.58** | 1.31 (-0.64) | 0.48 (-2.03) | 0.19 |
 
-| Ranker set-up | Trend lift off | Trend lift on |
-|---|---|---|
-| `v9` for every request (the best proven) | `skore_money_v21` | `skore_money_v22` |
-| `v9w` for cold requests, `v9` for the rest | `skore_money_v23` | `skore_money_v24` |
-| `v16` for every request (retrained on all of Saturday) | `skore_money_v25` | `skore_money_v26` |
-| `v16w` for cold requests, `v16` for the rest | `skore_money_v27` | `skore_money_v28` |
+## How to read it
 
-Read it on Sunday morning with `python scripts/arms.py 17:45 07:30` (UTC). The set-up that wins, with the
-lift if it helped while a trend ran, becomes the single arm of the final and the new entry here. If none
-beats `v9` clearly, `v9` serves the final.
+- The number is an expectation computed by the organisers from the hidden model, not a count of purchases, so it has no coin flip in it — but it still moves: on 14 Nov two arms running the same code differed by 0.12 over half an hour, and three identical arms read 1.92, 2.40 and 2.59 over a quarter of an hour. A version needs thousands of requests, and a lead of less than about 0.15 is a tie.
+- Each version is compared with the reference over its own minutes, because the store is easier in some hours than in others.
+- Versions whose only difference is the trend lift behave identically while no trend is running.
 
-## How we got here
+## Record
 
-| Version | What changed | Expected purchases per 100 requests | Reference, same hours |
-|---|---|---|---|
-| baseline | all-time best sellers in stock | 0.6 | |
-| v4 | rules: popularity × measured lifts (session, abandoned carts) | 1.45 | 2.04 |
-| v5 | first learned ranker on top of the rules | 1.81 | 2.10 |
-| v6 | + new products, price, age of the cart | 1.70 | 2.10 |
-| **v7** | **+ the attributes named in the descriptions** | **2.42** | 2.10 |
-| v8 | v7 without brand history | 2.35 | 2.10 |
-| **v9** | + attribute pair, purchases in the subcategory | **2.37** | 2.06 |
-| v9w | v9 with live feedback weighted ×20 | 2.32 (cold 3.21, warm 1.87) | 2.06 |
-| v10, v16 | + carts by subcategory, brand; v16 also all of Saturday's feedback, real prices, the trend as a feature | within noise of v9 so far | |
-| trend lift | products of a subcategory that is trending get its lift (detector on `shop.events`) | not measured live yet: no trend has run since it was deployed | |
-
-Team level, last hour at 19:00 CET: 2.2 against 1.8 for the next team and 2.0 for the reference; cold
-requests 2.8 against 1.7 for the reference. In every 15-minute window since 16:25 CET we have been 4 % to
-13 % above the reference, whatever the level of the window.
-
-## Log
-
-- **14 Nov 16:41 CET** — `v9` live (34 % of the traffic, then the control of every later test).
-- **14 Nov 17:00 CET** — `v9w`, `v9d` against `v9`: v9w level overall, better on cold; v9d (one model for
-  the purchase) worse → dropped.
-- **14 Nov 18:15 CET** — trend detector live (`skore_money_v14`, `v15`). No trend since.
-- **14 Nov 18:45 CET** — `v16` / `v16w` trained; overnight experiment `skore_money_v21`–`v28` live.
-- **14 Nov 18:58 CET** — the server runs as a process of its own (`scripts\swap_server.ps1`): closing a
-  terminal or an assistant session no longer stops it.
+- 14 Nov 2026, 19:00 CET — `skore_money_v9` takes the record: 2.37 expected purchases per 100 requests on 2,822 requests, +0.30 against the reference over the same minutes.
