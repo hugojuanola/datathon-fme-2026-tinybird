@@ -38,7 +38,8 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`scripts/leaderboard.py`](scripts/leaderboard.py) | Print the public leaderboard |
 | [`scripts/arms.py`](scripts/arms.py) | **How we judge an A/B**: expected purchases per 100 requests per `model_version` (the organisers' own metric), cold and warm, over any window |
 | [`scripts/netmon.py`](scripts/netmon.py) | Router ping and RawTree connect time once per second: tells Wi-Fi from the rest when answers are lost |
-| [`scripts/run_server.ps1`](scripts/run_server.ps1), [`docs/final-round.md`](docs/final-round.md) | Running the server in its own window, and the runbook for the final |
+| [`scripts/swap_server.ps1`](scripts/swap_server.ps1), [`scripts/run_server.ps1`](scripts/run_server.ps1), [`docs/final-round.md`](docs/final-round.md) | Start or replace the live server without a gap, as a process of its own (it does not die with a terminal or an assistant session), and the runbook for the final |
+| [`best_model.md`](best_model.md) | The best proven version, the line that puts it back, what is being measured against it, and the log of improvements |
 | [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (event-sourced live state), `features.py` (the one definition of every model feature, shared by training and serving), `recommend.py` (policies: rules, and rules-retrieve + model-rank), `rawtree.py` (client), `priority.py` |
 | [`offline/`](offline/) | Offline work: `pull_data.py` (export history / live stream), `build_dataset.py` (training table by replaying the store in time order), `train.py` (LightGBM click + conversion models, validated on the future), `evaluate.py` (policies on the held-out last week), `build_cache.py` (start-up cache for the server), `store_moves.py` (trends, price changes and new products in the organic stream, aggregated in RawTree, and the live trend detector replayed on them) |
 | [`models/`](models/) | The trained ranker (`click.txt`, `conv.txt`: LightGBM text models, readable) |
@@ -61,12 +62,12 @@ python -m venv <somewhere outside any synced folder> && <venv>/Scripts/pip insta
 <venv>/Scripts/python -u -m reco.serve >> $SKORE_LOGS_DIR/serve.log 2>&1   # our recommender, LIVE (one instance only)
 ```
 
-Deploying a new version **without a gap** (never two instances answering at once):
+Deploying a new version **without a gap** (never two instances answering at once), one command:
 
 ```bash
-<venv>/Scripts/python -u -m reco.serve --standby >> $SKORE_LOGS_DIR/serve.log 2>&1   # loads, then waits
-# when the log says "standby: ready": stop the old process, check it is gone, then
-touch $SKORE_LOGS_DIR/GO                                                            # the new one starts answering
+powershell -ExecutionPolicy Bypass -File scripts/swap_server.ps1
+# starts the new server in standby as a process of its own, waits for "standby: ready" and a clean
+# self-test in the log, stops the old one, creates $SKORE_LOGS_DIR/GO. If the new one is not fit, nothing changes.
 ```
 
 Retraining (all offline scripts lower their own priority so they do not starve the server):
@@ -192,13 +193,16 @@ Open for the final (findings §17 has the design; the humans decide, before Sund
    on; and, if a trend ran, whether the lift helped (even against odd versions over those minutes). Four
    trends ran on Saturday (09:30, 11:30, 13:30, 15:30 UTC) before any version reacted to them; none had come
    back by 18:45 CET.
-2. **A single arm** for the final with the winner, started in its own window:
+2. **A single arm** for the final with the winner (`scripts/swap_server.ps1` after editing `ARMS`):
    [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is already a sound mix.
+   The best proven version and how to put it back: [`best_model.md`](best_model.md).
 3. **The connection.** A network cable to the router, nothing else using the line, no assistant session
    open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi from the rest.
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
 (outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:
-OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). Commit at every deploy,
+OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). Since 18:58 CET the live
+server is a process of its own started by `scripts/swap_server.ps1` (no window; `python` with `reco.serve` in
+Task Manager): it survives closing the assistant app. Never start one as a child of an assistant session. Commit at every deploy,
 with the `model_version` in the message, so the repository always matches what is serving. Update this
 section when that changes.

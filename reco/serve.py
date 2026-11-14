@@ -300,6 +300,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    if "--log" in sys.argv:     # write the log ourselves: the same plain UTF-8 whatever shell started us
+        sys.stdout = sys.stderr = open(sys.argv[sys.argv.index("--log") + 1], "a", buffering=1,
+                                       encoding="utf-8", errors="replace")
     while True:  # if anything escapes the loop, start again rather than leave shoppers to the fallback
         try:
             main()

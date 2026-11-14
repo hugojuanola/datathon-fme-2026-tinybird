@@ -105,7 +105,7 @@ no ids, a profile builds itself from the stream, and the detector does not know 
 
 Nothing waits for a single call: four staggered pollers, four senders, an insert that has not come back in
 0.6 s is sent again on another connection. A new version loads in standby, answers real requests in a
-self-test, and takes over without a gap. If the ranker fails the rules answer; if the rules fail, the best
+self-test, and takes over without a gap ([`scripts/swap_server.ps1`](scripts/swap_server.ps1)). If the ranker fails the rules answer; if the rules fail, the best
 sellers in stock. What costs answers is the home connection, not the code: findings §8,
 [`scripts/netmon.py`](scripts/netmon.py), [`docs/final-round.md`](docs/final-round.md).
 
@@ -114,6 +114,7 @@ sellers in stock. What costs answers is the home connection, not the code: findi
 | Path | What |
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Entry point for AI agents and newcomers: mission, rules, commands, current state |
+| [`best_model.md`](best_model.md) | The best proven version, how to put it back, and the log of improvements |
 | [`reco/`](reco/) | The recommender: `serve.py` (live loop), `state.py` (live state), `features.py` (every feature and the trend detector, shared by training and serving), `recommend.py` (retrieve, rank, store moves) |
 | [`offline/`](offline/) | Data export, training table by replay, training and validation, start-up cache, `store_moves.py` |
 | [`models/`](models/) | The trained rankers (LightGBM text files) |

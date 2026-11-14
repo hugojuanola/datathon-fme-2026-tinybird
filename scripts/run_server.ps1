@@ -3,10 +3,10 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\run_server.ps1            # answer live traffic
 #   powershell -ExecutionPolicy Bypass -File scripts\run_server.ps1 -Standby   # load, then wait for the GO file
 #
-# Run it in its own PowerShell window and leave that window open: the server then does not depend on any
-# other program (editor, assistant session) staying alive. Only ONE server may answer at a time: to replace a
-# running one without a gap, start this with -Standby, wait for "standby: ready" in the log, stop the old
-# window (Ctrl+C), and create the GO file it names.
+# Run it in its own window and leave that window open: the server then does not depend on any other program
+# (editor, assistant session) staying alive. Only ONE server may answer at a time: to replace a running one
+# without a gap use scripts\swap_server.ps1, which starts this with -Standby in a new window, waits until it
+# is ready and hands over.
 #
 # Settings come from .env (TEAM_ID, RAWTREE_API_KEY, SKORE_DATA_DIR, SKORE_LOGS_DIR). The Python to use is
 # $env:SKORE_PYTHON if set, else the venv next to the data directory, else "python".
@@ -27,14 +27,20 @@ if (-not $python -and $settings["SKORE_DATA_DIR"]) {
     if (Test-Path $candidate) { $python = $candidate }
 }
 if (-not $python) { $python = "python" }
-$log = Join-Path $logs "serve.log"
-$mode = if ($Standby) { "--standby" } else { "" }
+$log = (Join-Path $logs "serve.log") -replace "/", "\"
+$python = $python -replace "/", "\"
+# the server writes its own log (--log): no shell redirection, so the file is plain UTF-8 on any PowerShell
+$arguments = @("-u", "-m", "reco.serve", "--log", $log)
+if ($Standby) { $arguments += "--standby" }
 
-Write-Host "recommender: $python -m reco.serve $mode   (log: $log)"
+try { $Host.UI.RawUI.WindowTitle = "Skore Money recommender - leave this window open" } catch {}
+Write-Host "recommender: $python $($arguments -join ' ')"
+Write-Host "Leave this window open. To replace the server without a gap: scripts\swap_server.ps1"
 while ($true) {
-    & $python -u -m reco.serve $mode *>> $log
-    Add-Content $log "$(Get-Date -Format 'HH:mm:ss') server exited with code $LASTEXITCODE - restarting in 2 s"
-    Write-Host "$(Get-Date -Format 'HH:mm:ss') server exited ($LASTEXITCODE): restarting"
-    $mode = ""          # after a crash there is nobody to give the GO: answer straight away
+    & $python @arguments
+    $code = $LASTEXITCODE
+    Add-Content -Path $log -Encoding UTF8 -Value "$(Get-Date -Format 'HH:mm:ss') server exited with code $code - restarting in 2 s"
+    Write-Host "$(Get-Date -Format 'HH:mm:ss') server exited ($code): restarting"
+    $arguments = $arguments | Where-Object { $_ -ne "--standby" }   # after a crash nobody is there to give the GO
     Start-Sleep -Seconds 2
 }
