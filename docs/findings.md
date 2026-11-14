@@ -678,6 +678,7 @@ all day — "explains" ×1.28 on clicks and ×1.57 on purchases; with v9's predi
 | The shopper had looked at the product in the 60 days and never carted it | 0.75 ± 0.10 | A look that did not end in a cart is a mild "no" |
 | Product of the request's recent views (2.5 per list; 12 % of them are in our ten) | 1.11 ± 0.14; the ones v9 scores low and were shown anyway: 4 purchases for 5.8 predicted | v9 is right to leave most of them out |
 | Product added during the event | 1.29 ± 0.12, against 0.91 ± 0.04 for the original catalogue | **v9 is short: below** |
+| An id for the category, the subcategory or the brand (v9 has none, by design) | Observed / predicted per group, learned before 17:00 UTC and compared with after (trending subcategories left out during their trend): the two halves of the day agree with a correlation of +0.38 (10 categories), −0.11 (87 subcategories), +0.20 (80 brands). Multiplying v9 by the morning's ratios leaves the evening's reciprocal rank where it was (0.393 → 0.393 by subcategory, 0.388 by brand) | Nothing stable to learn: what looks like a category effect in one window is gone in the next |
 
 Everything is within a quarter of what v9 predicts. Collaborative filtering helps exactly where the
 ranker has little to go on: a new shopper's handful of events is too few for shares, and what others bought
@@ -718,3 +719,36 @@ products added during the event from 0.85 to 1.27 per list.
 
 v34 (no lift) and v35 (lift ^ 0.5) were closed: the dose of the lift was settled per impression (×8.3
 measured, ×8.6 estimated, §16), and two arms of 10 % could not have told it apart in a night.
+
+**A model must not be asked about what it has never seen: the organic factor during a trend.** At 21:30 UTC
+Face Cream started trending: a small subcategory (22 products, 0.07 % of the store's purchases; during the
+trend 7–8 purchases per 5 minutes against 0.7, the detector said ×9–12). It was the first trend with the
+organic factor live, and the second session's watch caught it within 12 minutes:
+
+| 21:30–21:51 UTC | Face Cream products per list | in slot 1 | their impressions | clicks | purchases |
+|---|---|---|---|---|---|
+| v31, v33 (carousel models × lift) | 0.20 | 1 % of lists | 358 | 0 | 0 |
+| v32, v36 (× organic factor) | 1.63 – 1.79 | 13 – 15 % of lists | 2,936 | 2 | 0 |
+
+The other products of those same lists were clicked 0.8 % of the time (3.2 % in slot 1): the organic arms were
+giving a sixth of their slots to products nobody clicked, and their lists with three or more of them sold
+0.44 per 100 against 2.95 for their lists with none. For Game Consoles (11 % of the store's purchases while
+it trended) the carousel models had shown 1.2–1.4 trending products per list and they sold ×8.3: the lift is
+right, and it limits itself — eight times a tiny probability is still tiny, and v9 leaves those products
+out. The organic model is what broke. It learned which product a shopper goes on to buy *among the
+candidates the rules retrieve on an ordinary day*; Face Cream products are candidates only because the lift
+puts them there, and on products it was never asked about its answer means nothing. Reproduced offline on
+120 of the day's requests with a made-up ×10 on Face Cream: 0.24 trending products per list for v9 + lift,
+3.05 for v9 × organic + lift, 0.02 for v9 × organic without the trend.
+
+The fix (`reco.recommend.level_trending`, live at 21:51 UTC, 21 minutes after the trend began): while a
+trend runs, a trending product takes the organic factor of the products the carousel models score about as
+high — the median of the ten ranked just above it and the ten just below, among those not trending — so
+the organic model has no say on it and it keeps the place the carousel models and the lift give it. Offline
+the same test gives 0.17 per list; live, after the swap, 0.24 (v32) and 0.08 (v36) against 0.21 (v31) and
+0.20 (v33), none in slot 1. A big trend is still used: with a made-up ×8.8 on Game Consoles, 2.1 products
+per list against 2.5 for v9 + lift. For the night's reading the organic arms count from 21:52 UTC.
+
+Two things to keep from it. A model is only as good as the candidates it was trained on, and a multiplier
+that changes the candidates changes the question. And an arm must be watched in every regime it will meet:
+the organic arm had been ahead for an hour (+0.30, 1.9 standard errors) on minutes without a trend.

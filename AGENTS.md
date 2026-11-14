@@ -185,6 +185,7 @@ Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), one ranker for ever
 (`models/v9o`, `offline/organic.py`) + lift · `v33` (20 %) v9b, v9's features retrained on all of Saturday,
 + lift — these three live since 21:32 CET — · `v36` (20 %, since 22:32 CET) v32 with the score of a product
 added during the event x1.5 for known shoppers: every piece with evidence, as one candidate. No exploration.
+Since 22:51 CET, in v32 and v36 a trending product takes the organic factor of its neighbours in v9's order.
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
 versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
 organic model and the arms of the night, §21 nine signals checked against what v9 already predicts, and the
@@ -196,11 +197,12 @@ next team 1.83, organisers' reference 2.04. Cold requests 2.76 vs 1.73 for the r
 is `on_time`, 96.4 % (others 99.8 %): answers are lost in bursts of the home connection.
 
 Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
-1. **Read the night**: `python scripts/arms.py 21:35 07:30` (UTC), or the table in `best_model.md`. v31 is
+1. **Read the night**: `python scripts/arms.py 21:55 07:30` (UTC), or the table in `best_model.md`. v31 is
    the version to beat: against it, v32 (does the organic factor help live?), v33 (does retraining on more
-   data help?) and v36 (v32 plus the lift for new products). Read the hours with a trend apart (45 minutes
-   from :30 of every odd UTC hour): the organic arms show ten times more products of the trending
-   subcategory than v9 when it is one v9 scores low (Face Cream at 21:30 UTC: 1.3-1.6 per list against 0.1).
+   data help?) and v36 (v32 plus the lift for new products). Read the minutes with a trend apart (45 minutes
+   from :30 of every odd UTC hour). Before 21:52 UTC the organic arms had a flaw during a trend (they filled
+   lists with products of the trending subcategory, findings §21): fixed, and every arm should now show
+   about the same number of trending products per list (`tiers == "t"` in `served-*.jsonl`).
 2. **A single arm** for the final with the winner (`scripts/swap_server.ps1` after editing `ARMS`):
    [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is a sound mix: every
    arm is v9 or a step or two from it, and all the traffic has the lift.
