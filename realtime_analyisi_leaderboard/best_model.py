@@ -4,13 +4,17 @@
     python realtime_analyisi_leaderboard/best_model.py
 
 For every `model_version` we served it reads the organisers' own number — expected purchases per 100
-requests under the hidden model (leaderboard API, `by=model`) — over the whole practice round, and then the
-reference recommender over the SAME minutes that version was live. Versions are ranked by that margin, so a
-version is not rewarded for having run during an easy hour. Stdlib only; read-only; no RawTree query.
+requests under the hidden model (leaderboard API, `by=model`) — in half-hour pieces over the whole practice
+round, and compares each version with the reference recommender over the SAME half hours, weighted by how
+many requests the version had in each. So a version is not rewarded for having run during an easy hour.
+
+Half-hour pieces on purpose: a longer window with many versions in it comes back without the small ones.
+Finished pieces are cached in $SKORE_DATA_DIR, so a run costs one or two calls. Stdlib only; read-only.
 """
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -22,10 +26,11 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 from leaderboard import URL, team_id  # noqa: E402
+from rt import load_env  # noqa: E402
 
-PIECE = 3 * 3600      # the API serves windows of 15 minutes to 3 hours, in 5-minute steps
+PIECE = 1800          # seconds; the API takes windows of 15 minutes to 3 hours in 5-minute steps
 MIN_RANKED = 1500     # requests a version needs before it can hold the record
-NOISE = 0.15          # differences below this are not differences (two identical arms differed by 0.12-0.67)
+NOISE = 0.15          # differences below this are not differences (identical arms differed by 0.12-0.67)
 
 WHAT = {  # what each version is, in one line (details: docs/findings.md)
     "baseline": "all-time best sellers (the starter baseline)",
@@ -46,8 +51,6 @@ WHAT = {  # what each version is, in one line (details: docs/findings.md)
     "skore_money_v25": "v16 everywhere (retrained on all of 14 Nov), trend lift off", "skore_money_v26": "v16 everywhere, trend lift ^0.75",
     "skore_money_v27": "routed v16w cold / v16 warm, trend lift off", "skore_money_v28": "routed v16w cold / v16 warm, trend lift ^0.75",
 }
-
-
 RANKER = {  # the ranker spec each version uses in `reco/serve.py` ("a|b" = a for cold requests, b for the rest)
     "skore_money_v5": "v5", "skore_money_v8": "v8", "skore_money_v9": "v9", "skore_money_v9w": "v9w",
     "skore_money_v11": "v9w|v9", "skore_money_v13": "v9w|v10", "skore_money_v14": "v9w|v9", "skore_money_v15": "v9w|v9",
@@ -66,46 +69,22 @@ def fetch(start: int, end: int) -> dict:
         return json.loads(r.read())
 
 
-CACHE: dict[tuple[int, int], dict] = {}
-
-
-def window(start: int, end: int, me: str) -> dict:
-    """Requests-weighted totals between two 5-minute marks: every version of ours, and the reference."""
-    out: dict = {"versions": {}, "ref": [0, 0.0, 0.0, 0.0]}   # ref: requests, buys, cold requests, cold buys
-    for piece in range(start, end, PIECE):
-        key = (piece, min(piece + PIECE, end))
-        if key not in CACHE:
-            CACHE[key] = fetch(*key)
-            time.sleep(0.2)
-        state = CACHE[key]
-        ours = [v for t in state["teams"] if t["team_id"] == me for v in (t.get("versions") or [])]
-        traffic = max((t.get("requests") or 0 for t in state["teams"]), default=0)
-        share = sum(v.get("cold_requests") or 0 for v in ours) / max(sum(v.get("requests") or 0 for v in ours), 1)
-        ref = state["reference"]
-        n = ref.get("requests") or traffic
-        out["ref"][0] += n
-        out["ref"][1] += n * (ref.get("conversion") or 0.0)
-        out["ref"][2] += share * n
-        out["ref"][3] += share * n * (ref.get("cold_conversion") or 0.0)
-        for v in ours:
-            s = out["versions"].setdefault(str(v.get("model_version")), {"n": 0, "buys": 0.0, "cold_n": 0, "cold_buys": 0.0,
-                                                                         "eur": 0.0, "first": float("inf"), "last": 0.0})
-            req, cold = v.get("requests") or 0, v.get("cold_requests") or 0
-            s["n"] += req
-            s["buys"] += req * (v.get("conversion") or 0.0)
-            s["cold_n"] += cold
-            s["cold_buys"] += cold * (v.get("cold_conversion") or 0.0)
-            s["eur"] += req * (v.get("revenue_per_request") or 0.0)
-            # a version that crosses a piece boundary may come without its first/last there: fall back to the piece's ends
-            s["first"], s["last"] = min(s["first"], v.get("first") or key[0]), max(s["last"], v.get("last") or key[1])
+def piece(start: int, end: int, me: str, cache: dict, settled: bool) -> dict:
+    """One half hour of the board, reduced to what we need: our versions, the reference, the traffic."""
+    key = f"{start}-{end}"
+    if key in cache:
+        return cache[key]
+    state = fetch(start, end)
+    time.sleep(0.15)
+    ours = [v for t in state["teams"] if t["team_id"] == me for v in (t.get("versions") or [])]
+    out = {"traffic": max((t.get("requests") or 0 for t in state["teams"]), default=0),
+           "ref": state["reference"].get("conversion") or 0.0, "ref_cold": state["reference"].get("cold_conversion") or 0.0,
+           "versions": {str(v.get("model_version")): [v.get("requests") or 0, v.get("conversion") or 0.0, v.get("cold_requests") or 0,
+                                                      v.get("cold_conversion") or 0.0, v.get("revenue_per_request") or 0.0]
+                        for v in ours}}
+    if settled:   # a half hour that ended a while ago does not change any more
+        cache[key] = out
     return out
-
-
-def rates(n: float, buys: float, cold_n: float, cold_buys: float) -> tuple[float, float, float]:
-    conv = buys / max(n, 1)
-    cold = cold_buys / cold_n if cold_n else float("nan")
-    warm = (buys - cold_buys) / (n - cold_n) if n > cold_n else float("nan")
-    return conv, cold, warm
 
 
 def git(*args: str) -> str:
@@ -116,31 +95,54 @@ def git(*args: str) -> str:
 
 
 def main() -> None:
+    load_env()
     me = team_id()
-    state = fetch(*(lambda e: (e - 3600, e))(int(time.time()) // 300 * 300))
-    now_mark = int(state["window"][1]) // 300 * 300
-    start = int(state.get("practice_start") or state["limits"]["earliest"])
-    if state.get("mode") not in ("practice",):   # the board is hidden during the final: keep the last record
+    mark = int(time.time()) // 300 * 300
+    state = fetch(mark - 3600, mark)
+    if state.get("mode") != "practice":   # the board is hidden during the final: keep the last record
         print(f"mode {state.get('mode')}: best_model.md left as it is")
         return
-    whole = window(start, now_mark, me)
+    start = int(state.get("practice_start") or state["limits"]["earliest"])
+    cache_file = Path(os.environ.get("SKORE_DATA_DIR", ROOT / "data")) / "board_by_model_cache.json"
+    cache = json.loads(cache_file.read_text(encoding="utf-8")) if cache_file.exists() else {}
+    tot: dict[str, dict] = {}
+    thin = 0
+    for a in range(start, mark - 899, PIECE):   # a last piece shorter than 15 minutes cannot be asked for: it waits
+        b = min(a + PIECE, mark)
+        p = piece(a, b, me, cache, settled=b <= mark - 900)
+        served = sum(v[0] for v in p["versions"].values())
+        share = sum(v[2] for v in p["versions"].values()) / max(served, 1)   # share of cold requests in this half hour
+        ref_warm = (p["ref"] - share * p["ref_cold"]) / (1 - share) if share < 1 else float("nan")
+        if p["versions"] and served < 0.5 * p["traffic"]:
+            thin += 1
+        for name, (n, conv, cold_n, cold_conv, eur) in p["versions"].items():
+            t = tot.setdefault(name, {"n": 0, "buys": 0.0, "cold_n": 0, "cold_buys": 0.0, "eur": 0.0, "ref": 0.0, "ref_cold": 0.0,
+                                      "ref_warm": 0.0, "first": a, "last": b})
+            warm_n = n - cold_n
+            t["n"] += n
+            t["buys"] += n * conv
+            t["cold_n"] += cold_n
+            t["cold_buys"] += cold_n * cold_conv
+            t["eur"] += n * eur
+            t["ref"] += n * p["ref"]                 # the reference, weighted like this version
+            t["ref_cold"] += cold_n * p["ref_cold"]
+            t["ref_warm"] += warm_n * (ref_warm if ref_warm == ref_warm else p["ref"])
+            t["last"] = b
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    cache_file.write_text(json.dumps(cache), encoding="utf-8")
+
     rows = []
-    for name, s in whole["versions"].items():
-        if s["n"] < 300 or not s["last"]:
+    for name, t in tot.items():
+        if t["n"] < 300:
             continue
-        a = int(s["first"]) // 300 * 300
-        b = min(-(-int(s["last"]) // 300) * 300, now_mark)
-        if b - a < 900:
-            a = b - 900
-        w = window(a, b, me)
-        v = w["versions"].get(name)
-        if not v:
-            continue
-        conv, cold, warm = rates(v["n"], v["buys"], v["cold_n"], v["cold_buys"])
-        rconv, rcold, rwarm = rates(*w["ref"])
-        rows.append({"name": name, "n": v["n"], "conv": conv, "cold": cold, "warm": warm, "ref": rconv, "margin": conv - rconv,
-                     "cold_margin": cold - rcold, "warm_margin": warm - rwarm, "eur": v["eur"] / max(v["n"], 1),
-                     "from": datetime.fromtimestamp(a, timezone.utc), "to": datetime.fromtimestamp(b, timezone.utc),
+        warm_n = t["n"] - t["cold_n"]
+        conv, ref = t["buys"] / t["n"], t["ref"] / t["n"]
+        cold = t["cold_buys"] / t["cold_n"] if t["cold_n"] else float("nan")
+        warm = (t["buys"] - t["cold_buys"]) / warm_n if warm_n else float("nan")
+        rows.append({"name": name, "n": t["n"], "conv": conv, "ref": ref, "margin": conv - ref, "cold": cold, "warm": warm,
+                     "cold_margin": cold - t["ref_cold"] / t["cold_n"] if t["cold_n"] else float("nan"),
+                     "warm_margin": warm - t["ref_warm"] / warm_n if warm_n else float("nan"), "eur": t["eur"] / t["n"],
+                     "from": datetime.fromtimestamp(t["first"], timezone.utc), "to": datetime.fromtimestamp(t["last"], timezone.utc),
                      "explore": "explore" in name})
     rows.sort(key=lambda r: -r["margin"])
     ranked = [r for r in rows if r["n"] >= MIN_RANKED and not r["explore"]]
@@ -162,11 +164,11 @@ def main() -> None:
     leader = f"`{best['name']}`"
     if not record or leader not in record[-1]:
         record.append(f"- {cet} CET — {leader} takes the record: {best['conv']:.2f} expected purchases per 100 requests on "
-                      f"{best['n']:,} requests, {best['margin']:+.2f} against the reference over the same minutes.")
+                      f"{best['n']:,} requests, {best['margin']:+.2f} against the reference over the same half hours.")
 
     def row(r: dict) -> str:
-        mark = " **← record**" if r is best else (" (tied)" if r in tied else "")
-        return (f"| `{r['name']}`{mark} | {WHAT.get(r['name'], 'see docs/findings.md')} | {r['from']:%H:%M}–{r['to']:%H:%M} | {r['n']:,} | "
+        mark_ = " **← record**" if r is best else (" (tied)" if r in tied else "")
+        return (f"| `{r['name']}`{mark_} | {WHAT.get(r['name'], 'see docs/findings.md')} | {r['from']:%H:%M}–{r['to']:%H:%M} | {r['n']:,} | "
                 f"{r['conv']:.2f} | {r['ref']:.2f} | **{r['margin']:+.2f}** | {r['cold']:.2f} ({r['cold_margin']:+.2f}) | "
                 f"{r['warm']:.2f} ({r['warm_margin']:+.2f}) | {r['eur']:.2f} |")
 
@@ -176,13 +178,14 @@ def main() -> None:
         "Numbers are the organisers' own: expected purchases per 100 requests under the hidden model, per `model_version`._", "",
         f"**Record: `{best['name']}`** — {WHAT.get(best['name'], 'see docs/findings.md')}. "
         f"{best['conv']:.2f} expected purchases per 100 requests on {best['n']:,} requests, against {best['ref']:.2f} for the "
-        f"organisers' reference over the same minutes: **{best['margin']:+.2f}**.", "",
+        f"organisers' reference over the same half hours: **{best['margin']:+.2f}**.", "",
         ("Tied with it, within what the measurement can tell apart (" + f"{NOISE}" + " points): "
          + ", ".join(f"`{r['name']}` ({r['margin']:+.2f})" for r in tied) + ".") if tied else "No other version is within the noise of it.", "",
         f"- **Best on cold requests** (new shopper, or a new product among the recent views — what the final is expected to bring): "
         f"`{best_cold['name']}`, {best_cold['cold']:.2f} against the reference's {best_cold['cold'] - best_cold['cold_margin']:.2f}.",
         f"- **Best on the other requests** (known shoppers): `{best_warm['name']}`, {best_warm['warm']:.2f} against "
-        f"{best_warm['warm'] - best_warm['warm_margin']:.2f}.",
+        f"{best_warm['warm'] - best_warm['warm_margin']:.2f}. On cold requests every version of ours since v7 is 1.0 to 1.5 above the "
+        "reference; on the other requests the best of ours are level with it. That is the gap still open.",
         f"- **Code**: branch `javier`, last commit on `reco/` or `offline/`: `{git('log', '-1', '--format=%h — %s', '--', 'reco', 'offline')}`. "
         "Model files: `models/`.", "",
         TONIGHT, "",
@@ -193,9 +196,10 @@ def main() -> None:
         "process of its own, waits for its self-test (every arm must answer real requests with valid lists) and only then stops "
         "the old one; if the new one is not fit, nothing changes. Never start or stop a server any other way.", "",
         "## Every version we have served", "",
-        "Ranked by the margin over the reference in the minutes each version was live (UTC). Exploration arms and versions "
-        f"with fewer than {MIN_RANKED:,} requests are listed but cannot hold the record.", "",
-        "| Version | What it is | Live (UTC) | Requests | Conversion | Reference, same minutes | Margin | Cold (margin) | Other requests (margin) | € per request |",
+        "Ranked by the margin over the reference in the half hours each version was live (UTC), the reference weighted by the "
+        f"version's own requests. Exploration arms and versions with fewer than {MIN_RANKED:,} requests are listed but cannot "
+        "hold the record.", "",
+        "| Version | What it is | Live (UTC) | Requests | Conversion | Reference, same half hours | Margin | Cold (margin) | Other requests (margin) | € per request |",
         "|---|---|---|---|---|---|---|---|---|---|",
         *[row(r) for r in rows], "",
         "## How to read it", "",
@@ -203,14 +207,15 @@ def main() -> None:
         "coin flip in it — but it still moves: on 14 Nov two arms running the same code differed by 0.12 over half an hour, and "
         "three identical arms read 1.92, 2.40 and 2.59 over a quarter of an hour. A version needs thousands of requests, and a "
         f"lead of less than about {NOISE} is a tie.",
-        "- Each version is compared with the reference over its own minutes, because the store is easier in some hours than in others.",
+        "- Each version is compared with the reference over its own half hours, because the store is easier in some hours than in others.",
         "- Versions whose only difference is the trend lift behave identically while no trend is running.", "",
         "## Record", "",
         *record, "",
     ]
     path.write_text("\n".join(md), encoding="utf-8")
     print(f"record: {best['name']} {best['conv']:.2f} vs reference {best['ref']:.2f} ({best['margin']:+.2f}) on {best['n']:,} requests; "
-          f"tied: {', '.join(r['name'] for r in tied) or 'none'}; best cold {best_cold['name']}; best warm {best_warm['name']}")
+          f"tied: {', '.join(r['name'] for r in tied) or 'none'}; best cold {best_cold['name']}; best warm {best_warm['name']}; "
+          f"{len(rows)} versions listed; half hours where our versions cover under half the traffic: {thin}")
 
 
 if __name__ == "__main__":
