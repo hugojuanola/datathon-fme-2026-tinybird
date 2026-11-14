@@ -60,6 +60,8 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
 | What a shopper buys next is rarely what they are looking at | 10 % of requests are followed within 30 minutes by a purchase in the store: 75 % of them outside the category of the last view, 53 % in a subcategory the shopper had bought in — where it is the best of what they do not own yet, not the best seller | §19 |
 | A model that never saw a carousel orders our carousel's purchases as well as ours | Trained only on those next purchases, as a factor on the ranker it moves the purchased product up among the 10 shown (reciprocal rank 0.38 → 0.41) | §20 |
 | More weight on today's feedback, routing by kind of request, more features: no | Three ideas that looked right offline or for an hour and did not hold on thousands of live requests; one ranker serves everybody | §17, §20 |
+| Nine more signals, each checked against what the ranker already predicts: one survives | Co-purchases, repetition, cart history, ids for brand and subcategory: all within a quarter of the ranker's own prediction. Holding only the slot equal would have "found" four of them. The one that left something: after a click a known shopper buys a product added during the event 37 % of the time, the ranker expected 26 % | §21 |
+| A model must not be asked about what it has never seen | The first trend with the organic model live: it filled a sixth of the slots with a trending subcategory nobody clicked (2 clicks in 2,936 impressions). Caught by the watch in 12 minutes, fixed in 21: on trending products the organic model has no say | §21 |
 | Price drops and new products are small next to that | A 19 % promotion sells about ×1.2; a new product takes its fair share from its first ten minutes | §16 |
 
 ## How we know: offline first, then live
@@ -88,6 +90,7 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
 | reference | the organisers' recommender | 2.06 |
 | v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | being measured over the night (findings §20) |
 | v9 × organic | + what shoppers go on to buy in the store | being measured over the night |
+| v9 × organic, new products ×1.5 | + products added during the event lifted for known shoppers | being measured over the night (findings §21) |
 
 ## Learning from the stream
 
