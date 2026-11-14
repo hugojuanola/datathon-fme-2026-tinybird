@@ -22,9 +22,12 @@ The "where we stand" slide then shows the final round instead of the practice ro
 running the leaderboard hides the metrics and the script leaves `data.js` as it was.
 
 Every other number on the slides is quoted from [`docs/findings.md`](../docs/findings.md); the speaker
-notes of each slide name the section. If a newer ranker than v8 goes live, three places need a look: the
-columns of slide 7, the `VERSIONS` markers of the trend chart (top of the script in `index.html`) and the
-feature count on slide 6.
+notes of each slide name the section (or the watch note, for what `findings.md` does not cover yet: passing
+the reference, the routing of cold requests, the trend detector). The deck was last brought up to date with
+branch `javier` at commit `ed044ba` (14 Nov, 18:00 CET: rankers v9–v14). When the system changes again, these
+places need a look: the columns of slide 7 (held-out table of `offline.train`), the `VERSIONS` markers and
+caption of the trend chart, the feature count and routing line on slide 6, and the latency ticks on slide 10
+(`queries/health.sql`).
 
 ## Keys
 
