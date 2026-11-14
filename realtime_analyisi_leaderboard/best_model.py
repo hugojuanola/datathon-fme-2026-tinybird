@@ -64,10 +64,13 @@ RANKER = {  # the ranker spec each version uses in `reco/serve.py` ("a|b" = a fo
     "skore_money_v21": "v9", "skore_money_v22": "v9", "skore_money_v23": "v9w|v9", "skore_money_v24": "v9w|v9",
     "skore_money_v25": "v16", "skore_money_v26": "v16", "skore_money_v27": "v16w|v16", "skore_money_v28": "v16w|v16",
 }
-TONIGHT = ("**Being measured against the record** (live since 17:44:57 UTC on 14 Nov): `skore_money_v21`–`v28` = "
-           "{v9, v9w cold | v9 warm, v16, v16w cold | v16 warm} × {trend lift off, on at ^0.75}. `v21` / `v22` are v9 itself, so the "
-           "record's own number keeps growing under those two names; `v25` / `v26` are v16 (retrained on all of Saturday, 57 "
-           "features, real prices). Read the night with `python scripts/arms.py 17:45 07:30` on Sunday morning.")
+TONIGHT = ("**Being measured against the record** (live since 20:35 UTC on 14 Nov, all on the v9 ranker): `skore_money_v31` (30 %) "
+           "trend lift at full strength, `v32` (30 %) v9 × a third model of what shoppers go on to buy in the store, `v33` (20 %) v9's "
+           "features retrained on all of Saturday, `v34` (10 %) no trend lift, `v35` (10 %) lift ^0.5. Outside a trend `v31`, `v34` and "
+           "`v35` are v9 itself. Read the night with `python scripts/arms.py 20:35 07:30 | python realtime_analyisi_leaderboard/pool_arms.py "
+           "'v9=31,34,35' 'v9 x organic=32' 'v9b=33'` on Sunday morning. Before them, 17:45–20:30 UTC, `v21`–`v28` compared v9, v9w cold + "
+           "v9 warm, v16 and v16w cold + v16 warm, each with the trend lift off and at ^0.75: v9 everywhere led (+0.38 over the reference "
+           "on 7,186 requests), v16 lost on warm requests (1.78 against 1.97, 2.7 standard errors) and the lift at ^0.75 changed nothing.")
 
 
 def fetch(start: int, end: int) -> dict:

@@ -59,3 +59,42 @@ requests are where the remaining margin is; the 20:15 note has the candidate lev
 Generalisation: `v16` uses no ids and was trained on the same day's stream, so its lead on cold requests
 should carry to the final if the final's new shoppers arrive as today's did, with a few views already in
 `shop.events`. It is still one day's evidence.
+
+## Update, 22:00 CET — the experiment is closed (17:45-20:30 UTC), and where the rivals are
+
+The model session replaced `v21`-`v28` at 20:32-20:35 UTC (the swap cost 4 requests). Final numbers,
+`python scripts/arms.py 17:45 20:30 | python realtime_analyisi_leaderboard/pool_arms.py ...`; standard
+errors from the spread measured between arms that ran the same code (6.5 per request overall, 8.8 on cold
+requests, 4.75 on warm ones):
+
+| Set-up | Requests | Overall | Over the reference (1.981) | Cold (on) | Warm (on) |
+|---|---|---|---|---|---|
+| v9 everywhere (v21 + v22) | 7,186 | **2.356** | +0.375 | 2.957 (2,660) | **2.003** (4,526) |
+| v9w cold, v9 warm (v23 + v24) | 7,218 | 2.213 | +0.232 | 2.660 (2,779) | 1.933 (4,439) |
+| v16 everywhere (v25 + v26) | 7,268 | 2.216 | +0.235 | 2.988 (2,774) | 1.740 (4,494) |
+| v16w cold, v16 warm (v27 + v28) | 7,290 | 2.294 | +0.313 | **3.070** (2,788) | 1.812 (4,502) |
+
+- **Warm, by ranker**: `v9` 1.968 on 8,965 requests, `v16` 1.776 on 8,996: 0.19, 2.7 standard errors. It
+  read 3.2 a quarter of an hour earlier; a real lead, not a large one. The reference is at 2.09.
+- **Cold, by ranker**: `v16w` 3.07, `v16` 2.99, `v9` 2.96, `v9w` 2.66. The first three are level; `v9w`
+  trails `v16w` by 1.7 standard errors. The live-feedback weight x20 did not pay on cold requests.
+- **Trend lift at ^0.75**: 2.261 with it on 21,884 requests, 2.295 without on 7,078: -0.03, 0.4 standard
+  errors, one trend inside the window.
+- **Overall**: no set-up is more than 1.3 standard errors from `v9` everywhere, which is first. What came
+  next (`v31`-`v35`) is built on `v9` only.
+
+**The rivals have caught up.** Whole teams, conversion / cold / on time, by half hour (UTC):
+
+| Window | Reference | team_06 | team_14 | team_03 | team_22 | team_42 |
+|---|---|---|---|---|---|---|
+| 19:00-19:30 | 2.12 | 2.34 / 3.04 / 99.8 | 1.16 / 1.61 / 47.6 | 1.72 / 2.24 / 86.0 | 1.81 / 2.47 / 99.5 | 2.08 / 2.67 / 99.9 |
+| 19:30-20:00 | 2.20 | 2.70 / 3.55 / 100 | 2.18 / 2.90 / 100 | 2.38 / 3.25 / 99.9 | 2.22 / 3.00 / 95.9 | 2.27 / 2.99 / 99.8 |
+| 20:00-20:30 | 1.96 | 2.28 / 2.84 / 100 | 2.20 / 2.73 / 100 | 2.13 / 2.70 / 100 | 2.06 / 2.62 / 100 | 2.06 / 2.52 / 100 |
+| 20:30-20:55 | 2.03 | 2.33 / 3.07 / 99.8 | 2.28 / 2.96 / 100 | 2.28 / 3.02 / 100 | 2.20 / 2.95 / 100 | 2.20 / 2.81 / 100 |
+
+Until 19:30 UTC the next team was 0.25 or more behind and several were losing answers; since then four
+teams answer everything and sit within 0.05 to 0.13 of us. Their versions over 19:55-20:55 UTC read like
+ours: about 2.9 on cold requests and 1.7 to 1.9 on warm ones (team_14 `v7-hummingbird` 2.27 = 2.90 / 1.87;
+team_03 2.22 = 2.86 / 1.81; team_22 2.20 = 2.94 / 1.73; team_42's best arm 2.45 = 3.28 / 1.92 on 3,305
+requests). Nobody beats the reference on warm requests (2.15 in that hour): that is the one place left
+where a team can pull away, and it is 62 % of the traffic.
