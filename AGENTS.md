@@ -208,6 +208,14 @@ Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 ha
    from :30 of every odd UTC hour). Before 21:52 UTC the organic arms had a flaw during a trend (they filled
    lists with products of the trending subcategory, findings §21): fixed, and every arm should now show
    about the same number of trending products per list (`tiers == "t"` in `served-*.jsonl`).
+   **If a reading shows us off first place before the final** (standing order from Javier, 15 Nov 00:15 CET:
+   recover it as fast as possible, hold it, widen the gap). The second session reads the board every 15
+   minutes and raises the alarm when we are not first on the 60-minute window (a 15-minute window is noise:
+   three arms running the same code read 1.92, 2.40 and 2.59 in one). The answer, in this order:
+   reliability first (`queries/health.sql`: lost or late answers are the fastest points to lose and to win
+   back); then an arm 2 standard errors below the others over a clean window is taken out; then, if a rival
+   has simply improved, the traffic goes to our best arm by the longest clean window, with 20 % kept for
+   the comparison. From 08:00 CET on, nothing changes on the server without Javier or Hugo (rule 7).
 2. **A single arm** for the final with the winner (`scripts/swap_server.ps1` after editing `ARMS`):
    [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is a sound mix: every
    arm is v9 or a step or two from it, and all the traffic has the lift.
