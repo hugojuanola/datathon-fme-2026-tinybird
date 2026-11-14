@@ -9,6 +9,7 @@ for whoever is training or tuning the model: read `latest.md` for the numbers an
 | [`latest.md`](latest.md) | The last tick: leaderboard top 5, who served our shoppers, conversion by model version and kind of shopper, the known-shopper lever. Regenerated every tick |
 | [`history.csv`](history.csv) | One row per tick, to see the trend |
 | [`notes/`](notes/) | One dated note per finding worth acting on, with the evidence and what to do |
+| [`ab_mechanism.py`](ab_mechanism.py) | Reads an A/B: conversion per arm for new and known shoppers, and whether each arm pulls the measured levers (attribute affinity, attributes shared with the last view, bought subcategory). `--brand` adds the brand-versus-attributes table |
 | [`tick.py`](tick.py) | Produces `latest.md` and a row of `history.csv`. Read-only and light: leaderboard API + three `SELECT`s on the last minutes of the live tables; the 60-day purchase history comes from a local cache, not from a scan |
 | [`queries/`](queries/) | The SQL behind the notes, runnable with `python scripts/rt.py -f <file>` |
 
@@ -39,27 +40,25 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## Current reading
 
-_Updated 14 Nov 2026, 16:14 CET._
+_Updated 14 Nov 2026, 16:27 CET._
 
-- **The biggest lever so far is confirmed on the carousel: product attributes.** Each description names 2 of
-  20 attributes. Known shoppers buy 0.303% per impression of products whose attributes they like against
-  0.030% of those they do not (10×, adjusted for slot, inside and outside their subcategories); new shoppers
-  buy 2.3× / 5.6× more when the product shares 1 / 2 attributes with the one they just viewed. 44% of what we
-  show known shoppers today is in the low band. See
-  [the 16:12 note](notes/2026-11-14_1612_attributes-confirmed-on-carousel.md). The model session is training
-  v7 with it.
-- **Leaderboard**: 1.68, rank 1 (team_19 1.64, team_09 1.48). Reference 2.17, baseline 0.79. Cold conversion
-  2.44, above the reference's 2.12.
-- **Reliability is back**: every request answered since 15:43 CET, p95 1.55 s.
-- **`skore_money_v6` is in A/B against v5 since 15:55 CET**; first six minutes: behind on known shoppers
-  (1 purchase against 6), ahead on new ones (7 against 4). Too early. Its lists do not contain more
-  bought-brand products than v5's ([16:05 note](notes/2026-11-14_1605_v6-first-read.md)).
-- **Brand history** survives the slot adjustment on the carousel but is probably a stand-in for attributes.
+- **Leaderboard**: 1.80, rank 1 (team_19 1.63, team_26 1.58). Reference 2.11, baseline 0.72 — **78% of the way
+  from baseline to reference**. Cold conversion 2.44, above the reference's 1.92.
+- **Reliability**: every request answered since 15:43 CET, p95 1.7 s, `on_time` back to 97% on the board.
+- **`skore_money_v7` (product attributes) is live since 16:12 CET against v5, and it pulls the lever**: 75% of
+  what it shows known shoppers has high attribute affinity (v5: 43%), 10% low (v5: 38%); twice as many
+  products share an attribute with the last view. See
+  [the 16:25 note](notes/2026-11-14_1625_v7-live-mechanism.md).
+- **Its conversion is not readable yet**: after ten minutes v7 1.61% (19 / 1,181) against v5 1.82% (36 /
+  1,982 over a longer period). Readable about 17:00 CET.
+- **v6 was replaced at 16:12 CET**; it was behind on known shoppers (0.81% against 1.46%).
+- **The gap left** (0.31 points): about 0.1 is the exploration arm; the rest is known shoppers.
 
 ## Notes
 
 | When (CET) | Finding |
 |---|---|
+| [14 Nov 16:25](notes/2026-11-14_1625_v7-live-mechanism.md) | **v7 is live and pulls the attribute lever** (low-affinity impressions 38% → 10%, attribute-sharing with the last view doubled); conversion not readable after ten minutes; v6 replaced; brand history is not a stand-in for attributes but adds nothing to the model |
 | [14 Nov 16:12](notes/2026-11-14_1612_attributes-confirmed-on-carousel.md) | **Attributes confirmed on the live carousel**, adjusted for slot: 10× between low and high attribute affinity for known shoppers, inside and outside their subcategories; 2.3× / 5.6× for new shoppers when the product shares 1 / 2 attributes with the last view; 44% of known-shopper impressions are in the low band; worth roughly +0.45 overall |
 | [14 Nov 16:05](notes/2026-11-14_1605_v6-first-read.md) | **v6 first read**: behind v5 on known shoppers and ahead on new ones after six minutes (too early); its lists do not contain more bought-brand products than v5's, so the brand lever is not being tested yet; the brand effect holds with purchase count fixed (2–2.7× for shoppers with 1–19 purchases) |
 | [14 Nov 15:40](notes/2026-11-14_1540_path-to-the-reference.md) | **The path to the reference**: v5 converts 1.94% on what it serves; the board loses ≈0.12 to unanswered requests and ≈0.22 to exploration; the remaining model gap is on known shoppers. New lever: the brands a shopper has bought (2.2–2.5×, not in the model). Checked and withdrawn: `home` page, impression discounting |
