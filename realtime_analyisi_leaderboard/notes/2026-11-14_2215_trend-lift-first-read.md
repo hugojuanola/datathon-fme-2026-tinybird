@@ -83,7 +83,7 @@ leads the night overall (+0.39 over the reference on 6,551 requests).
 - **Technique**: a boost that reorders a slate has a displacement cost whenever the top slot dominates;
   the usual remedies are to cap the boosted items per slate or to protect the first slot.
 
-## Update, 23:45 CET — Face Cream (21:30 UTC): a trend in views, not in purchases (first 12 minutes)
+## Update, 22:45 CET — Face Cream (21:30 UTC): a trend in views, not in purchases (first 12 minutes)
 
 All arms now carry the lift at full strength (`v31` v9, `v32` v9 x organic, `v33` v9b, `v36` = `v32` with
 new products x1.5). The second trend of the evening is not like the first.

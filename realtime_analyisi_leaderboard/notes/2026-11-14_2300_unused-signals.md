@@ -1,4 +1,4 @@
-# Three signals our lists do not use: co-purchase, co-view and "new product" (14 Nov, 23:00 CET)
+# Three signals our lists do not use: co-purchase, co-view and "new product" (14 Nov, 22:05 CET)
 
 **In one line**: inside the lists we served, the product that was clicked or bought is, more often than
 its slot explains, (1) one that shoppers with the same purchases also bought, (2) one co-purchased with
@@ -108,7 +108,7 @@ Sources: [OTTO: co-visitation candidates and a GBDT reranker](https://towardsdat
 [H&M 1st place, summary](https://goldandrabbit.github.io/2022/05/15/H&M%20Recommendation%20Competition%20Top1%20%E6%96%B9%E6%A1%88) ·
 [H&M winners used LightGBM and CatBoost rankers](https://arxiv.org/pdf/2310.03778v1.pdf)
 
-## Update, 23:40 CET — do they come back on a separate window? And region, device
+## Update, 22:40 CET — do they come back on a separate window? And region, device
 
 A finding kept only if it repeats. The properties come from the 60-day history, which ends before the
 event, so two windows of today are two independent tests: A = 15:30-18:30 UTC (2,275 clicked lists),
@@ -138,7 +138,7 @@ What stands, then: `co_hist` for known shoppers, `co_view` for new shoppers, and
 multiplier. The model session put the last one live at 21:33 UTC as `skore_money_v36` (`v32` with products
 added during the event x1.5), which measures it directly against `v32`.
 
-## Correction, 23:50 CET — the co-purchase terms do not survive a better control
+## Correction, 22:45 CET — the co-purchase terms do not survive a better control
 
 The model session repeated the test with the right control: next to the slot, the ranker's own prediction
 for each product (`log` of v9's prediction at that slot), on lists v9 had not been trained on (17:00-20:20
