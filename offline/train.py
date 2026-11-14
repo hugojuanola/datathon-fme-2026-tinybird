@@ -103,7 +103,7 @@ def main() -> None:
     conv = fit(df[clicked], valid[clicked], "buy", conv_features, rounds=600)
 
     rankers = {p.name: (lgb.Booster(model_file=str(p / "click.txt")), lgb.Booster(model_file=str(p / "conv.txt")))
-               for p in sorted(MODELS.iterdir()) if p.is_dir() and p.name != name}
+               for p in sorted(MODELS.iterdir()) if p.name != name and (p / "conv.txt").exists()}
     rankers[f"{name} (validation fit)"] = (click, conv)
     for label, rows in (("all requests", held), ("known shoppers", held[held.is_new == False]),      # noqa: E712
                         ("new shoppers", held[held.is_new == True])):                                # noqa: E712

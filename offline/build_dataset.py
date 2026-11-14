@@ -119,9 +119,9 @@ def replay(cat: Catalog, shoppers: dict[str, Shopper], events: pd.DataFrame, req
                 if kind == "v":
                     u.view(sub_of[item], attrs_of[item])
                 elif kind == "a":
-                    u.cart(item, ev_ts[j], attrs_of[item])
+                    u.cart(item, ev_ts[j], attrs_of[item], sub_of[item])
                 else:
-                    u.buy(item, sub_of[item], log_price[item], brand_of[item], attrs_of[item])
+                    u.buy(item, sub_of[item], log_price[item], attrs_of[item], brand_of[item])
             j += 1
 
     for i, r in enumerate(requests.itertuples(index=False)):

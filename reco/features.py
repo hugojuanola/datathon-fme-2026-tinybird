@@ -24,19 +24,20 @@ REGIONS = {r: i for i, r in enumerate(["Andalucía", "Aragón", "Canarias", "Cas
 FEATURES = [
     # the product itself
     "pop", "view_share", "cart_rate", "buy_rate", "log_price", "pop_vs_sub", "pop_vs_cat",
-    "is_new_item", "item_age", "discount", "attr_prior",
+    "is_new_item", "item_age", "discount", "attr_prior", "attr_a", "attr_b",
     # how it matches this session
     "page", "n_recent", "same_cat", "same_sub", "same_brand", "in_recent", "is_last",
     "recent_sub_frac", "recent_cat_frac", "dprice_last", "dprice_recent", "recent_new", "recent_attr",
+    "recent_attr_max", "recent_attr_mean",
     # how it matches this shopper
     "u_views", "u_purch", "u_buy_rate", "u_cat_view", "u_cat_purch", "u_sub_view", "u_sub_purch",
-    "u_sub_purch_n", "u_sub_rank", "u_sub_bought_frac", "u_attr_p", "u_attr_p_lo", "u_attr_c", "u_attr_c_lo", "u_attr_v", "u_attr_v_lo",
+    "u_sub_purch_n", "u_sub_rank", "u_sub_bought_frac", "u_sub_cart", "u_cat_cart", "u_brand_purch", "u_brand_purch_n", "u_attr_p", "u_attr_p_lo", "u_attr_c", "u_attr_c_lo", "u_attr_v", "u_attr_v_lo",
     "u_bought_n",
     "u_carted", "u_cart_age", "u_n_carted", "u_dprice",
     # context
     "device", "region", "slot",
 ]
-CATEGORICAL = ["page", "device", "region"]
+CATEGORICAL = ["page", "device", "region", "attr_a", "attr_b"]
 F = {name: i for i, name in enumerate(FEATURES)}
 PRIOR_VIEWS = 50.0   # a product's rates are shrunk towards the store average until it has this many views
 ATTR_PRIOR = 5.0     # a shopper's taste for an attribute is shrunk towards everybody's until they have this many purchases
@@ -101,6 +102,10 @@ class Catalog:
                     self.attr[i, k] = 1.0
         self.attr_n = self.attr.sum(axis=1)
         self.attr_ids = [tuple(np.flatnonzero(row).tolist()) for row in self.attr]
+        # the product's attributes as two categorical features (lower id first): lets the model learn what an
+        # attribute is worth by itself and for a kind of shopper (device, region) — all a new shopper offers
+        self.attr_a = np.array([t[0] if t else np.nan for t in self.attr_ids], dtype=float)
+        self.attr_b = np.array([t[1] if len(t) > 1 else np.nan for t in self.attr_ids], dtype=float)
         # added: unix seconds when the product was added during the event (0 = original catalogue)
         self.added = np.zeros(n) if added is None else np.asarray(added, dtype=float)
         self.is_new = self.added > 0
@@ -136,7 +141,7 @@ class Catalog:
 
         static = np.full((n, len(FEATURES)), np.nan, dtype=np.float32)
         for name in ("pop", "view_share", "cart_rate", "buy_rate", "log_price", "pop_vs_sub", "pop_vs_cat",
-                     "is_new_item", "discount", "attr_prior"):
+                     "is_new_item", "discount", "attr_prior", "attr_a", "attr_b"):
             static[:, F[name]] = getattr(self, name)
         self.static = static
 
@@ -150,9 +155,8 @@ class Shopper:
     sub_views: dict[int, int] = field(default_factory=dict)
     sub_purch: dict[int, int] = field(default_factory=dict)
     sub_bought: dict[int, int] = field(default_factory=dict)   # distinct products bought per subcategory
-    brand_purch: dict[int, int] = field(default_factory=dict)  # purchases per brand id. Not a model feature:
-    # inside a subcategory the brands a shopper bought say nothing about what they buy next (AUC 0.498) and
-    # the two brand features made the ranker worse on held-out feedback; kept only for analysis
+    sub_carts: dict[int, int] = field(default_factory=dict)    # carts per subcategory
+    brand_purch: dict[int, int] = field(default_factory=dict)  # purchases per brand id
     attr_purch: dict[int, int] = field(default_factory=dict)   # purchases per description attribute id
     attr_cart: dict[int, int] = field(default_factory=dict)    # carts per attribute id
     attr_view: dict[int, int] = field(default_factory=dict)    # views per attribute id
@@ -166,18 +170,21 @@ class Shopper:
         for a in attrs:
             self.attr_view[a] = self.attr_view.get(a, 0) + 1
 
-    def cart(self, item: int, ts: int, attrs: tuple = ()) -> None:
+    def cart(self, item: int, ts: int, attrs: tuple = (), sub: int = -1) -> None:
         self.carts += 1
+        if sub >= 0:
+            self.sub_carts[sub] = self.sub_carts.get(sub, 0) + 1
         for a in attrs:
             self.attr_cart[a] = self.attr_cart.get(a, 0) + 1
         if item not in self.bought:
             self.carted[item] = ts
 
-    def buy(self, item: int, sub: int, log_price: float, brand: int, attrs: tuple = ()) -> None:
+    def buy(self, item: int, sub: int, log_price: float, attrs: tuple = (), brand: int = -1) -> None:
         """An organic purchase: taste evidence, and the product is now satiated."""
         self.purchases += 1
         self.sub_purch[sub] = self.sub_purch.get(sub, 0) + 1
-        self.brand_purch[brand] = self.brand_purch.get(brand, 0) + 1
+        if brand >= 0:
+            self.brand_purch[brand] = self.brand_purch.get(brand, 0) + 1
         for a in attrs:
             self.attr_purch[a] = self.attr_purch.get(a, 0) + 1
         self.price_sum += log_price
@@ -228,8 +235,11 @@ def featurize(cat: Catalog, shopper: Shopper | None, page: int, device: int, reg
         x[:, F["dprice_last"]] = cat.log_price[idx] - cat.log_price[last]
         x[:, F["dprice_recent"]] = cat.log_price[idx] - cat.log_price[r].mean()
         x[:, F["recent_new"]] = float(cat.is_new[r].any())
-        if described.any():     # share of the product's attributes that the last viewed product has too
+        if described.any():     # share of the product's attributes that the last viewed product has too…
             x[described, F["recent_attr"]] = (attrs[described] @ cat.attr[last]) / n_attrs[described]
+            shared = (attrs[described] @ cat.attr[r].T) / n_attrs[described][:, None]     # …and each recent view
+            x[described, F["recent_attr_max"]] = shared.max(axis=1)
+            x[described, F["recent_attr_mean"]] = shared.mean(axis=1)
 
     u = shopper or NOBODY
     n_sub = len(cat.sub_names)
@@ -258,6 +268,20 @@ def featurize(cat: Catalog, shopper: Shopper | None, page: int, device: int, reg
         rank = np.full(n_sub, np.nan)   # 1 = the subcategory this shopper buys most from
         rank[subs[np.argsort(-counts, kind="stable")]] = np.arange(1, len(subs) + 1)
         x[:, F["u_sub_rank"]] = rank[sub]
+        brands = {b: c for b, c in dict(u.brand_purch).items() if b < len(cat.brand_names)}
+        if brands:
+            brand_purch = np.zeros(len(cat.brand_names))
+            brand_purch[list(brands)] = list(brands.values())
+            x[:, F["u_brand_purch"]] = brand_purch[cat.brand[idx]] / total
+            x[:, F["u_brand_purch_n"]] = np.log1p(brand_purch[cat.brand[idx]])
+    if u.carts:
+        in_cart = {s: c for s, c in dict(u.sub_carts).items() if s < n_sub}
+        if in_cart:
+            sub_carts = np.zeros(n_sub)
+            sub_carts[list(in_cart)] = list(in_cart.values())
+            cat_carts = np.bincount(cat.sub_cat, weights=sub_carts, minlength=len(cat.cat_names))
+            x[:, F["u_sub_cart"]] = sub_carts[sub] / u.carts
+            x[:, F["u_cat_cart"]] = cat_carts[catg] / u.carts
     if u.sub_bought:
         owned = dict(u.sub_bought)
         sub_owned = np.zeros(n_sub)

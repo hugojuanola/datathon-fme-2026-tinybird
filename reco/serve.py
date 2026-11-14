@@ -28,14 +28,16 @@ import threading
 import time
 import zlib
 
-from reco.priority import foreground
+from reco.priority import foreground, stay_awake
 from reco.rawtree import LOGS, ROOT, insert, query
 from reco.recommend import Ranker, is_valid, recommend, safe_list
 from reco.state import State
 
 # (model_version written with each answer and shown on the public leaderboard, policy, ranker in models/,
-#  % of the traffic)
-ARMS = (("skore_money_v5", "model", "v5", 30), ("skore_money_v8", "model", "v8", 60), ("skore_money_v8_explore", "explore", "v8", 10))
+#  how much of a live trend to apply (0 = ignore trends: see recommend), % of the traffic).
+#  A ranker "A|B" routes by kind of request: A answers the cold ones (see is_cold), B the rest.
+ARMS = (("skore_money_v11", "model", "v9w|v9", 0.0, 33), ("skore_money_v14", "model", "v9w|v9", 1.0, 34),
+        ("skore_money_v13", "model", "v9w|v10", 0.0, 33))
 POLLERS = 4
 POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
 SENDERS = 4
@@ -47,30 +49,47 @@ NEW_REQUESTS = """
 SELECT request_id::String AS id, toUnixTimestamp64Milli(ts::DateTime64(3)) AS ts_ms, user_id::String AS user,
        context.page::String AS page, context.device::String AS device, context.region::String AS region,
        arrayMap(v -> v.product_id::String, recent_views::Array(JSON)) AS rv,
-       toUnixTimestamp64Milli(now64(3)) AS now_ms
+       is_new_user::Bool AS is_new, toUnixTimestamp64Milli(now64(3)) AS now_ms
 FROM shop.requests
 WHERE ts > now64(3) - INTERVAL 4 SECOND
 ORDER BY ts"""
 
 
-def arm_of(request_id: str) -> tuple[str, str, str]:
+def arm_of(request_id: str) -> tuple[str, str, str, float]:
     """Deterministic split on the request id, so every variant sees the same kind of traffic."""
     bucket = zlib.crc32(b"arm:" + request_id.encode()) % 100
-    for version, policy, ranker, share in ARMS:
+    for version, policy, ranker, trend, share in ARMS:
         bucket -= share
         if bucket < 0:
-            return version, policy, ranker
-    return ARMS[0][:3]
+            return version, policy, ranker, trend
+    return ARMS[0][:4]
+
+
+def is_cold(state: State, req: dict) -> bool:
+    """The organisers' definition of a cold request: a new shopper, or a product added during the event among
+    the recent views. These are the requests the old carousel log knows nothing about."""
+    if str(req.get("is_new")).lower() in ("true", "1"):
+        return True
+    cat = state.catalog
+    return any(bool(cat.is_new[cat.pos[p]]) for p in req["rv"] if p in cat.pos)
 
 
 def answer(state: State, rankers: dict[str, Ranker], req: dict) -> tuple[dict, dict]:
     """One submission row and one log row for a request. Never raises, never returns an invalid list."""
-    version, policy, name = arm_of(req["id"])
+    version, policy, name, trend = arm_of(req["id"])
+    cold = None
+    if "|" in name:
+        try:
+            cold = is_cold(state, req)
+        except Exception as e:
+            print(f"is_cold failed for {req['id']}: {str(e)[:200]}", flush=True)
+            cold = False
+        name = name.split("|")[0 if cold else 1]
     ranker = rankers.get(name)
     items: list[str] = []
     for attempt in ([policy, "rules"] if policy != "rules" and ranker else ["rules"]):
         try:
-            items, why = recommend(state, ranker, req, attempt)
+            items, why = recommend(state, ranker, req, attempt, trend=trend)
             if is_valid(state, items):
                 policy = attempt
                 break
@@ -80,9 +99,33 @@ def answer(state: State, rankers: dict[str, Ranker], req: dict) -> tuple[dict, d
             items = []
     if not items:
         items, why, policy = safe_list(state), ["safe"] * 10, "safe"
-    return ({"request_id": req["id"], "items": items, "model_version": version},
-            {"kind": "served", "request_id": req["id"], "ts_ms": req["ts_ms"], "user_id": req["user"],
-             "model_version": version, "policy": policy, "items": items, "tiers": why})
+    log = {"kind": "served", "request_id": req["id"], "ts_ms": req["ts_ms"], "user_id": req["user"],
+           "model_version": version, "policy": policy, "ranker": name, "cold": cold, "items": items, "tiers": why}
+    trending = state.trend
+    if trending:    # what the detector saw when this request was answered, whether or not this arm used it
+        names = state.catalog.sub_names
+        log["trending"] = {names[s]: round(v, 1) for s, v in trending.items() if s < len(names)}
+    return {"request_id": req["id"], "items": items, "model_version": version}, log
+
+
+def selftest(state: State, rankers: dict[str, Ranker]) -> None:
+    """Before taking over: every arm answers a few real requests, as things are and with a made-up trend."""
+    try:
+        rows = query(NEW_REQUESTS, timeout=5)[:12]
+        cat = state.catalog
+        fake = {int(max(cat.by_sub, key=lambda s: len(cat.by_sub[s]))): 5.0}
+        for version, policy, name, trend, _ in ARMS:
+            for label, trending in (("live trend", None), ("made-up trend", fake)):
+                valid = shown = 0
+                for r in rows:
+                    ranker = rankers.get(name.split("|")[0 if is_cold(state, r) else -1])
+                    items, why = recommend(state, ranker, r, policy if ranker else "rules", trend=trend, trending=trending)
+                    valid += is_valid(state, items)
+                    shown += why.count("t")
+                print(f"selftest {version} ({label}): {valid}/{len(rows)} valid lists, {shown} trending products shown",
+                      flush=True)
+    except Exception as e:
+        print(f"selftest failed: {str(e)[:300]}", flush=True)
 
 
 def poller(out: queue.Queue, offset: float) -> None:
@@ -153,13 +196,15 @@ def log_writer(q: queue.Queue, dry: bool) -> None:
 def main() -> None:
     dry, standby = "--dry" in sys.argv, "--standby" in sys.argv
     foreground()
+    stay_awake()
     LOGS.mkdir(parents=True, exist_ok=True)
     go = LOGS / "GO"
     go.unlink(missing_ok=True)
     rankers: dict[str, Ranker] = {}
-    for name in sorted({arm[2] for arm in ARMS if arm[1] != "rules"}):
+    for name in sorted({part for arm in ARMS if arm[1] != "rules" for part in arm[2].split("|")}):
         try:
-            rankers[name] = Ranker(ROOT / "models" / name)
+            folder, _, mode = name.partition("@")       # "v8@click" = models/v8, ranking by P(click) alone
+            rankers[name] = Ranker(ROOT / "models" / folder, click_only=mode == "click")
         except Exception as e:  # no model, or a stale one: that arm falls back to the rules
             print(f"ranker {name} unavailable ({str(e)[:200]}): its arms use the rules", flush=True)
     state = State()
@@ -167,6 +212,7 @@ def main() -> None:
     state.load()
     state.start()
     if standby:
+        selftest(state, rankers)
         print(f"standby: ready, waiting for {go}", flush=True)
         while not go.exists():
             time.sleep(0.05)
@@ -189,7 +235,7 @@ def main() -> None:
     rank_ms: list[float] = []
     poll_ms: list[float] = []
     report_at = time.time() + 30
-    print(f"serving {[f'{v} {share}%' for v, _, _, share in ARMS]} with rankers {sorted(rankers)} "
+    print(f"serving {[f'{v} {share}%' + (f' trend^{t:g}' if t else '') for v, _, _, t, share in ARMS]} with rankers {sorted(rankers)} "
           f"({'DRY RUN' if dry else 'LIVE'})", flush=True)
     while True:
         try:

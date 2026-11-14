@@ -153,6 +153,32 @@ def main() -> None:
     print("share of impressions that are products added during the event:")
     print((100 * e.groupby("mv").new_product.mean()).round(1).to_string(), "\n")
 
+    if "--bands" in sys.argv:   # does each arm sell what the levers promise, and how varied are its lists?
+        k = known[known.aff.notna()].copy()
+        k["band"] = pd.cut(k.aff, [0, 1.0, 1.25, 1.75, 99], labels=["under 1.0", "1.0-1.25", "1.25-1.75", "over 1.75"])
+        t = k.groupby(["mv", "band"], observed=True).agg(impressions=("b", "size"), buys=("b", "sum"), mean_slot=("slot", "mean"))
+        t["buy_pct"] = (100 * t.buys / t.impressions).round(3)
+        t["mean_slot"] = t.mean_slot.round(1)
+        print("known shoppers, products not bought — purchases per impression by attribute-affinity band, per arm:")
+        print(t[t.impressions >= 300].to_string(), "\n")
+        v = e[e.shared.notna()]
+        t = v.groupby(["mv", v.is_new.map({True: "new", False: "known"}), "shared"]).agg(impressions=("b", "size"), buys=("b", "sum"))
+        t["buy_pct"] = (100 * t.buys / t.impressions).round(3)
+        print("requests with a recent view — purchases per impression by attributes shared with the last view, per arm:")
+        print(t[t.impressions >= 300].to_string(), "\n")
+        d["n_sub"] = d.shown.map(lambda a: len({sub.get(i) for i in a}))
+        d["n_pair"] = d.shown.map(lambda a: len({tuple(pa.get(i, [])) for i in a}))
+        div = d.groupby(["mv", d.is_new.map({True: "new", False: "known"})]).agg(
+            requests=("buy", "size"), subcategories_in_list=("n_sub", "mean"), attribute_pairs_in_list=("n_pair", "mean")).round(2)
+        print("variety of the lists (mean distinct subcategories / attribute pairs among the 10 products):")
+        print(div[div.requests >= 100].to_string(), "\n")
+        kd = d[~d.is_new & ~d.mv.str.contains("v5|v6")].copy()
+        kd["variety"] = pd.cut(kd.n_sub, [0, 3, 5, 7, 10], labels=["1-3 subcategories", "4-5", "6-7", "8-10"])
+        t = kd.groupby("variety", observed=True).agg(requests=("buy", "size"), buys=("buy", "sum"))
+        t["conv_pct"] = (100 * t.buys / t.requests).round(2)
+        print("known shoppers, attribute models and their exploration arms — conversion by variety of the list:")
+        print(t.to_string(), "\n")
+
     if "--brand" in sys.argv:   # is brand history just a stand-in for attribute affinity?
         k = known[known.aff.notna() & ~known.mv.str.contains("explore")].copy()
         rate = k.groupby("slot").b.mean()
