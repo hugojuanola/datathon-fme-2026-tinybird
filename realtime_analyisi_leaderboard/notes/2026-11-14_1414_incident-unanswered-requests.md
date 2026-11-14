@@ -30,3 +30,16 @@ started, so an earlier job (dataset build or training) had the same effect. It r
 3. Keep models, parquet files and logs outside the OneDrive folder, or pause OneDrive during the final.
 4. Alarm on the loop time: a line in the log (and in `tick.py`) when it exceeds one second.
 5. The leaderboard's `on_time` covers one hour, so a restart or a stall shows for an hour: plan restarts.
+
+## Update, 14:45 CET — root cause and fix, from the session that owns the server
+
+The stall lasted until about 14:31 CET. Two causes: (1) a dry run and a test script that loaded the state with
+heavy RawTree aggregations and scored the 5,100 products on all cores; (2) OneDrive uploading about 550 MB of
+exports and logs written inside the repository, over an uplink of roughly 100 KB/s. Fixed in commit `ffad8c3`:
+data and logs now live outside the repository (`SKORE_DATA_DIR`, `SKORE_LOGS_DIR` in `.env`), the server starts
+from a local cache and journal instead of heavy SQL, a new server takes over with `--standby`, offline scripts
+lower their priority and the server raises its own. Since 14:35 CET: p50 1.05 s, p95 1.4 s, no unanswered
+requests apart from the 38 lost in the switch to v5.
+
+On the analysis side: the EDA cache moved out of the repository as well, and `tick.py` no longer scans
+`shop.history_events`.
