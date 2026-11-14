@@ -36,7 +36,10 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`starter/`](starter/) | Official starter kit, unmodified: baseline loop, SQL examples, offline-eval notebook |
 | [`scripts/rt.py`](scripts/rt.py) | Run SQL against RawTree from the shell (stdlib, read-only by default) |
 | [`scripts/leaderboard.py`](scripts/leaderboard.py) | Print the public leaderboard |
-| [`queries/`](queries/) | Our reusable SQL (`health.sql`: is the live system healthy?) |
+| [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (live state from RawTree), `recommend.py` (ranking policy), `rawtree.py` (client) |
+| [`offline/`](offline/) | Offline work: `pull_data.py` exports the history to `data/` (git-ignored) |
+| [`docs/findings.md`](docs/findings.md) | What drives a purchase, measured: the evidence behind the ranking policy |
+| [`queries/`](queries/) | Our reusable SQL: `health.sql` (is the live system healthy?), `variants.sql` (A/B by `model_version`), `tiers.sql` (which ranking tier sells) |
 | `.env` | `TEAM_ID` and `RAWTREE_API_KEY`. **Git-ignored. Not in the repo.** Template: [`.env.example`](.env.example) |
 
 ## Setup and everyday commands
@@ -48,7 +51,9 @@ python3 scripts/rt.py "SELECT count() FROM shop.requests"                 # any 
 python3 scripts/rt.py -f queries/health.sql --stats                       # from a file, with rows/bytes read
 python3 scripts/leaderboard.py                                            # where we stand
 
-uv run --with requests python starter/recommender.py                      # run the official baseline live
+python -m venv .venv && .venv/Scripts/pip install requests numpy pandas pyarrow duckdb lightgbm scikit-learn
+.venv/Scripts/python -m reco.serve --dry                                  # our recommender, printing instead of inserting
+.venv/Scripts/python -u -m reco.serve >> logs/serve.log 2>&1              # our recommender, LIVE (one instance only)
 ```
 
 Is the system healthy? (last 10 minutes of our feedback: who served, conversion, latency)
@@ -129,6 +134,10 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 12:30 CET: this repo contains the ingested context, the unmodified starter kit and
-two helper scripts. **No recommender of ours exists yet and nothing is running**, so `team_06` is currently
-served 100% by the fallback (0% on time on the leaderboard). Update this section when that changes.
+As of Sat 14 Nov 2026 13:30 CET (branch `javier`): **`reco/serve.py` v1 is running live** from Javier's
+laptop (started 13:24 CET), answering every request in ≈1 s. It is a rule cascade — products just viewed,
+then products carted but never bought, then a popularity fill — with a three-way A/B on the fill
+(`model_version` `v1s` / `v1c` / `v1g`). The measurements behind it are in [`docs/findings.md`](docs/findings.md).
+Next: a learned ranker for the fill, validated offline on `data/` (`python -m offline.pull_data`).
+Only one `reco.serve` may run at a time (rule 4): check `queries/health.sql` before starting another.
+Update this section when that changes.
