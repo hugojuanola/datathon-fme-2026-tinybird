@@ -8,6 +8,9 @@ session (realtime_analyisi_leaderboard/history.csv), and writes them as one Java
 index.html loads. Run it once the final ranking is published (Sun 12:00 CET) and the "where we stand"
 slide shows the final round instead of the practice round.
 
+It also rebuilds the public board of the practice round every 5 minutes (the API serves any window: about
+290 small requests, a minute) to say since when we lead it and for how long we did not: `lead` in data.js.
+
 While the final is running the leaderboard hides every metric: the script then leaves data.js untouched.
 """
 from __future__ import annotations
@@ -16,7 +19,9 @@ import csv
 import json
 import os
 import sys
+import time
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -25,6 +30,7 @@ HERE = Path(__file__).resolve().parent
 HISTORY = HERE.parent / "realtime_analyisi_leaderboard" / "history.csv"
 TEAM = os.environ.get("TEAM_ID", "team_06")
 KEEP = ("conversion", "cold_conversion", "on_time", "revenue_per_request", "model_version")
+BOARD_WINDOW = 3600     # the public board ranks on the last hour
 
 
 def row(team: dict) -> dict:
@@ -44,9 +50,57 @@ def trend() -> list[list[float]]:
     return [points[t] for t in sorted(points)]
 
 
+def fetch(query: str = "") -> dict:
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(URL + query, headers={"User-Agent": "deck"}), timeout=40) as r:
+                return json.load(r)
+        except OSError:
+            if attempt == 2:
+                raise
+            time.sleep(1 + attempt)
+
+
+def lead(state: dict) -> dict:
+    """Since when we lead the public board of the practice round, and for how long we did not since then.
+
+    The board as it was at every step (5 minutes) of the practice round: the last hour up to that moment, in
+    the organisers' own order. `since` is the first of those moments with us on top.
+    """
+    start, step = int(state["practice_start"]), int(state["limits"]["step"])
+    end = min(int(time.time()), int(state["final_start"]))
+    moments = list(range(start + int(state["limits"]["min"]), end + 1, step))
+
+    def place(t: int) -> int | None:
+        begin = max(start, t - BOARD_WINDOW)
+        board = fetch(f"?from={begin}&to={t}")
+        if [round(x) for x in board.get("window") or []] != [begin, t]:
+            raise ValueError(f"the API did not serve the window ending at {t}")
+        ids = [team.get("team_id") for team in board.get("teams") or []]
+        return ids.index(TEAM) + 1 if TEAM in ids else None
+
+    with ThreadPoolExecutor(3) as pool:
+        places = list(pool.map(place, moments))
+    first = places.index(1)                                   # ValueError if we never led: no `lead` then
+    after = places[first:]
+    return {
+        "since": moments[first],
+        "until": moments[-1],
+        "minutes_not_first": sum(p != 1 for p in after) * step // 60,
+        "minutes_off_podium": sum(p is None or p > 3 for p in after) * step // 60,
+    }
+
+
+def previous_lead() -> dict | None:
+    try:
+        text = (HERE / "data.js").read_text(encoding="utf-8")
+        return json.loads(text[text.index("{"):text.rindex("}") + 1]).get("lead")
+    except (OSError, ValueError):
+        return None
+
+
 def main() -> None:
-    with urllib.request.urlopen(urllib.request.Request(URL, headers={"User-Agent": "deck"}), timeout=20) as r:
-        state = json.load(r)
+    state = fetch()
     teams = state.get("teams", [])
     rank = next((i for i, t in enumerate(teams) if t.get("team_id") == TEAM), None)
     if rank is None or teams[rank].get("conversion") is None:
@@ -67,12 +121,21 @@ def main() -> None:
         "baseline": row(state["baseline"]),
         "history": history,
     }
+    try:
+        data["lead"] = lead(state)
+    except (OSError, ValueError, KeyError) as e:      # e.g. after the final, if the API no longer serves the practice
+        data["lead"] = previous_lead()
+        print(f"lead: not recomputed ({e}); kept the one already in data.js", file=sys.stderr)
     (HERE / "data.js").write_text(
         "// Written by update_data.py from the public leaderboard. Do not edit by hand.\n"
         f"window.DECK_DATA = {json.dumps(data, indent=1)};\n", encoding="utf-8")
     print(f"data.js: mode={data['mode']} rank={data['rank']}/{data['teams']} "
           f"conversion={data['team']['conversion']:.2f} (reference {data['reference']['conversion']:.2f}, "
           f"baseline {data['baseline']['conversion']:.2f}), {len(history)} trend points")
+    if data["lead"]:
+        at = lambda t: datetime.fromtimestamp(t, timezone.utc).strftime("%a %H:%M UTC")
+        print(f"lead: first since {at(data['lead']['since'])} (up to {at(data['lead']['until'])}), "
+              f"except {data['lead']['minutes_not_first']} min; off the podium {data['lead']['minutes_off_podium']} min")
 
 
 if __name__ == "__main__":

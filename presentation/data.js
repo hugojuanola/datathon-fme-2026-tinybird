@@ -1,44 +1,44 @@
 // Written by update_data.py from the public leaderboard. Do not edit by hand.
 window.DECK_DATA = {
  "mode": "practice",
- "updated_at": 1794683456,
+ "updated_at": 1794698356,
  "rank": 1,
  "teams": 42,
  "team": {
-  "conversion": 2.007082331079013,
-  "cold_conversion": 2.6485660764816688,
-  "on_time": 93.20415353235676,
-  "revenue_per_request": 1.0758542052227045,
-  "model_version": "skore_money_v28"
+  "conversion": 2.242388481495022,
+  "cold_conversion": 2.8433792715825614,
+  "on_time": 99.79605080189117,
+  "revenue_per_request": 1.213077351842145,
+  "model_version": "skore_money_v36"
  },
  "rivals": [
   {
-   "conversion": 1.78799377189949,
-   "cold_conversion": 2.3231529363142953,
-   "on_time": 99.15631374003338,
-   "revenue_per_request": 0.9895910068262194,
-   "model_version": "v2r1-buy-nb"
+   "conversion": 2.132864451507414,
+   "cold_conversion": 2.723137590888824,
+   "on_time": 98.22007972559562,
+   "revenue_per_request": 1.2471401673859774,
+   "model_version": "transformada-neta-trend"
   },
   {
-   "conversion": 1.7780501713233396,
-   "cold_conversion": 2.35082993638627,
-   "on_time": 99.62914889671796,
-   "revenue_per_request": 0.9697020803998516,
-   "model_version": "me15cb"
+   "conversion": 2.0392767804619396,
+   "cold_conversion": 2.6010076847886037,
+   "on_time": 99.91656623713729,
+   "revenue_per_request": 1.0494409894902437,
+   "model_version": "v3r5g-buy-nb"
   }
  ],
  "reference": {
-  "conversion": 1.879938597705411,
-  "cold_conversion": 1.6958840793013055,
+  "conversion": 1.9644672096223077,
+  "cold_conversion": 1.84994347403169,
   "on_time": 100,
-  "revenue_per_request": 0.8732371454220598,
+  "revenue_per_request": 0.975763601302393,
   "model_version": ""
  },
  "baseline": {
-  "conversion": 0.5033046181407321,
-  "cold_conversion": 0.799269668579261,
+  "conversion": 0.5320804759098988,
+  "cold_conversion": 0.8334062762085666,
   "on_time": 100,
-  "revenue_per_request": 0.16754795145714496,
+  "revenue_per_request": 0.09834837323905171,
   "model_version": ""
  },
  "history": [
@@ -139,10 +139,52 @@ window.DECK_DATA = {
    0.4533
   ],
   [
-   1794683456,
-   2.007082331079013,
-   1.879938597705411,
-   0.5033046181407321
+   1794684120,
+   2.0849,
+   1.9633,
+   0.5628
+  ],
+  [
+   1794685560,
+   2.2526,
+   2.0697,
+   0.6774
+  ],
+  [
+   1794687420,
+   2.5344,
+   2.1405,
+   0.5997
+  ],
+  [
+   1794689640,
+   2.3534,
+   2.0149,
+   0.516
+  ],
+  [
+   1794691680,
+   2.2698,
+   2.0123,
+   0.5531
+  ],
+  [
+   1794694860,
+   2.1729,
+   1.9379,
+   0.5929
+  ],
+  [
+   1794698356,
+   2.242388481495022,
+   1.9644672096223077,
+   0.5320804759098988
   ]
- ]
+ ],
+ "lead": {
+  "since": 1794661800,
+  "until": 1794698400,
+  "minutes_not_first": 20,
+  "minutes_off_podium": 0
+ }
 };

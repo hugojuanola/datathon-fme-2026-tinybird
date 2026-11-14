@@ -1,8 +1,8 @@
 # RawTree visual identity — reference for the jury deck
 
 The deck follows **RawTree's slide template**: the one the organisers' own challenge deck is built on. The
-cover and the closing slide carry the collaboration lockup, Tinybird × RawTree, because RawTree is Tinybird's
-product and Tinybird presents the challenge.
+cover and the closing slide carry both logos, Tinybird and RawTree, parted by a thin rule: RawTree is
+Tinybird's product and Tinybird presents the challenge.
 
 Measured on **14 Nov 2026**. Nothing here is from memory; anything not read directly from a file is marked
 **inferred**. Sources, cited below by letter:
@@ -31,7 +31,7 @@ Type scale of the template at 1920 px (**S** `:root`, "only these sizes"): 128 /
 
 | Element | Template value (**S**) | In our deck |
 |---|---|---|
-| Slide title | Geist 400, 75 px (`3.889cqw`), line-height 1.12, tracking 0, colour `#25283d` (`.sheet--tpl .title`) | the same |
+| Slide title | Geist 400, 75 px (`3.889cqw`), line-height 1.12, tracking 0, colour `#25283d` (`.sheet--tpl .title`) | the same size and colour, but **weight 500, tracking −0.035em**: the team found regular weight too plain at this size. Cover title and "Gracias." in 600 |
 | Emphasis | upright, regular, brand blue (`.sub em`); the template never bolds or highlights a title | `h1 em` in `--accent` |
 | Subtitle | 40 px, line-height 1.35, tracking −0.01em, warm grey `#777169` (`.sub`) | `.lead` |
 | Kicker (top left) | Geist Mono 24 px, line-height 1.3, **sentence case**, `--accent` (`.kicker`) | `.kick` |
@@ -111,8 +111,9 @@ Every bar and line end carries its value as text, so no series depends on colour
 The RawTree lockup has no wordmark file: the template and rawtree.com both set **"RawTree" in Geist 600,
 tracking −0.025em**, beside the symbol (symbol 40 px wide for 32 px text, gap 11.5 px: **S** `.logo`).
 
-The collaboration lockup, `tinybird × RawTree`, is ours: both marks in the same ink at the same optical
-height, a light `×` in `--muted` between them, used on the cover and on the closing slide. Every other slide
+The double lockup, `tinybird | RawTree`, is ours: both marks in the same ink at the same optical
+height, a thin vertical rule in `--muted` between them (not a `×`: the two are one company, not a
+collaboration), used on the cover and on the closing slide. Every other slide
 carries the RawTree logo bottom-left, as the template does.
 
 Neither company publishes brand guidelines (`/brand`, `/press` and similar return 404 on tinybird.co), so
@@ -142,4 +143,4 @@ navy ink, hairlines instead of boxes, dark terminal windows.
 - The organisers' CSS mentions a Figma file "BRAND-REVAMP-2026" (a hexagon logo, a pixelated hummingbird) for
   Tinybird; neither appears on the live site, so a newer Tinybird identity may exist.
 - Sizes marked "in our deck" that differ from the template (figures at 112–240 px, counter at 18 px) are our
-  choices for a projector, not template values.
+  choices for a projector, not template values. So are the heavier, tighter titles (500 / 600 instead of 400).
