@@ -40,7 +40,6 @@ LIFT_CART_SAME = 2.2     # carted, never bought, session's category  (live: 0.58
 LIFT_VIEWED = 3.0        # in this session's recent views            (live A/B: ×3 beat ×1.5, ×10 and ×30)
 LIFT_BOUGHT_SUB = 5.0    # retrieval only: the shopper bought in that subcategory before (live: 5.6× with
 LIFT_BOUGHT_SUB_3 = 10.0 # 1-2 purchases, 14× with 3+). The model decides how much it is really worth.
-LIFT_BOUGHT_BRAND = 2.0  # retrieval only: the shopper bought that brand before (live: 2.2-2.5×)
 CANDIDATES = 1000        # products handed from the rules to the model
 LIFT_SHARED_ATTR = (1.0, 2.0, 4.5)   # retrieval only: 0 / 1 / 2 description attributes shared with the last
                                      # viewed product (live, slot-adjusted: 0.75 / 1.7 / 4.3 of the average)
@@ -97,8 +96,6 @@ def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrie
         for sub, n in list(shopper.sub_purch.items()):
             if sub in cat.by_sub:
                 score[cat.by_sub[sub]] *= LIFT_BOUGHT_SUB_3 if n >= 3 else LIFT_BOUGHT_SUB
-        if shopper.brand_purch:
-            score[np.isin(cat.brand, list(shopper.brand_purch))] *= LIFT_BOUGHT_BRAND
     if retrieval and shopper and cat.attr.shape[1]:
         # products whose description attributes the shopper goes for (purchases and carts count fully,
         # views a quarter): works from the first few events of a brand-new shopper

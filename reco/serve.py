@@ -35,7 +35,7 @@ from reco.state import State
 
 # (model_version written with each answer and shown on the public leaderboard, policy, ranker in models/,
 #  % of the traffic)
-ARMS = (("skore_money_v5", "model", "v5", 30), ("skore_money_v7", "model", "v7", 60), ("skore_money_v7_explore", "explore", "v7", 10))
+ARMS = (("skore_money_v5", "model", "v5", 30), ("skore_money_v8", "model", "v8", 60), ("skore_money_v8_explore", "explore", "v8", 10))
 POLLERS = 4
 POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
 SENDERS = 4

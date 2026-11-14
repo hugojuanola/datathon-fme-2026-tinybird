@@ -30,8 +30,7 @@ FEATURES = [
     "recent_sub_frac", "recent_cat_frac", "dprice_last", "dprice_recent", "recent_new", "recent_attr",
     # how it matches this shopper
     "u_views", "u_purch", "u_buy_rate", "u_cat_view", "u_cat_purch", "u_sub_view", "u_sub_purch",
-    "u_sub_purch_n", "u_sub_rank", "u_sub_bought_frac", "u_brand_purch", "u_brand_purch_n",
-    "u_attr_p", "u_attr_p_lo", "u_attr_c", "u_attr_c_lo", "u_attr_v", "u_attr_v_lo",
+    "u_sub_purch_n", "u_sub_rank", "u_sub_bought_frac", "u_attr_p", "u_attr_p_lo", "u_attr_c", "u_attr_c_lo", "u_attr_v", "u_attr_v_lo",
     "u_bought_n",
     "u_carted", "u_cart_age", "u_n_carted", "u_dprice",
     # context
@@ -151,7 +150,9 @@ class Shopper:
     sub_views: dict[int, int] = field(default_factory=dict)
     sub_purch: dict[int, int] = field(default_factory=dict)
     sub_bought: dict[int, int] = field(default_factory=dict)   # distinct products bought per subcategory
-    brand_purch: dict[int, int] = field(default_factory=dict)  # purchases per brand id
+    brand_purch: dict[int, int] = field(default_factory=dict)  # purchases per brand id. Not a model feature:
+    # inside a subcategory the brands a shopper bought say nothing about what they buy next (AUC 0.498) and
+    # the two brand features made the ranker worse on held-out feedback; kept only for analysis
     attr_purch: dict[int, int] = field(default_factory=dict)   # purchases per description attribute id
     attr_cart: dict[int, int] = field(default_factory=dict)    # carts per attribute id
     attr_view: dict[int, int] = field(default_factory=dict)    # views per attribute id
@@ -257,13 +258,6 @@ def featurize(cat: Catalog, shopper: Shopper | None, page: int, device: int, reg
         rank = np.full(n_sub, np.nan)   # 1 = the subcategory this shopper buys most from
         rank[subs[np.argsort(-counts, kind="stable")]] = np.arange(1, len(subs) + 1)
         x[:, F["u_sub_rank"]] = rank[sub]
-        brands = dict(u.brand_purch)
-        if brands:
-            brand_purch = np.zeros(len(cat.brand_names))
-            brand_purch[list(brands)] = list(brands.values())
-            mine = brand_purch[cat.brand[idx]]
-            x[:, F["u_brand_purch"]] = mine / total
-            x[:, F["u_brand_purch_n"]] = np.log1p(mine)
     if u.sub_bought:
         owned = dict(u.sub_bought)
         sub_owned = np.zeros(n_sub)

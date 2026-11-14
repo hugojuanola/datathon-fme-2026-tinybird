@@ -162,11 +162,12 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 As of Sat 14 Nov 2026 16:15 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
 answering in about 1.0 s (p95 about 1.5 s) when the connection is quiet. Arms, tagged in `model_version`:
 
-- `skore_money_v7`, 60 % — the current best ranker (`models/v7`): the rules retrieve 1,000 candidates, two
-  LightGBM models rank them by `P(click) x P(purchase | click)` over the 50 features of `reco/features.py`.
-  Its main addition is the shopper's taste for the **attributes in the product descriptions**.
-- `skore_money_v5`, 30 % — the previous ranker (`models/v5`), kept as the control of the A/B.
-- `skore_money_v7_explore`, 10 % — v7's list with the top 4 shuffled and 6 of its ranks 5-14: clean data to
+- `skore_money_v8`, 60 % — the current best ranker (`models/v8`, reproducible with `python -m offline.train v8`):
+  the rules retrieve 1,000 candidates, two LightGBM models rank them by `P(click) x P(purchase | click)` over
+  the 48 features of `reco/features.py`. Its main ingredient is the shopper's taste for the **attributes in
+  the product descriptions** (findings 13).
+- `skore_money_v5`, 30 % — the first ranker (`models/v5`), kept as the control of the A/B.
+- `skore_money_v8_explore`, 10 % — v8's list with the top 4 shuffled and 6 of its ranks 5-14: clean data to
   train and judge the next model. **Practice round only: set it to 0 before the final.**
 
 Every arm blocks products the shopper already bought and products out of stock. Evidence for every piece,
@@ -175,7 +176,7 @@ A second session writes a live read of the leaderboard and of each arm (new vs k
 [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
 Where we stand (16:00 CET): rank 1 of the teams, conversion 1.68 vs 2.17 for the organisers' reference;
-v7 was validated offline only minutes before this note, so its live effect is not measured yet.
+v8 was validated offline only minutes before this note, so its live effect is not measured yet.
 
 Open for the final: (1) where the server runs — the laptop's home connection lost answers whenever anything
 else used it (rule 9); (2) exploration off; (3) retrain on all data once the last A/B is read.
