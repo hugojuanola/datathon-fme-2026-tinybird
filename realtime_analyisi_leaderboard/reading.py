@@ -9,10 +9,19 @@ Stdlib only. The section is generated: findings and their interpretation live in
 from __future__ import annotations
 
 import csv
+import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+MODEL_PATHS = ["reco", "offline", "docs/findings.md"]   # where the architecture and the model live
+
+
+def git(*args: str) -> str:
+    try:
+        return subprocess.run(["git", *args], cwd=HERE.parent, capture_output=True, text=True, timeout=20).stdout.strip()
+    except Exception:
+        return ""
 
 
 def num(row: dict, key: str) -> float | None:
@@ -47,6 +56,13 @@ def main() -> None:
     lines.append(f"- **Our own feedback, {last['window']}**: {served:.1f}% of requests answered by us, p95 {p95:.0f} ms; "
                  f"new shoppers {num(last, 'new_conv_pct'):.2f}% ({last['new_requests']} requests), "
                  f"known shoppers {num(last, 'known_conv_pct'):.2f}% ({last['known_requests']}).")
+    # which code produced these numbers: the last commit that touched the model, and anything not committed yet
+    head = git("log", "-1", "--format=%h — %s (%cd)", "--date=format:%H:%M", "--", *MODEL_PATHS)
+    dirty = [ln[3:] for ln in git("status", "--porcelain", "--", *MODEL_PATHS).splitlines() if ln.strip()]
+    unpushed = git("log", "origin/javier..HEAD", "--oneline", "--", *MODEL_PATHS).splitlines()
+    lines.append(f"- **Architecture and model in the repository**: last commit on `reco/`, `offline/` or the findings: `{head}`. "
+                 + ("Everything there is committed" if not dirty else "Not committed yet: " + ", ".join(f"`{d}`" for d in dirty))
+                 + ("; all of it is pushed." if not unpushed else f"; {len(unpushed)} model commit(s) waiting for this tick's push."))
     lines.append("- Per-arm numbers of this tick: [`latest.md`](latest.md). Every earlier tick: [`history.csv`](history.csv).")
     lines += ["", ""]
     readme = HERE / "README.md"
