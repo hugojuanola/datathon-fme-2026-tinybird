@@ -48,6 +48,18 @@ WHAT = {  # what each version is, in one line (details: docs/findings.md)
 }
 
 
+RANKER = {  # the ranker spec each version uses in `reco/serve.py` ("a|b" = a for cold requests, b for the rest)
+    "skore_money_v5": "v5", "skore_money_v8": "v8", "skore_money_v9": "v9", "skore_money_v9w": "v9w",
+    "skore_money_v11": "v9w|v9", "skore_money_v13": "v9w|v10", "skore_money_v14": "v9w|v9", "skore_money_v15": "v9w|v9",
+    "skore_money_v21": "v9", "skore_money_v22": "v9", "skore_money_v23": "v9w|v9", "skore_money_v24": "v9w|v9",
+    "skore_money_v25": "v16", "skore_money_v26": "v16", "skore_money_v27": "v16w|v16", "skore_money_v28": "v16w|v16",
+}
+TONIGHT = ("**Being measured against the record** (live since 17:44:57 UTC on 14 Nov): `skore_money_v21`–`v28` = "
+           "{v9, v9w cold | v9 warm, v16, v16w cold | v16 warm} × {trend lift off, on at ^0.75}. `v21` / `v22` are v9 itself, so the "
+           "record's own number keeps growing under those two names; `v25` / `v26` are v16 (retrained on all of Saturday, 57 "
+           "features, real prices). Read the night with `python scripts/arms.py 17:45 07:30` on Sunday morning.")
+
+
 def fetch(start: int, end: int) -> dict:
     req = urllib.request.Request(f"{URL}?by=model&from={start}&to={end}", headers={"User-Agent": "datathon-agent/best_model.py"})
     with urllib.request.urlopen(req, timeout=30) as r:
@@ -84,7 +96,8 @@ def window(start: int, end: int, me: str) -> dict:
             s["cold_n"] += cold
             s["cold_buys"] += cold * (v.get("cold_conversion") or 0.0)
             s["eur"] += req * (v.get("revenue_per_request") or 0.0)
-            s["first"], s["last"] = min(s["first"], v.get("first") or s["first"]), max(s["last"], v.get("last") or 0.0)
+            # a version that crosses a piece boundary may come without its first/last there: fall back to the piece's ends
+            s["first"], s["last"] = min(s["first"], v.get("first") or key[0]), max(s["last"], v.get("last") or key[1])
     return out
 
 
@@ -172,6 +185,13 @@ def main() -> None:
         f"{best_warm['warm'] - best_warm['warm_margin']:.2f}.",
         f"- **Code**: branch `javier`, last commit on `reco/` or `offline/`: `{git('log', '-1', '--format=%h — %s', '--', 'reco', 'offline')}`. "
         "Model files: `models/`.", "",
+        TONIGHT, "",
+        "## Putting the record back", "",
+        f"To serve the record alone: in `reco/serve.py` set `ARMS = ((\"{best['name']}\", \"model\", "
+        f"\"{RANKER.get(best['name'], '<its ranker>')}\", {{}}, 100),)`, commit, then run "
+        "`powershell -ExecutionPolicy Bypass -File scripts\\swap_server.ps1`. The script starts the new server in standby as a "
+        "process of its own, waits for its self-test (every arm must answer real requests with valid lists) and only then stops "
+        "the old one; if the new one is not fit, nothing changes. Never start or stop a server any other way.", "",
         "## Every version we have served", "",
         "Ranked by the margin over the reference in the minutes each version was live (UTC). Exploration arms and versions "
         f"with fewer than {MIN_RANKED:,} requests are listed but cannot hold the record.", "",

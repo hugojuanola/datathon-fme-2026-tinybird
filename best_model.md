@@ -1,6 +1,6 @@
 # Best model so far
 
-_Updated 14 Nov 2026, 19:00 CET by [`realtime_analyisi_leaderboard/best_model.py`](realtime_analyisi_leaderboard/best_model.py). Numbers are the organisers' own: expected purchases per 100 requests under the hidden model, per `model_version`._
+_Updated 14 Nov 2026, 19:02 CET by [`realtime_analyisi_leaderboard/best_model.py`](realtime_analyisi_leaderboard/best_model.py). Numbers are the organisers' own: expected purchases per 100 requests under the hidden model, per `model_version`._
 
 **Record: `skore_money_v9`** — attributes + carts by subcategory; learned from the old log and today's feedback. 2.37 expected purchases per 100 requests on 2,822 requests, against 2.07 for the organisers' reference over the same minutes: **+0.30**.
 
@@ -8,7 +8,13 @@ Tied with it, within what the measurement can tell apart (0.15 points): `skore_m
 
 - **Best on cold requests** (new shopper, or a new product among the recent views — what the final is expected to bring): `skore_money_v9w`, 3.35 against the reference's 1.87.
 - **Best on the other requests** (known shoppers): `skore_money_v9`, 2.11 against 2.17.
-- **Code**: branch `javier`, last commit on `reco/` or `offline/`: `e4c8a45 — skore_money_v21-v28: the overnight experiment (four ranker set-ups x trend lift off / on)`. Model files: `models/`.
+- **Code**: branch `javier`, last commit on `reco/` or `offline/`: `e315165 — best_model.md; the server as a process of its own (scripts/swap_server.ps1)`. Model files: `models/`.
+
+**Being measured against the record** (live since 17:44:57 UTC on 14 Nov): `skore_money_v21`–`v28` = {v9, v9w cold | v9 warm, v16, v16w cold | v16 warm} × {trend lift off, on at ^0.75}. `v21` / `v22` are v9 itself, so the record's own number keeps growing under those two names; `v25` / `v26` are v16 (retrained on all of Saturday, 57 features, real prices). Read the night with `python scripts/arms.py 17:45 07:30` on Sunday morning.
+
+## Putting the record back
+
+To serve the record alone: in `reco/serve.py` set `ARMS = (("skore_money_v9", "model", "v9", {}, 100),)`, commit, then run `powershell -ExecutionPolicy Bypass -File scripts\swap_server.ps1`. The script starts the new server in standby as a process of its own, waits for its self-test (every arm must answer real requests with valid lists) and only then stops the old one; if the new one is not fit, nothing changes. Never start or stop a server any other way.
 
 ## Every version we have served
 
