@@ -1,7 +1,8 @@
-"""Export the history from RawTree to local parquet files (data/, git-ignored).
+"""Export the history from RawTree to local parquet files ($SKORE_DATA_DIR, default data/, git-ignored).
 
     python -m offline.pull_data              # catalog + sessions + events
     python -m offline.pull_data sessions     # only one of: catalog, sessions, events
+    python -m offline.pull_data live         # the live stream so far: events + our feedback (re-run to refresh)
 
 RawTree caps a query at 30 s / 100 MiB, so the two big tables are pulled in time slices, in
 parallel, with arrays flattened to comma-separated strings inside SQL (TSV transport).
@@ -15,9 +16,9 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from reco.rawtree import ROOT, query_tsv
+from reco.rawtree import DATA, TEAM, query_tsv
+from reco.priority import background
 
-DATA = ROOT / "data"
 START = datetime(2026, 9, 15, 6)   # history spans 2026-09-15 07:00 → 2026-11-14 07:08 UTC
 END = datetime(2026, 11, 14, 8)
 
@@ -56,9 +57,31 @@ SELECT toUnixTimestamp64Milli(ts::DateTime64(3)) AS ts_ms, change::String AS cha
 FROM shop.catalog_updates ORDER BY ts_ms"""
 
 
-def _slices(hours: int) -> list[tuple[str, str]]:
-    out, t = [], START
-    while t < END:
+LIVE_START = datetime(2026, 11, 14, 9)   # the practice stream opened at 09:00 UTC
+
+LIVE_EVENTS = EVENTS.replace("shop.history_events", "shop.events")
+
+LIVE_FEEDBACK = """
+SELECT toUnixTimestamp64Milli(r.ts) AS ts_ms, r.user_id AS user_id, r.device AS device, r.region AS region,
+       r.page AS page, r.is_new AS is_new, r.rv AS rv, f.shown AS shown, f.clicked AS clicked,
+       f.purchased AS purchased, f.served_by AS served_by, f.request_id AS request_id
+FROM (SELECT request_id::String AS request_id, arrayStringConcat(shown::Array(String), ',') AS shown,
+             clicked::String AS clicked, purchased::String AS purchased, served_by::String AS served_by
+      FROM {team}.feedback
+      WHERE request_id != '__init__' AND ts::DateTime64(3) >= '{lo}' AND ts::DateTime64(3) < '{hi}') AS f
+INNER JOIN (SELECT request_id::String AS request_id, ts::DateTime64(3) AS ts, user_id::String AS user_id,
+                   context.device::String AS device, context.region::String AS region, context.page::String AS page,
+                   is_new_user::Bool AS is_new,
+                   arrayStringConcat(arrayMap(v -> v.product_id::String, recent_views::Array(JSON)), ',') AS rv
+            FROM shop.requests
+            WHERE ts::DateTime64(3) >= toDateTime64('{lo}', 3) - INTERVAL 10 SECOND AND ts::DateTime64(3) < '{hi}') AS r
+    ON r.request_id = f.request_id
+ORDER BY ts_ms"""
+
+
+def _slices(hours: int, start: datetime = START, end: datetime = END) -> list[tuple[str, str]]:
+    out, t = [], start
+    while t < end:
         out.append((t.strftime("%Y-%m-%d %H:%M:%S"), (t + timedelta(hours=hours)).strftime("%Y-%m-%d %H:%M:%S")))
         t += timedelta(hours=hours)
     return out
@@ -74,17 +97,19 @@ def _pull(template: str, lo: str, hi: str) -> pd.DataFrame:
     raise RuntimeError(f"slice {lo} failed")
 
 
-def pull_sliced(name: str, template: str, hours: int, workers: int = 6) -> None:
+def pull_sliced(name: str, template: str, hours: int, workers: int = 6,
+                start: datetime = START, end: datetime = END) -> None:
     t0 = time.time()
     with ThreadPoolExecutor(workers) as pool:
-        parts = list(pool.map(lambda s: _pull(template, *s), _slices(hours)))
+        parts = list(pool.map(lambda s: _pull(template, *s), _slices(hours, start, end)))
     df = pd.concat([p for p in parts if len(p)], ignore_index=True)
     df.to_parquet(DATA / f"{name}.parquet", index=False)
     print(f"{name}: {len(df):,} rows in {time.time() - t0:.0f}s", flush=True)
 
 
 def main() -> None:
-    DATA.mkdir(exist_ok=True)
+    background()   # never compete with the live loop for the CPU
+    DATA.mkdir(parents=True, exist_ok=True)
     what = sys.argv[1:] or ["catalog", "sessions", "events"]
     if "catalog" in what:
         query_tsv(CATALOG).to_parquet(DATA / "catalog.parquet", index=False)
@@ -94,6 +119,11 @@ def main() -> None:
         pull_sliced("sessions", SESSIONS, hours=24)
     if "events" in what:
         pull_sliced("events", EVENTS, hours=12)
+    if "live" in what:
+        now = datetime.utcnow() + timedelta(minutes=1)
+        query_tsv(UPDATES).to_parquet(DATA / "catalog_updates.parquet", index=False)
+        pull_sliced("live_events", LIVE_EVENTS, hours=1, start=LIVE_START, end=now)
+        pull_sliced("live_feedback", LIVE_FEEDBACK.replace("{team}", TEAM), hours=1, start=LIVE_START, end=now)
 
 
 if __name__ == "__main__":

@@ -36,8 +36,9 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`starter/`](starter/) | Official starter kit, unmodified: baseline loop, SQL examples, offline-eval notebook |
 | [`scripts/rt.py`](scripts/rt.py) | Run SQL against RawTree from the shell (stdlib, read-only by default) |
 | [`scripts/leaderboard.py`](scripts/leaderboard.py) | Print the public leaderboard |
-| [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (live state from RawTree), `recommend.py` (ranking policy), `rawtree.py` (client) |
-| [`offline/`](offline/) | Offline work: `pull_data.py` exports the history to `data/` (git-ignored); `evaluate.py` validates the policy on the held-out last week |
+| [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (event-sourced live state), `features.py` (the one definition of every model feature, shared by training and serving), `recommend.py` (policies: rules, and rules-retrieve + model-rank), `rawtree.py` (client), `priority.py` |
+| [`offline/`](offline/) | Offline work: `pull_data.py` (export history / live stream), `build_dataset.py` (training table by replaying the store in time order), `train.py` (LightGBM click + conversion models, validated on the future), `evaluate.py` (policies on the held-out last week), `build_cache.py` (start-up cache for the server) |
+| [`models/`](models/) | The trained ranker (`click.txt`, `conv.txt`: LightGBM text models, readable) |
 | [`docs/findings.md`](docs/findings.md) | What drives a purchase, measured: the evidence behind the ranking policy |
 | [`queries/`](queries/) | Our reusable SQL: `health.sql` (is the live system healthy?), `variants.sql` (A/B by `model_version`), `tiers.sql` (which ranking tier sells) |
 | [`avanced_data_analysis/`](avanced_data_analysis/README.md) | Exploratory analysis: distributions, outliers, PCA/UMAP/clustering, SHAP importance — what drives purchases, with figures and the request→feedback workflow diagram |
@@ -54,7 +55,24 @@ python3 scripts/leaderboard.py                                            # wher
 
 python -m venv .venv && .venv/Scripts/pip install requests numpy pandas pyarrow duckdb lightgbm scikit-learn
 .venv/Scripts/python -m reco.serve --dry                                  # our recommender, printing instead of inserting
-.venv/Scripts/python -u -m reco.serve >> logs/serve.log 2>&1              # our recommender, LIVE (one instance only)
+.venv/Scripts/python -u -m reco.serve >> $SKORE_LOGS_DIR/serve.log 2>&1   # our recommender, LIVE (one instance only)
+```
+
+Deploying a new version **without a gap** (never two instances answering at once):
+
+```bash
+.venv/Scripts/python -u -m reco.serve --standby >> $SKORE_LOGS_DIR/serve.log 2>&1   # loads, then waits
+# when the log says "standby: ready": stop the old process, check it is gone, then
+touch $SKORE_LOGS_DIR/GO                                                            # the new one starts answering
+```
+
+Retraining (all offline scripts lower their own priority so they do not starve the server):
+
+```bash
+.venv/Scripts/python -m offline.pull_data live      # refresh the live stream export (events + our feedback)
+.venv/Scripts/python -m offline.build_dataset       # training table: one row per (request, product shown)
+.venv/Scripts/python -m offline.train               # models/ + validation report (last week of log, last quarter of live)
+.venv/Scripts/python -m offline.evaluate            # policies on the held-out week, through the live code
 ```
 
 Is the system healthy? (last 10 minutes of our feedback: who served, conversion, latency)
@@ -100,6 +118,12 @@ reference recommender ≈ 2.24. Details in [`docs/challenge.md`](docs/challenge.
    explicit go-ahead from Hugo or Javier. Before that window, restart/redeploy freely.
 8. **`rt.py` is read-only unless `--write`.** Writes to `team_06.submissions` affect our live score;
    `TRUNCATE` / `DROP` / `DELETE` on anything need explicit human approval.
+9. **Nothing heavy on the serving machine while it serves.** On 14 Nov 13:14–13:31 UTC we lost 25 % of the
+   answers three times: a second process loading its state with big RawTree queries, a model scoring the
+   whole catalogue with every core, and OneDrive uploading hundreds of MB of data files over a ~100 KB/s
+   uplink (the repo lives in a synced folder). So: bulky files go to `$SKORE_DATA_DIR` / `$SKORE_LOGS_DIR`
+   outside any synced folder; offline scripts call `reco.priority.background()`; new versions start with
+   `--standby`; and during the final, pause OneDrive and run nothing else. Details: `docs/findings.md` §8.
 
 ## Ways of working
 
@@ -135,12 +159,23 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 13:45 CET (branch `javier`): **`reco/serve.py` v4 is running live** from Javier's
-laptop, answering every request in ≈1.1 s (p95 ≈ 1.8 s). The policy (`reco/recommend.py`) scores every
-product as `popularity × lifts` (category and subcategory of the last view, abandoned cart, just viewed),
-never shows a product the shopper already bought, and A/B-tests the "just viewed" lift (`model_version`
-`v4a` = ×3, `v4b` = ×1.5). Evidence and offline validation: [`docs/findings.md`](docs/findings.md).
-First live read: ≈2.6 % conversion for the ×3 arm vs 0.79 % baseline (small sample).
-Next: replace the hand-set lifts with a learned ranker (LightGBM on the log + live feedback), gated by
-`python -m offline.evaluate`. Only one `reco.serve` may run at a time (rule 4): check
-`queries/health.sql` before starting another. Update this section when that changes.
+As of Sat 14 Nov 2026 14:40 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop
+(started 14:34 CET with `--standby`, 7 s hand-over gap), answering in ≈1.05 s (p95 ≈ 1.4 s). It runs an A/B,
+half the traffic each, tagged in `model_version`:
+
+- `skore_money_v4` — **rules**: `popularity × lifts` (category and subcategory of the last view, abandoned
+  cart, just viewed). The control arm, and the fallback if the model fails.
+- `skore_money_v5` — **model**: the rules retrieve 500 candidates, then two LightGBM models rank them by
+  `P(click) × P(purchase | click)` using `reco/features.py` (≈10 ms per request).
+
+Both never show a product the shopper already bought or one that is out of stock. Evidence, offline
+validation and the reliability incident: [`docs/findings.md`](docs/findings.md). A second session writes a
+live read of the leaderboard and of each variant (new vs known shoppers) every ~10 min in
+[`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
+
+Where we stand (14:21 CET): rank 1 of the teams, conversion 1.38 vs 2.04 for the organisers' reference.
+The whole gap is on known shoppers (1.1 % vs ≈2.1 %; new shoppers match the reference), who buy in the
+subcategories they bought from before: that is what v5's shopper features target.
+
+Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
+(outside OneDrive). Only one `reco.serve` may answer at a time (rule 4). Update this section when that changes.

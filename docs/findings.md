@@ -114,3 +114,75 @@ Re-run `queries/variants.sql` for current numbers.
 - Time filters on Dynamic `ts` need the cast: `ts::DateTime64(3) >= '2026-11-07 00:00:00'`.
 - The Query API accepts `"format": "TSVWithNames"`: the full history (2 M sessions + 12 M events)
   exports in under a minute in 24 h / 12 h slices (`python -m offline.pull_data`).
+
+## 8. Reliability: what starves the serving loop (incident of 14 Nov, 13:14–13:31 UTC)
+
+For three stretches of a few minutes, 25–50 % of the requests went unanswered and p95 latency rose from
+1.6 s to 3 s. Nothing was wrong with the recommender: the laptop and its uplink were busy with something else.
+
+| When (UTC) | What else was running | Missing answers |
+|---|---|---|
+| 13:14–13:19 | a second copy of the server in dry-run: state bootstrap = 16 heavy aggregations over the 12 M-row history, then the model scoring all 5,100 products with every core | 24–96 per minute |
+| 13:20–13:22 | a test script doing the same bootstrap | 18–46 per minute |
+| 13:26–13:27, 13:30 | writing 550 MB of exports and an 18 MB cache **inside the repo, which lives in OneDrive**: the sync client used ~25 % of the CPU and the whole uplink (~100 KB/s) | 55, 18, 70 per minute |
+
+The live process logged `Read timed out` on both its queries and its inserts: its small HTTP calls were
+queuing behind the uploads. What changed, all in the repo:
+
+- **Start-up without heavy queries.** The history is loaded from a local cache built offline
+  (`offline/build_cache.py`, 4 s to load); the live stream is replayed from a local journal and caught up
+  from `shop.events` in 50,000-row pages. A cold start went from 116 s of heavy SQL to 32 s of light pages.
+- **Bulky files out of the synced folder**: `SKORE_DATA_DIR`, `SKORE_LOGS_DIR`.
+- **Priorities**: the server raises its own (`reco/priority.py`), offline scripts lower theirs.
+- **Hand-over without a gap**: `--standby` loads everything and waits for a `GO` file (7 s gap vs 20–90 s).
+- **Answers are inserted by a second thread**, so a slow insert no longer delays the next poll; timeouts cut
+  from 3 s to 1.5 s (a call that takes longer is useless anyway). p95 went from 1.65 s to 1.4 s.
+- **Stock changes**: they land every 5 minutes on the dot and become queryable ≈0.8 s later. A request in
+  that window is held (≤1.6 s) until the new stock list is in, and the catalogue is polled every 0.2 s around
+  the mark. Before: 1–3 invalid answers per mark. After: none.
+
+## 9. The learned ranker (`skore_money_v5`)
+
+**What it is.** Two LightGBM models multiplied, `P(click | shown) × P(purchase | click)`, over 32 features
+that describe the product (popularity, cart and buy rates, price), how it matches the session (category,
+subcategory and brand of the last view, share of recent views in its category, price vs the viewed products)
+and how it matches the shopper (share of their views and purchases in the product's category and
+subcategory, abandoned cart, price level). No product id, no user id: it has to work on shoppers and products
+it has never seen. Served in two stages: the rules retrieve 500 candidates, the model ranks them.
+
+**What it is trained on** (`offline/build_dataset.py`): 3.3 M rows = one per (request, product shown).
+2.9 M from the old carousel log (every clicked request + 12 % of the rest, weighted back) and 280 k from our
+live feedback (weight ×5: it is the real simulator, and the only place with cross-category impressions).
+The store is replayed in time order, so each row only knows what was known at that moment. Rows where the
+shopper had already bought the product are dropped: live, those are never shown.
+
+**Validation, always on the future** (`offline/train.py`; the model does not see the slot here):
+
+| Among the 10 products shown, how high does it rank the one that was bought? | as shown | popularity | rules (v4) | model (v5) |
+|---|---|---|---|---|
+| Log, last 7 days (1,048 purchases): reciprocal rank, slot-debiased | 0.324 | 0.463 | 0.523 | **0.574** |
+| Log, last 7 days: bought product in its top 3 | 34.9 % | 61.8 % | 67.0 % | **71.2 %** |
+| Live, held-out last quarter (93 purchases): reciprocal rank, slot-debiased | 0.351 | 0.335 | 0.404 | **0.461** |
+| Live held-out, new shoppers (44): bought product in its top 3 | 36.7 % | 48.3 % | 51.7 % | **65.1 %** |
+| Live held-out, known shoppers (49): bought product in its top 3 | 42.3 % | 36.9 % | 37.9 % | **53.1 %** |
+
+"Slot-debiased" weights each purchase by the inverse of the attention its slot got, so a ranker is not
+rewarded for agreeing with the order the products happened to be shown in. The model wins on the log, on
+live feedback, and for new and known shoppers separately; the live samples are small, the direction is
+the same everywhere.
+
+**Calibration on held-out live feedback** (predicted vs observed purchases per impression): same category
+as the last view 0.170 % vs 0.211 %; other category 0.099 % vs 0.100 %; home 0.043 % vs 0.045 %; abandoned
+cart 0.222 % vs 0.227 %; new shoppers 0.177 % vs 0.219 %. The model has learned the cross-category
+trade-off that the log alone cannot teach.
+
+**What it looks at** (share of the click model's gain): shopper's share of views in the product's category
+20 %, shopper's buy rate 16 %, slot 10 %, popularity 10 %, product cart rate 6 %, abandoned cart 4 %.
+
+**Speed.** Ranking 500 retrieved candidates takes 14 ms per request (the whole catalogue: 120 ms) and
+returns the same top 10 as ranking everything in 98 % of requests (99.7 % overlap, same first product in
+100 %; 299 live requests).
+
+**Train/serve parity.** `featurize()` is the only feature code. A server state built from RawTree was
+compared with the state the training set is built from, shopper by shopper: 378 of 400 identical, the
+other 22 had new live events since the export.

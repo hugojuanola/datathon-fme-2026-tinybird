@@ -29,6 +29,10 @@ def _load_env() -> None:
 _load_env()
 API = os.environ.get("RAWTREE_API_URL", "https://api.rawtree.com")
 TEAM = os.environ["TEAM_ID"]
+# Bulky, fast-changing files (exports, caches, logs). Point these outside any synced folder: a sync
+# client uploading them competes with the live loop for the uplink (measured: 25 % of answers lost).
+DATA = Path(os.environ.get("SKORE_DATA_DIR") or ROOT / "data")
+LOGS = Path(os.environ.get("SKORE_LOGS_DIR") or ROOT / "logs")
 _local = threading.local()
 
 
@@ -57,6 +61,14 @@ def query_tsv(sql: str, timeout: float = 60):
     if r.status_code != 200:
         raise RuntimeError(f"query failed: HTTP {r.status_code}: {r.text[:300]}")
     return pd.read_csv(io.BytesIO(r.content), sep="\t", quoting=3, keep_default_na=False, na_values=["\\N"])
+
+
+def query_rows(sql: str, timeout: float = 40) -> list[list[str]]:
+    """Run SQL and return the rows as lists of strings (TSV transport, no pandas: for the hot paths)."""
+    r = _http().post(f"{API}/v1/query", json={"sql": sql, "format": "TSV"}, timeout=timeout)
+    if r.status_code != 200:
+        raise RuntimeError(f"query failed: HTTP {r.status_code}: {r.text[:300]}")
+    return [line.split("\t") for line in r.text.split("\n") if line]
 
 
 def insert(table: str, rows: list[dict[str, Any]], timeout: float = 5) -> None:

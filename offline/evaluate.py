@@ -1,107 +1,91 @@
-"""Offline validation of the ranking policy on the held-out last 7 days of shop.history_sessions.
+"""Offline validation of the ranking policies on the held-out last 7 days of shop.history_sessions.
 
-    python -m offline.pull_data      # once: export the history to data/
+    python -m offline.pull_data      # once
+    python -m offline.train          # the models are fitted on the days BEFORE the cut
     python -m offline.evaluate
 
-Everything a policy may use (popularity, carts, purchases) is built only from events BEFORE the cut;
-the policies are then asked to rank for the impressions AFTER it, running the same code as live
-(reco.recommend). Two numbers per policy:
+The store is replayed up to the cut (same code as the training set and the live server), then every policy
+ranks the whole catalogue for the requests AFTER it, through `reco.recommend` — the code that runs live.
 
     hit@10      share of logged clicks / purchases whose product is in our top 10
     weighted    the same, weighting a hit by the attention its slot gets (slot 1 = 1, slot 10 = 0.15)
 
-The live simulator has satiation (docs/findings.md) and the log does not, so the test set keeps only
-clicks/purchases of products the shopper had NOT bought before: the cases that exist live.
-The log only contains what the old system showed, so absolute values are pessimistic; the comparison
-between policies is what matters.
+Two things the log cannot tell, and live feedback has to:
+  - it only contains what the old system showed (same category as the last view, popular products), so a
+    cross-category recommendation can never score here, however good it is live;
+  - it has no satiation, so the test set keeps only clicks on products the shopper had NOT bought before:
+    the cases that exist live.
 """
 from __future__ import annotations
-
-from collections import defaultdict
 
 import numpy as np
 import pandas as pd
 
-from reco import recommend as policy
-from reco.rawtree import ROOT
+from offline.build_dataset import load_catalogs, replay
+from reco.features import Shopper
+from reco.priority import background
+from reco.rawtree import DATA, ROOT
+from reco.recommend import Ranker, recommend
 from reco.state import Product, State
 
-DATA = ROOT / "data"
-CUT = pd.Timestamp("2026-11-07").value // 10**6           # ms: train < cut <= test
+CUT = pd.Timestamp("2026-11-07").value // 10**6           # ms: state < cut <= test (same cut as offline/train.py)
 SLOT_WEIGHT = np.array([21483, 12015, 8805, 6836, 5629, 5043, 4438, 3923, 3483, 3260]) / 21483  # clicks per slot in the log
 
 
-def offline_state() -> State:
-    """The State the live loop would have had at the cut, built from the local export."""
+def state_at_cut() -> State:
+    """The State the live server would have had at the cut."""
+    cat, _ = load_catalogs()
+    events = pd.read_parquet(DATA / "events.parquet", columns=["ts", "ev", "user_id", "product_id"])
+    events = events[events.ts < CUT // 1000]
+    sold = pd.read_parquet(DATA / "sessions.parquet", columns=["ts_ms", "user_id", "device", "region", "page", "rv",
+                                                               "shown", "clicked", "purchased"])
+    sold = sold[(sold.purchased != "") & (sold.ts_ms < CUT)]
     state = State()
-    for r in pd.read_parquet(DATA / "catalog.parquet").itertuples():
-        state.products[r.product_id] = Product(r.category, r.subcategory, r.brand, r.price_eur, r.price_eur, False)
-    ev = pd.read_parquet(DATA / "events.parquet", columns=["ts", "ev", "user_id", "product_id"])
-    ev = ev[ev.ts < CUT // 1000]
-    bought = ev[ev.ev == "p"]
-    for u, p in zip(bought.user_id.values, bought.product_id.values):
-        state.purchased[u].add(p)
-    carts = ev[ev.ev == "a"]
-    for u, p, t in zip(carts.user_id.values, carts.product_id.values, carts.ts.values):
-        if p not in state.purchased[u]:
-            state.carted[u][p] = int(t)
-    counts = bought.product_id.value_counts()
-    state.hist_pop = (counts / counts.sum()).to_dict()
-    state._rank()
+    base = pd.read_parquet(DATA / "catalog.parquet")
+    for r in base.itertuples():
+        state._add_product(r.product_id, Product(r.category, r.subcategory, r.brand, r.price_eur))
+    replay(cat, state.shoppers, events, sold, np.zeros(len(sold), bool), 0.0, [])
+    counts = events.groupby(["product_id", "ev"]).size().unstack(fill_value=0)
+    state.hist_counts = {p: (float(r.get("v", 0)), float(r.get("a", 0)), float(r.get("p", 0))) for p, r in counts.iterrows()}
+    state._snapshot((cat.cat_names, cat.sub_names, cat.brand_names))
     return state
 
 
 def test_set(state: State) -> pd.DataFrame:
-    s = pd.read_parquet(DATA / "sessions.parquet", columns=["ts_ms", "user_id", "page", "rv", "clicked", "purchased"])
+    s = pd.read_parquet(DATA / "sessions.parquet",
+                        columns=["ts_ms", "user_id", "device", "region", "page", "rv", "clicked", "purchased"])
     s = s[(s.ts_ms >= CUT) & (s.clicked != "")].copy()
-    s["rv"] = s.rv.map(lambda x: x.split(",") if x else [])
-    fresh = [c not in state.purchased.get(u, ()) for u, c in zip(s.user_id.values, s.clicked.values)]
+    nobody = Shopper()
+    fresh = [state.pos[c] not in state.shoppers.get(u, nobody).bought for u, c in zip(s.user_id.values, s.clicked.values)]
     return s[fresh]
 
 
 def evaluate(name: str, recs: list[list[str]], test: pd.DataFrame) -> dict:
     rank = np.array([r.index(c) if c in r else -1 for r, c in zip(recs, test.clicked.values)])
     weight = np.where(rank >= 0, SLOT_WEIGHT[np.clip(rank, 0, 9)], 0.0)
-    bought = (test.purchased != "").to_numpy()
-    return {"policy": name,
-            "click hit@10": (rank >= 0).mean(), "click weighted": weight.mean(),
-            "purchase hit@10": (rank >= 0)[bought].mean(), "purchase weighted": weight[bought].mean()}
+    out = {"policy": name}
+    for label, mask in (("all", np.ones(len(test), bool)), ("home", (test.page == "home").to_numpy())):
+        bought = (test.purchased != "").to_numpy() & mask
+        out[f"{label}: click hit@10"] = (rank >= 0)[mask].mean()
+        out[f"{label}: purchase hit@10"] = (rank >= 0)[bought].mean()
+        out[f"{label}: purchase weighted"] = weight[bought].mean()
+    return out
 
 
 def main() -> None:
-    state = offline_state()
+    background()   # never compete with the live loop for the CPU
+    state = state_at_cut()
     test = test_set(state)
+    ranker = Ranker(ROOT / "models")
     print(f"test: {len(test):,} clicks, {(test.purchased != '').sum():,} purchases after the cut "
-          f"(products the shopper had not bought before)\n")
-    baseline = [p for p in state.best][:10]
-    rows = [evaluate("baseline (best sellers)", [baseline] * len(test), test)]
-
-    def run(name: str, arm: str = "a", **lifts) -> None:
-        saved = {k: getattr(policy, k) for k in lifts}
-        for k, v in lifts.items():
-            setattr(policy, k, v)
-        recs = [policy.recommend(state, u, rv, arm)[0] for u, rv in zip(test.user_id.values, test.rv.values)]
-        for k, v in saved.items():
-            setattr(policy, k, v)
-        rows.append(evaluate(name, recs, test))
-
-    off = dict(LIFT_CATEGORY=1, LIFT_SUBCATEGORY=1, LIFT_CART=1, LIFT_CART_SAME=1)
-    policy.ARMS.update({"1": 1.0, "2": 2.0, "3": 3.0, "5": 5.0})
-    run("popularity, minus already bought", arm="1", **off)
-    run("+ category of last view", arm="1", **{**off, "LIFT_CATEGORY": policy.LIFT_CATEGORY})
-    run("+ subcategory", arm="1", LIFT_CART=1, LIFT_CART_SAME=1)
-    run("+ abandoned carts", arm="1")
-    policy.ARMS.update({"10": 10.0, "30": 30.0})
-    for arm in ("2", "3", "5", "10", "30"):
-        run(f"+ just viewed x{policy.ARMS[arm]:g}", arm=arm)
-    for k in (1.5, 3, 5):
-        run(f"  (cart in category x{k:g}, viewed x1)", arm="1", LIFT_CART_SAME=k)
-    for k in (1.2, 2, 3):
-        run(f"  (subcategory x{k:g}, viewed x1)", arm="1", LIFT_SUBCATEGORY=k)
-    for k in (2, 8, 20):
-        run(f"  (category x{k:g}, viewed x1)", arm="1", LIFT_CATEGORY=k)
-    out = pd.DataFrame(rows).set_index("policy")
-    print((100 * out).round(2).to_string())
+          f"(products the shopper had not bought before); {(test.page == 'home').mean():.1%} on the home page\n")
+    requests = [{"user": r.user_id, "rv": r.rv.split(",") if r.rv else [], "page": r.page, "device": r.device,
+                 "region": r.region} for r in test.itertuples()]
+    best = state.best[:10]
+    rows = [evaluate("baseline (best sellers)", [best] * len(test), test)]
+    rows.append(evaluate("rules (v4)", [recommend(state, None, r, "rules")[0] for r in requests], test))
+    rows.append(evaluate("model (v5): rules retrieve, model ranks", [recommend(state, ranker, r, "model")[0] for r in requests], test))
+    print((100 * pd.DataFrame(rows).set_index("policy")).round(1).to_string())
 
 
 if __name__ == "__main__":
