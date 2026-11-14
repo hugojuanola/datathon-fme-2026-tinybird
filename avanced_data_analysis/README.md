@@ -12,8 +12,9 @@ round). Everything here is reproducible:
 |---|---|
 | [`eda_pull.py`](eda_pull.py) | 16 SQL queries. Aggregations run **inside RawTree** (12 M events → per-product, per-shopper, per-hour tables); only a 10% hash sample of the carousel log (200 k requests) comes down in full detail |
 | [`eda.py`](eda.py) | Builds every figure and number below |
+| [`levers.py`](levers.py) | Draws the summary figure (10 · score levers) from `numbers.json`, in seconds |
 | [`numbers.json`](numbers.json) | Every number quoted here, machine-readable |
-| [`figures/`](figures/) | The nine figures |
+| [`figures/`](figures/) | The ten figures |
 
 Data used: `shop.catalog` (5,000 products), `shop.history_events` (12.0 M organic events, 59,841 shoppers),
 `shop.history_sessions` (2.0 M requests of the old carousel = 20 M impressions), plus the live `shop.requests`
@@ -54,6 +55,12 @@ organisers' reference at 2.09 (cold 1.79); the oracle is not published. Two cons
   `home` pages are 20% of the requests but **2.1% of the purchases**; product and category pages are the other 98%.
 
 ## Headline findings, ranked by how much they move purchases
+
+![Score levers](figures/10_score_levers.png)
+
+The one figure to keep in mind ([`levers.py`](levers.py) draws it from `numbers.json`): on the left, what we
+control — which products we show and in which slot; in the middle and on the right, what we do not control but
+tells us where precision pays — the page and how much the shopper buys.
 
 | # | Finding | Size of the effect | Figure |
 |---|---|---|---|
