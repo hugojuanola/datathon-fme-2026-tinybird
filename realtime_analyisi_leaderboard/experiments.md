@@ -17,38 +17,58 @@ but not worth or not possible to deploy · **FIXED** = a fault found and repaire
 ## 1. Where we stand now
 
 <!-- live:start -->
-_Refreshed 23:29 CET on 14 Nov 2026 (board to 23:25 CET). Expected purchases per 100 requests, the organisers' own number._
+_Refreshed 00:13 CET on 15 Nov 2026 (board to 00:10 CET). Expected purchases per 100 requests, the organisers' own number._
 
 ### The gap to the next team
 
 | Window | Place | Us | Next team | Gap | Gap on cold requests | Reference | Answered on time |
 |---|---|---|---|---|---|---|---|
-| 15 min | 1 | 2.274 | team_03 2.183 | +0.091 | +0.106 | 1.964 | 99.9 % |
-| 30 min | 1 | 2.145 | team_14 2.062 | +0.084 | +0.077 | 1.906 | 99.9 % |
-| 60 min | 1 | 2.189 | team_03 2.126 | +0.063 | +0.021 | 1.950 | 99.8 % |
-| 180 min | 1 | 2.323 | team_03 2.207 | +0.116 | +0.105 | 2.020 | 99.9 % |
+| 15 min | 1 | 2.475 | team_03 2.369 | +0.106 | +0.193 | 2.127 | 99.9 % |
+| 30 min | 1 | 2.358 | team_03 2.274 | +0.084 | +0.118 | 2.019 | 99.9 % |
+| 60 min | 1 | 2.311 | team_03 2.220 | +0.091 | +0.104 | 2.013 | 99.8 % |
+| 180 min | 1 | 2.240 | team_03 2.166 | +0.074 | +0.068 | 1.974 | 99.9 % |
 
-Official hourly score, hour in progress (previous full hour): team_06 61.2 (62.5), team_03 58.8 (59.9), team_14 56.5 (59.5), team_42 55.9 (56.6), team_22 53.2 (56.1).
+Official hourly score, hour in progress (previous full hour): team_06 64.9 (63.0), team_03 60.0 (60.3), team_40 56.4 (49.8), team_37 56.3 (38.9), team_22 55.5 (55.2).
 
 ### The arms now serving, over the same minutes (since 23:25 CET, when the last one started)
 
-**All minutes**: nothing yet (a piece needs 15 minutes).
+**All minutes** — reference 2.029 (cold 1.890, warm 2.122)
 
-**Minutes without a trend**: nothing yet (a piece needs 15 minutes).
+| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
+|---|---|---|---|---|---|---|---|
+| `v31` | v9 + trend lift (the proven one) | 2,444 | 2.387 | +0.358 | 2.920 | 2.015 |  |
+| `v32` | v9 x organic factor | 2,393 | 2.345 | +0.316 | 3.019 | 1.894 | -0.04 (-0.2), +0.10 (+0.2), -0.12 (-0.7) |
+| `v36` | v9 x organic, new products x1.5 for known shoppers | 1,677 | 2.257 | +0.228 | 2.847 | 1.851 | -0.13 (-0.6), -0.07 (-0.2), -0.16 (-0.8) |
+| `v37` | v9 picks the ten, the organic factor only orders them | 1,571 | 2.278 | +0.249 | 3.058 | 1.796 | -0.11 (-0.5), +0.14 (+0.3), -0.22 (-1.1) |
+
+**Minutes without a trend** — reference 2.029 (cold 1.890, warm 2.122)
+
+| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
+|---|---|---|---|---|---|---|---|
+| `v31` | v9 + trend lift (the proven one) | 2,444 | 2.387 | +0.358 | 2.920 | 2.015 |  |
+| `v32` | v9 x organic factor | 2,393 | 2.345 | +0.316 | 3.019 | 1.894 | -0.04 (-0.2), +0.10 (+0.2), -0.12 (-0.7) |
+| `v36` | v9 x organic, new products x1.5 for known shoppers | 1,677 | 2.257 | +0.228 | 2.847 | 1.851 | -0.13 (-0.6), -0.07 (-0.2), -0.16 (-0.8) |
+| `v37` | v9 picks the ten, the organic factor only orders them | 1,571 | 2.278 | +0.249 | 3.058 | 1.796 | -0.11 (-0.5), +0.14 (+0.3), -0.22 (-1.1) |
 
 **Minutes of a trend**: nothing yet (a piece needs 15 minutes).
 
 ### The same for the arms that were already serving at 22:55 CET, since then
 
-**All minutes** — reference 1.906 (cold 1.663, warm 2.058)
+**All minutes** — reference 1.980 (cold 1.869, warm 2.053)
 
 | Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
 |---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 1,052 | 2.054 | +0.148 | 2.266 | 1.924 |  |
-| `v32` | v9 x organic factor | 1,057 | 2.249 | +0.343 | 2.878 | 1.809 | +0.19 (+0.7), +0.61 (+1.0), -0.12 (-0.4) |
-| `v36` | v9 x organic, new products x1.5 for known shoppers | 732 | 2.052 | +0.146 | 2.438 | 1.844 | -0.00 (-0.0), +0.17 (+0.2), -0.08 (-0.3) |
+| `v31` | v9 + trend lift (the proven one) | 4,065 | 2.281 | +0.301 | 2.839 | 1.902 |  |
+| `v32` | v9 x organic factor | 3,970 | 2.268 | +0.288 | 2.908 | 1.835 | -0.01 (-0.1), +0.07 (+0.2), -0.07 (-0.5) |
+| `v36` | v9 x organic, new products x1.5 for known shoppers | 2,749 | 2.216 | +0.236 | 2.849 | 1.809 | -0.06 (-0.4), +0.01 (+0.0), -0.09 (-0.6) |
 
-**Minutes without a trend**: nothing yet (a piece needs 15 minutes).
+**Minutes without a trend** — reference 2.007 (cold 1.940, warm 2.051)
+
+| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
+|---|---|---|---|---|---|---|---|
+| `v31` | v9 + trend lift (the proven one) | 3,013 | 2.360 | +0.353 | 3.024 | 1.894 |  |
+| `v32` | v9 x organic factor | 2,913 | 2.275 | +0.268 | 2.918 | 1.845 | -0.09 (-0.5), -0.11 (-0.3), -0.05 (-0.3) |
+| `v36` | v9 x organic, new products x1.5 for known shoppers | 2,017 | 2.276 | +0.269 | 2.977 | 1.794 | -0.08 (-0.5), -0.05 (-0.1), -0.10 (-0.6) |
 
 **Minutes of a trend** — reference 1.906 (cold 1.663, warm 2.058)
 
@@ -83,10 +103,10 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
 | Trend lift at ^0.75 (`v22`, `v24`, `v26`, `v28` against the odd versions) | 18:45-21:30, one trend inside | Is it worth multiplying a trending subcategory by its lift? | -0.03 (0.4 se) over the evening; +0.03 ± 0.20 inside the Game Consoles trend. Then measured directly by the model session: a trend product sells 8.3 times v9's prediction | follows the store within a minute; in the one large trend our gap to the next team was 0.13 to 0.33 | a lift on a very small subcategory gives nothing; depends on the detector | KEPT, at full strength (^1.0) in every arm since 21:35 |
 | `v34` (no lift), `v35` (lift ^0.5) against `v31` (lift ^1.0) | 21:35-22:32 | The dose of the lift | not measured: no trend ran in that hour before the arms were replaced | - | - | closed without an answer; the direct measurement (x8.3) decided |
 | `v33` = v9b: v9's features retrained on all of Saturday | 21:35-23:23 | Is v16's deficit the newer data or the extra features? | +0.13 over v9 (0.8 se) before the trend, -0.02 after: level | none | none | DROPPED at 23:23 (level with v9: the deficit of v16 was its extra features) |
-| **`v32`**: v9 x an organic factor, a third model of what shoppers go on to buy in the store | since 21:35; counts from 22:55 | Does the store teach something the carousel's own feedback does not? | 2.440 against 2.162 for v9 over 21:35-22:30 (+0.28, +1.9 se), 3.22 against 2.72 on cold requests; then the flaw below; since the fix +0.12 (+0.5 se) on 25 minutes | the only candidate left with a sizeable gain; strongest on cold requests | slower (ranking 100 ms against 63); had a flaw in trends; three of its ten products come from outside v9's ten and nothing offline can value them; not yet two standard errors | **LIVE**: decided in the morning |
+| **`v32`**: v9 x an organic factor, a third model of what shoppers go on to buy in the store | since 21:35; counts from 22:55 | Does the store teach something the carousel's own feedback does not? | 2.440 against 2.162 for v9 over 21:35-22:30 (+0.28, +1.9 se), 3.22 against 2.72 on cold requests; then the flaw below; since 23:25, next to the four arms of now, -0.04 against v9 (-0.2 se) on 2,393 requests in 45 minutes | the only candidate left with a sizeable gain; strongest on cold requests | slower (ranking 83 ms against 63, after it was cut to the best 100 candidates at 23:41); had a flaw in trends; three of its ten products come from outside v9's ten and nothing offline can value them; not yet two standard errors | **LIVE**: decided in the morning |
 | The organic factor inside a trend | 22:30-22:51 | (found, not planned) | `v32` and `v36` put Face Cream in 57 % of their lists, slot 1 in 14-16 %: 1,820 impressions, 2 clicks, no purchase. The organic model had never seen such products as candidates | - | twenty minutes of half the traffic | FIXED at 22:51 (`level_trending`): after it 0.20 to 0.30 trend products per list in every arm, and they sell like their neighbours |
-| `v36`: `v32` with products added during the event x1.5 for known shoppers | since 22:32; counts from 22:55 | New products sell more than v9 expects to known shoppers (observed / predicted purchases 1.37 on held-out lists): does a lift collect it? | too early: +0.09 over v9 (0.3 se) on 908 requests | measured with v9's prediction held equal; keyed on "added during the event", not on today's products | it pushed products in their first 20 minutes, when nobody clicks them, until they were held out at 23:34 (section 3) | **LIVE** |
-| `v37`: v9 picks the ten, the organic factor only orders them | since 23:23 | Is the organic gain in the order or in the products it brings in? | offline, on 38,627 held-out lists: reordering v9's ten is worth about +2.5 % purchases (± 1.1) under today's attention curve, +4.7 % under the old log's steeper one; as a choice model the organic factor is the strongest signal found outside v9 (0.59 ± 0.07 on purchases next to v9's own prediction). Live: just started | the ten products are v9's, so the risk is bounded; almost no extra latency (ten rows, where `v32` scores 300); the one use of the organic model that could be valued offline | gives up whatever the outside products bring; the offline gain is small | **LIVE**; preferred over `v32` if both pass |
+| `v36`: `v32` with products added during the event x1.5 for known shoppers | since 22:32; counts from 22:55 | New products sell more than v9 expects to known shoppers (observed / predicted purchases 1.37 on held-out lists): does a lift collect it? | too early: -0.13 against v9 (-0.6 se) on 1,677 requests since 23:25 | measured with v9's prediction held equal; keyed on "added during the event", not on today's products | it pushed products in their first 20 minutes, when nobody clicks them, until they were held out at 23:34 (section 3) | **LIVE** |
+| `v37`: v9 picks the ten, the organic factor only orders them | since 23:23 | Is the organic gain in the order or in the products it brings in? | offline, on 38,627 held-out lists: reordering v9's ten is worth about +2.5 % purchases (± 1.1) under today's attention curve, +4.7 % under the old log's steeper one; as a choice model the organic factor is the strongest signal found outside v9 (0.59 ± 0.07 on purchases next to v9's own prediction). Live: -0.11 against v9 (-0.5 se) on 1,571 requests in 45 minutes, nothing yet | the ten products are v9's, so the risk is bounded; almost no extra latency (ten rows, where `v32` scores 300); the one use of the organic model that could be valued offline | gives up whatever the outside products bring; the offline gain is small | **LIVE**; preferred over `v32` if both pass |
 
 ## 3. Signals and ideas tried on the data
 
@@ -122,7 +142,7 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
 | The server's console window closed by hand | 19:53-19:57 | 723 requests, four minutes | a windowless supervisor that restarts the server | nothing to close by mistake; survives the assistant app | FIXED at 20:11 |
 | Long assistant sessions uploading megabytes per step over the home connection | afternoon | bursts of late answers; `on_time` 96.4 % against 99.8 % for the others | fewer, shorter steps; no session open during the final | 99.9-100 % since 21:00 | KEPT as a rule for the final |
 | Replacing the server | every deploy | 2 to 6 requests per swap | `scripts/swap_server.ps1`: standby, self-test, hand-over | every swap of the evening went through with a handful of requests lost, never a gap | KEPT |
-| The answers get slower since the organic model went in | since 21:35 | ranking 63 → 100 ms per request; latency of the answers, half hour by half hour from 21:00 to 23:36: p50 1.17 → 1.33 s, p95 1.78 → 2.31 s, p99 2.16 → 2.91 s; answers over 3 s from 1 to 12 per half hour. Nothing lost yet (`on_time` 99.8-99.9 %). The network is flat (router ping 5 ms, RawTree connect 110 ms): it is the process, and what else runs on the machine | the organic model applied to the best 300 candidates only; `v37` applies it to ten; fewer analyses on the serving machine | not yet enough | **OPEN**: the model session was told at 23:37. It weighs in the morning's choice: v9 alone and `v37` are cheap, `v32` and `v36` are not |
+| The answers get slower since the organic model went in | since 21:35 | ranking 63 → 100 ms per request; latency of the answers, half hour by half hour from 21:00 to 23:36: p50 1.17 → 1.33 s, p95 1.78 → 2.31 s, p99 2.16 → 2.91 s; answers over 3 s from 1 to 12 per half hour. Nothing lost yet (`on_time` 99.8-99.9 %). The network is flat (router ping 5 ms, RawTree connect 110 ms): it is the process, and what else runs on the machine | at 23:41 the organic model went from the best 300 candidates to the best 100 (the same list in 115 of 120 requests, the same first product in all of them); no analysis runs on the serving machine for the rest of the night | ranking 100 → 83 ms; p95 back to 1.9-2.0 s; answers over 3 s from 15 to 2-9 per quarter of an hour | **FIXED** for now and watched every 15 minutes (`latency_history.csv`). Latency is the second thing the morning's choice looks at (p95 under 2 s): v9 alone and `v37` are cheap, `v32` and `v36` less so |
 
 ## 5. What it adds up to
 
