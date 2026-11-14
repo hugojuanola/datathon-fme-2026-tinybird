@@ -39,30 +39,26 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## Current reading
 
-_Updated 14 Nov 2026, 15:10 CET._
+_Updated 14 Nov 2026, 15:22 CET._
 
-- **The learned ranker won the A/B.** 13:34–13:57 UTC: `skore_money_v5` 2.50% (58 purchases in 2,322
-  requests) against `skore_money_v4` 1.50% (29 in 1,936), 2.4 standard errors apart. The gain is on known
-  shoppers: 2.10% against 0.97% (2.6 standard errors). New shoppers 3.50% against 2.68%, not conclusive.
-  See [the 15:00 note](notes/2026-11-14_1500_v5-ab-result.md).
-- **Live since 14:06:31 UTC**: 80% `skore_money_v5`, 20% `skore_money_v5_explore` (10 products sampled from
-  the model's best 20, in random order — clean data to train and judge the next model; practice only).
-- **Against the reference**: v5 is at its level on the requests it served (2.50 ± 0.64 against 2.06). The
-  leaderboard shows 1.50 (rank 1; best rival team_09 at 1.27) because its one-hour window is still mostly v4;
-  cold conversion 2.01 against the reference's 1.85.
-- **Reliability — cause found**: the stalls at 14:14–14:31 and 14:58–15:01 CET happened because OneDrive was
-  uploading the 669 MB Python environment from inside the repository and saturating the uplink (≈110 KB/s);
-  any second process talking to RawTree then tipped the server into timeouts. The environment, data and logs
-  are now outside the repository. **OneDrive should stay paused while the server runs.** See
-  [the incident note](notes/2026-11-14_1414_incident-unanswered-requests.md).
-- **The store moved again**: a second batch of 100 new products arrived at 14:00 UTC (5,200 products now).
-- **Next to watch**: v5 on new shoppers (the final brings new shoppers), and whether the leaderboard climbs
-  towards 2 over the next hour.
+- **Warning — v5 converts half as much since 14:06 UTC.** 1.22% (18 purchases in 1,473 requests) against
+  2.35% in the 32 minutes before (73 in 3,105); 2.6 standard errors. Lists, order, shoppers and the organic
+  stream are unchanged; known shoppers click as before but buy 15% of what they click instead of 36%. Either
+  the instance started at 14:06:31 or the store itself (a second batch of products at 14:00 UTC). See
+  [the 15:20 note](notes/2026-11-14_1520_conversion-drop-after-1406.md).
+- **Reliability is down again**: 5.5% of requests unanswered since 14:06, p95 2.6 s, `on_time` 91.4% on the
+  leaderboard. OneDrive is closed but the uplink is still full (113–124 KB/s): the browser and Discord.
+- **Leaderboard**: conversion 1.52 (rank 1; team_09 at 1.34 and closing), cold 2.13; reference 2.10 / 1.96.
+  The hourly window still holds the good 13:34–14:06 stretch; if the last ten minutes continue, it will fall.
+- **Earlier result that still stands**: in the A/B (13:34–13:57 UTC) the learned ranker beat the rules, 2.50%
+  against 1.50%, with the gain on known shoppers ([15:00 note](notes/2026-11-14_1500_v5-ab-result.md)).
+- **Live since 14:06:31 UTC**: 80% `skore_money_v5`, 20% `skore_money_v5_explore`.
 
 ## Notes
 
 | When (CET) | Finding |
 |---|---|
+| [14 Nov 15:20](notes/2026-11-14_1520_conversion-drop-after-1406.md) | **v5 converts half as much since 14:06 UTC** (1.22% vs 2.35%) with unchanged lists, order, shoppers and organic stream; what was ruled out, what is left, and the test that separates the two remaining causes. Also: repeat visits convert half as much as first visits |
 | [14 Nov 15:00](notes/2026-11-14_1500_v5-ab-result.md) | **A/B result**: the learned ranker converts 2.50% against 1.50% for the rules (2.4 standard errors); the gain is on known shoppers (2.10% vs 0.97%); v5 puts 62% of known-shopper impressions in purchase-history subcategories against 34%. At the reference's level on served requests |
 | [14 Nov 14:30](notes/2026-11-14_1430_why-far-from-reference.md) | **Why we are far from the reference**: the gap is all on known shoppers; their purchases follow their purchase-history subcategories (63%), not the session's category (21%); arithmetic of what the lever is worth; a proposed A/B arm |
 | [14 Nov 14:14](notes/2026-11-14_1414_incident-unanswered-requests.md) | Incidents: requests unanswered at 14:14–14:31 and 14:58–15:01. Cause: OneDrive uploading the Python environment from inside the repository saturated the uplink; a second process talking to RawTree then tipped the server into timeouts. What to change before the final |
