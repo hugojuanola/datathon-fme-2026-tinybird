@@ -165,37 +165,43 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 18:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+As of Sat 14 Nov 2026 21:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
 answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 1. **Retrieve** — the rules (`score_rules`): popularity x measured lifts, 1,000 candidates.
 2. **Rank** — two LightGBM models, `P(click) x P(purchase | click)`, over the features of
    `reco/features.py` (counts, shares and matches: never an id). Requests are routed by kind: a ranker
    written `"v9w|v9"` sends the cold ones (new shopper, or a product added during the event among the recent
-   views) to `models/v9w` (our live feedback weighted x20) and the rest to `models/v9` (x5).
+   views) to the first ranker and the rest to the second. Not in use: one ranker serves everybody (three
+   measurements against weighting live feedback x20 for cold requests). Optionally a third model multiplies
+   the score: the organic propensity, "this shopper is about to buy this product in the store".
 3. **Store moves** — the trend detector (`reco.features.Trends`, fed from `shop.events` every second)
-   multiplies the scores of a trending subcategory by its lift to the power the arm sets.
+   multiplies the scores of a trending subcategory by its lift (measured live: a trend sells x8.3 in our
+   carousel, the detector says x8.6).
 4. **Hard rules** — never a product the shopper already bought, never one out of stock.
 
-Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`): the overnight experiment, live since 18:45 CET.
-Four ranker set-ups (`v9` · `v9w|v9` · `v16` · `v16w|v16`), each with the trend lift off (6 % of the traffic:
-`skore_money_v21`, `v23`, `v25`, `v27`) and on at lift ^ 0.75 (19 %: `v22`, `v24`, `v26`, `v28`). No exploration.
+Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), live since 21:32 CET, one ranker for every
+request: `skore_money_v31` (30 %) v9 + full trend lift, the version to beat · `v32` (30 %) v9 x the organic
+model (`models/v9o`, `offline/organic.py`) + lift · `v33` (20 %) v9b, v9's features retrained on all of
+Saturday, + lift · `v34` (10 %) v9 without lift · `v35` (10 %) v9 with lift ^ 0.5. No exploration.
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
-versions scored, §16 trends / prices / new products, §17 the overnight experiment, §18 reliability). A second session writes a live read of the board and
+versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
+organic model and the arms of the night). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
 Where we stand (18:19 CET, last hour): first of the teams with 2.18 expected purchases per 100 requests;
 next team 1.83, organisers' reference 2.04. Cold requests 2.76 vs 1.73 for the reference. The weak number
 is `on_time`, 96.4 % (others 99.8 %): answers are lost in bursts of the home connection.
 
-Open for the final (findings §17 has the design; the humans decide, before Sunday 09:30 CET):
-1. **Read the night**: `python scripts/arms.py 17:45 07:30` (UTC). Which ranker set-up, pooling lift off and
-   on; and, if a trend ran, whether the lift helped (even against odd versions over those minutes). Four
-   trends ran on Saturday (09:30, 11:30, 13:30, 15:30 UTC) before any version reacted to them; none had come
-   back by 18:45 CET.
+Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
+1. **Read the night**: `python scripts/arms.py 20:45 07:30` (UTC), or the table in `best_model.md`. Outside
+   a trend v31, v34 and v35 are the same ranker: pool them (50 %) against v32 (does the organic factor help
+   live?) and v33 (does retraining on more data help?). While a trend runs, v31 / v34 / v35 give the dose
+   of the lift; a trend sells x8.3 in our carousel (measured on 9,000 impressions), so full lift is the
+   expectation.
 2. **A single arm** for the final with the winner (`scripts/swap_server.ps1` after editing `ARMS`):
-   [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is already a sound mix.
-   The best proven version and how to put it back: [`best_model.md`](best_model.md).
+   [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is a sound mix: every
+   arm is v9 or one step from it, and 90 % of the traffic has the lift.
 3. **The connection.** A network cable to the router, nothing else using the line, no assistant session
    open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi from the rest.
 

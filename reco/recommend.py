@@ -43,6 +43,7 @@ LIFT_BOUGHT_SUB_3 = 10.0 # 1-2 purchases, 14× with 3+). The model decides how m
 CANDIDATES = 1000        # products handed from the rules to the model
 LIFT_SHARED_ATTR = (1.0, 2.0, 4.5)   # retrieval only: 0 / 1 / 2 description attributes shared with the last
                                      # viewed product (live, slot-adjusted: 0.75 / 1.7 / 4.3 of the average)
+ORGANIC_TOP = 300        # candidates (the best by the carousel models) the organic model is asked about
 EXPLORE_HEAD = 4         # exploration: the model's best 4 are shown in slots 1-4, in random order
 EXPLORE_POOL = 14        # …and slots 5-10 are 6 products drawn at random from its ranks 5-14
 
@@ -171,12 +172,15 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
                       REGIONS.get(req["region"], -1), recent, top, int(req["ts_ms"]) / 1000, slot=1.0,
                       trend=trend_lift if by_model else None)
         p = ranker.score(x)
-        if organic:
-            wants = ranker.propensity(x)
-            if wants is not None:
-                p = p * wants ** organic
         if lift is not None:
             p = p * lift[top]
+        if organic and ranker.organic is not None:
+            # the organic model is the slow one (1,500 trees), and beyond the best few hundred candidates it
+            # cannot change the first 10: on 250 requests, applying it to the best 200 gave the same lists
+            best = np.argpartition(-p, ORGANIC_TOP - 1)[:ORGANIC_TOP] if len(p) > ORGANIC_TOP else np.arange(len(p))
+            blended = np.zeros(len(p))
+            blended[best] = p[best] * ranker.propensity(x[best]) ** organic
+            p = blended
         order = np.argsort(-p, kind="stable")
         if policy == "explore":     # reproducible: the same request always gets the same sample
             rng = np.random.default_rng(zlib.crc32(req.get("id", "").encode()))

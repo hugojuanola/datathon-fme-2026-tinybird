@@ -412,6 +412,27 @@ underestimated them: lifts of 4–8.) The same statistic also watches categories
 final could have another shape — and those levels only speak when no subcategory explains the move, because
 a trending subcategory drags its category and its brands up with it.
 
+**Measured live: a trending product sells ×8.3 in our carousel.** The first trend with the detector in
+production was Game Consoles, 19:30–20:15 UTC. The server announced it **41 seconds** after it started and
+let it go 90 seconds after it ended; its lift went from 3.6 to about 10 in ten minutes (median 8.6). The
+arms that lifted the subcategory showed 9,074 of its impressions. Against what v9 — which knows nothing
+about trends — predicted for those same impressions, at the slot they were in:
+
+| | Observed | v9 expected | Ratio (95 %) |
+|---|---|---|---|
+| Clicks | 129 | 32.6 | ×3.96 (3.3–4.7) |
+| Purchases | 52 | 6.2 | **×8.33 (6.3–11.0)** |
+| Same products, not trending (3,876 impressions v9 had not seen) | 6 purchases | 6.8 | ×0.88 |
+
+The ratio is the same for shoppers who were looking at something else (×8.4) and in every slot band from
+1 to 6. So what the organic stream says is what the carousel does, one to one, and the detector's own
+estimate is the right multiplier: the lift is applied in full (exponent 1). The arms of that evening used
+exponent 0.75 (about ×5) and, as an A/B over one trend, read +0.03 ± 0.20 against no lift — a single
+45-minute trend cannot resolve it; the 9,000 impressions can. One thing that looks like cannibalisation and
+is not: lists that fill up with trend products sell nothing else, but those are the weak requests (home
+pages, no signals). Across versions the click rate of a list follows its quality (best sellers 2.4 %, rules
+4.8 %, v5 5.9 %, v9 7.4 %) while purchases per click stay at 30–33 %: clicks are not a fixed budget.
+
 **Price changes.** Promotions of about 19 % on some 600 products, for two hours, then back (10:30–12:30,
 13:30–15:30, 16:30–). The discounted products take ×1.2 to ×1.5 of their previous share of purchases in one
 batch and no more than before in another (the batches overlap with trends, which blurs it): an elasticity
@@ -578,3 +599,55 @@ those.
   view; nothing to correct by hand.
 - *Where the value of a list is.* The top fifth of our impressions by score holds 89 % of the purchases,
   the bottom three fifths 1 %: the first slots decide.
+
+
+## 20. A third model: what the store itself teaches (`offline/organic.py`), and the arms of the night
+
+The two carousel models learn from what a carousel showed. The purchases of §19 are a different teacher:
+the product the shopper was really after, whoever showed it. `offline/organic.py` trains a model for "this
+shopper is about to buy this product" on three kinds of moment, each followed within 30 minutes by a
+purchase of the same shopper: requests of the live stream (7,441), requests of the old carousel (14,930),
+and 104,951 moments inside the purchase sessions of the 60-day history written as the request they would
+have been (the shopper has just viewed a product, or has just arrived). 153,580 purchases; for each moment,
+the product bought against 30 products the rules retrieved and the shopper did not buy.
+
+On its own it is a poor ranker of 1,000 candidates (8 % of next purchases in its top 10; v9 13 %). As a
+factor on top of v9 — score = P(click) × P(purchase | click) × organic — it adds on both offline judges, on
+hours neither model had seen:
+
+| | v9 | v9 × organic ^ 0.5 | v9 × organic ^ 1 | organic alone |
+|---|---|---|---|---|
+| Our carousel's held-out purchases (904): reciprocal rank among the 10 shown | 0.384 | 0.398 | **0.406** | 0.406 |
+| … ranked first | 17.8 % | 19.8 % | **20.4 %** | 21.3 % |
+| Our carousel's held-out clicks (2,865): reciprocal rank | 0.323 | 0.336 | **0.340** | 0.351 |
+| Next purchases in the store (2,100): in the top 10 | 13.2 % | 14.0 % | 13.7 % | 8.2 % |
+| … weighted by the attention of the slot | 5.8 % | 6.2 % | **6.5 %** | 3.7 % |
+
+A model that never saw a carousel orders our carousel's purchases as well as v9 does: shoppers buy from a
+carousel what they were going to buy anyway. Without the history's sessions (25,000 purchases instead of
+153,000) the same model added nothing on the carousel's purchases: here more data did matter. It changes
+3 of the 10 products of a list on average. It costs 115 ms on 1,000 candidates, so it is asked only about
+the best 300 of the carousel models (identical lists on 250 requests; 34 ms).
+
+**What did not survive the evening:**
+
+- `v16` (all of Saturday's feedback, more features) against `v9` on warm requests, live: 1.76 against 1.99
+  on 8,150 requests each, 3.2 standard errors. Both offline judges had them level or v16 slightly ahead.
+  Offline numbers screen ideas; the live arms decide.
+- Weighting live feedback ×20 for cold requests (v9w, v16w): no gain on any of three measurements.
+- `rank_left` / `pop_vs_left` (§19) in the carousel models: 0.1–0.5 % of their gain and no change on either
+  judge (`v17`). The organic model does use them (2.5 % of its gain), so they stay as features.
+
+**Live since 20:32 UTC**, one ranker for every request:
+
+| Arm | Traffic | What |
+|---|---|---|
+| `skore_money_v31` | 30 % | v9 + trend lift (full) — the version to beat |
+| `skore_money_v32` | 30 % | v9 × organic + trend lift |
+| `skore_money_v33` | 20 % | v9b (v9's features retrained on all of Saturday) + trend lift |
+| `skore_money_v34` | 10 % | v9, no lift |
+| `skore_money_v35` | 10 % | v9, lift ^ 0.5 |
+
+Outside a trend v31, v34 and v35 are the same ranker: pooled (50 %) against v32 and v33 they answer
+"does the organic factor help live?" and "does retraining v9 on more data help or hurt?". While a trend
+runs, v31 / v34 / v35 give the dose of the lift.
