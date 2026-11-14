@@ -22,12 +22,23 @@ The "where we stand" slide then shows the final round instead of the practice ro
 running the leaderboard hides the metrics and the script leaves `data.js` as it was.
 
 Every other number on the slides is quoted from [`docs/findings.md`](../docs/findings.md); the speaker
-notes of each slide name the section (or the watch note, for what `findings.md` does not cover yet: passing
-the reference, the routing of cold requests, the trend detector). The deck was last brought up to date with
-branch `javier` at commit `ed044ba` (14 Nov, 18:00 CET: rankers v9–v14). When the system changes again, these
-places need a look: the columns of slide 7 (held-out table of `offline.train`), the `VERSIONS` markers and
-caption of the trend chart, the feature count and routing line on slide 6, and the latency ticks on slide 10
-(`queries/health.sql`).
+notes of each slide name the section (or [`best_model.md`](../best_model.md), the record of every version
+served). The deck was last brought up to date with branch `javier` at commit `2f3e282` (14 Nov, 20:10 CET:
+findings §15–§18, the overnight experiment `skore_money_v21`–`v28` still running).
+
+**Still to fill in on Sunday**, once the night is read and the final is over; the notes of these slides say
+"decir aquí…" where the spoken sentence depends on it:
+
+| Slide | What depends on Sunday |
+|---|---|
+| 3 | The whole slide: run `update_data.py` after 12:00 |
+| 6 | Which of the eight arms served the final (one ranker or one per kind of request; trend lift on or off) |
+| 9 | What the overnight experiment said, in the last row of the list and in the notes |
+| 10 | The share of answers on time during the final, and whether the cable fixed the bursts |
+
+When the system changes again, these places need a look too: the columns and the live bars of slide 7
+(held-out table of `offline.train`, `scripts/arms.py`), the `VERSIONS` markers and caption of the trend chart,
+the feature count on slide 6, and the latency ticks on slide 10 (`queries/health.sql`).
 
 ## Keys
 
@@ -51,8 +62,8 @@ of demo (`data-t` on each slide, in seconds). `index.html?min=5` rescales the wh
 | 3 | Where we stand | | 25 |
 | 4 | Measure before modelling | Method | 35 |
 | 5 | The trap: satiation | Method, learning from the stream | 25 |
-| 6 | Two stages | Method | 35 |
-| 7 | Validated offline, confirmed live | Method | 40 |
+| 6 | Two stages, then the store moves | Method | 35 |
+| 7 | Validated offline, confirmed live, noise measured | Method | 40 |
 | 8 | The finding: description attributes | Method, cold start | 40 |
 | 9 | Learning from the stream | Learning from the stream | 40 |
 | 10 | Reliability | | 30 |

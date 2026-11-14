@@ -1,44 +1,44 @@
 // Written by update_data.py from the public leaderboard. Do not edit by hand.
 window.DECK_DATA = {
  "mode": "practice",
- "updated_at": 1794675616,
+ "updated_at": 1794683456,
  "rank": 1,
  "teams": 42,
  "team": {
-  "conversion": 2.146015767922973,
-  "cold_conversion": 2.7963833230657684,
-  "on_time": 95.61346564035982,
-  "revenue_per_request": 1.0633522030585165,
-  "model_version": "skore_money_v14"
+  "conversion": 2.007082331079013,
+  "cold_conversion": 2.6485660764816688,
+  "on_time": 93.20415353235676,
+  "revenue_per_request": 1.0758542052227045,
+  "model_version": "skore_money_v28"
  },
  "rivals": [
   {
-   "conversion": 1.8047968290793126,
-   "cold_conversion": 2.28118043191928,
-   "on_time": 99.87016600204025,
-   "revenue_per_request": 0.9225382187055041,
-   "model_version": "m29f61"
+   "conversion": 1.78799377189949,
+   "cold_conversion": 2.3231529363142953,
+   "on_time": 99.15631374003338,
+   "revenue_per_request": 0.9895910068262194,
+   "model_version": "v2r1-buy-nb"
   },
   {
-   "conversion": 1.6696738290391935,
-   "cold_conversion": 2.1333675680913826,
-   "on_time": 99.69396271909487,
-   "revenue_per_request": 0.8248361351020506,
-   "model_version": "v3r1-buy-nb"
+   "conversion": 1.7780501713233396,
+   "cold_conversion": 2.35082993638627,
+   "on_time": 99.62914889671796,
+   "revenue_per_request": 0.9697020803998516,
+   "model_version": "me15cb"
   }
  ],
  "reference": {
-  "conversion": 1.9804876688410937,
-  "cold_conversion": 1.7318022194960734,
+  "conversion": 1.879938597705411,
+  "cold_conversion": 1.6958840793013055,
   "on_time": 100,
-  "revenue_per_request": 0.9421269720007153,
+  "revenue_per_request": 0.8732371454220598,
   "model_version": ""
  },
  "baseline": {
-  "conversion": 0.5347332255958668,
-  "cold_conversion": 0.8505566313420276,
+  "conversion": 0.5033046181407321,
+  "cold_conversion": 0.799269668579261,
   "on_time": 100,
-  "revenue_per_request": 0.09173294209337653,
+  "revenue_per_request": 0.16754795145714496,
   "model_version": ""
  },
  "history": [
@@ -115,10 +115,34 @@ window.DECK_DATA = {
    0.6018
   ],
   [
-   1794675616,
-   2.146015767922973,
-   1.9804876688410937,
-   0.5347332255958668
+   1794676260,
+   2.1444,
+   2.0146,
+   0.5168
+  ],
+  [
+   1794678060,
+   2.2453,
+   2.0898,
+   0.628
+  ],
+  [
+   1794680820,
+   2.0595,
+   1.8485,
+   0.4983
+  ],
+  [
+   1794682860,
+   1.9623,
+   1.8475,
+   0.4533
+  ],
+  [
+   1794683456,
+   2.007082331079013,
+   1.879938597705411,
+   0.5033046181407321
   ]
  ]
 };
