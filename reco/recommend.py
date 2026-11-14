@@ -114,13 +114,14 @@ def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrie
 
 
 def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candidates: int | None = None,
-              trend: float = 0.0, price: float = 0.0,
+              trend: float | str = 0.0, price: float = 0.0,
               trend_lift: np.ndarray | None = None) -> tuple[list[str], list[str]]:
     """(10 product ids, why each is there) for a request {user, rv, page, device, region}.
 
     The store moves, and the organic stream shows by how much before our own feedback can:
-    trend: how much of a live trend to apply. Products of a group selling L times its usual share right
-           now (state.trend_lift; `trend_lift` overrides it, for tests) have their scores multiplied by L ** trend.
+    trend: what to do with a live trend. 0 = ignore it. A number = products of a group selling L times its
+           usual share right now (state.trend_lift; `trend_lift` overrides it, for tests) have their scores
+           multiplied by L ** trend. "model" = no multiplier: the ranker gets the trend as a feature.
     price: price elasticity. A product at r times its catalogue price has its score multiplied by r ** -price
            (measured on 14 Nov: a 19 % drop sells x1.3-1.45, an elasticity of about 1.6).
     why: v = just viewed · c = abandoned cart · t = trending subcategory · b = the shopper bought in that
@@ -132,15 +133,17 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
     score = score_rules(cat, shopper, recent, retrieval=policy != "rules")
     n = len(score)
     lift, hot = None, None      # lift: every store move together · hot: the trending products
+    by_model = trend == "model"
+    power = 0.0 if by_model else float(trend)
     trend_lift = state.trend_lift if trend_lift is None else trend_lift
     if trend_lift is not None and len(trend_lift) != n:     # computed on another snapshot of the catalogue
         trend_lift = None
     try:
         if price and cat.discount.any():
             lift = np.clip(np.exp(-price * cat.discount), 0.5, 2.5)
-        if trend and trend_lift is not None:
+        if power and trend_lift is not None:
             hot = trend_lift > 1
-            lift = trend_lift ** trend if lift is None else lift * trend_lift ** trend
+            lift = trend_lift ** power if lift is None else lift * trend_lift ** power
         if lift is not None:
             score *= lift
     except Exception as e:     # a store move is a bonus: never let it cost an answer
@@ -155,8 +158,7 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
         top = np.argpartition(-score, k - 1)[:k]
         x = featurize(cat, shopper, PAGES.get(req["page"], 2), DEVICES.get(req["device"], 0),
                       REGIONS.get(req["region"], -1), recent, top, int(req["ts_ms"]) / 1000, slot=1.0,
-                      trend=None if trend else trend_lift)     # a trend is counted once: by the lift, or by
-                                                               # a ranker that has it as a feature
+                      trend=trend_lift if by_model else None)
         p = ranker.score(x)
         if lift is not None:
             p = p * lift[top]

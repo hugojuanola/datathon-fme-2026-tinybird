@@ -35,10 +35,16 @@ from reco.recommend import Ranker, is_valid, recommend, safe_list
 from reco.state import State
 
 # (model_version written with each answer and shown on the public leaderboard, policy, ranker in models/,
-#  the store moves it reacts to — {"trend": exponent, "price": elasticity}, see recommend —, % of the traffic).
-#  A ranker "A|B" routes by kind of request: A answers the cold ones (see is_cold), B the rest.
-ARMS = (("skore_money_v11", "model", "v9w|v9", {}, 33), ("skore_money_v14", "model", "v9w|v9", {"trend": 1.0}, 34),
-        ("skore_money_v15", "model", "v9w|v9", {"trend": 0.6}, 33))
+#  the store moves it reacts to — {"trend": exponent or "model", "price": elasticity}, see recommend —,
+#  % of the traffic). A ranker "A|B" routes by kind of request: A answers the cold ones (see is_cold), B the rest.
+#
+# The night of 14 Nov: four ranker set-ups x trend lift off / on, so that both questions are read from the
+# same requests (rankers: all the traffic, pooling off and on; the lift: the minutes a trend is running).
+# Three quarters of every set-up already apply the lift: it is our best guess if nobody is there to choose.
+ARMS = (("skore_money_v21", "model", "v9", {}, 6),              ("skore_money_v22", "model", "v9", {"trend": 0.75}, 19),
+        ("skore_money_v23", "model", "v9w|v9", {}, 6),          ("skore_money_v24", "model", "v9w|v9", {"trend": 0.75}, 19),
+        ("skore_money_v25", "model", "v16", {}, 6),             ("skore_money_v26", "model", "v16", {"trend": 0.75}, 19),
+        ("skore_money_v27", "model", "v16w|v16", {}, 6),        ("skore_money_v28", "model", "v16w|v16", {"trend": 0.75}, 19))
 POLLERS = 4
 POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
 SENDERS = 4
