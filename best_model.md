@@ -1,16 +1,16 @@
 # Best model so far
 
-_Updated 14 Nov 2026, 23:21 CET by [`realtime_analyisi_leaderboard/best_model.py`](realtime_analyisi_leaderboard/best_model.py). Numbers are the organisers' own: expected purchases per 100 requests under the hidden model, per `model_version`._
+_Updated 14 Nov 2026, 23:29 CET by [`realtime_analyisi_leaderboard/best_model.py`](realtime_analyisi_leaderboard/best_model.py). Numbers are the organisers' own: expected purchases per 100 requests under the hidden model, per `model_version`._
 
 **Record: `skore_money_v9`** — attributes + carts by subcategory; learned from the old log and today's feedback. 2.37 expected purchases per 100 requests on 2,822 requests, against 2.02 for the organisers' reference over the same half hours: **+0.35**.
 
-Tied with it, within what the measurement can tell apart (0.15 points): `skore_money_v22` (+0.40), `skore_money_v23` (+0.39), `skore_money_v36` (+0.39), `skore_money_v27` (+0.39), `skore_money_v32` (+0.35), `skore_money_v9w` (+0.34), `skore_money_v21` (+0.32), `skore_money_v28` (+0.30), `skore_money_v15` (+0.25), `skore_money_v8` (+0.25), `skore_money_v26` (+0.24), `skore_money_v25` (+0.23), `skore_money_v13` (+0.23), `skore_money_v33` (+0.22), `skore_money_v14` (+0.21), `skore_money_v24` (+0.20).
+Tied with it, within what the measurement can tell apart (0.15 points): `skore_money_v22` (+0.40), `skore_money_v23` (+0.39), `skore_money_v27` (+0.39), `skore_money_v36` (+0.36), `skore_money_v9w` (+0.34), `skore_money_v32` (+0.34), `skore_money_v21` (+0.32), `skore_money_v28` (+0.30), `skore_money_v15` (+0.25), `skore_money_v8` (+0.25), `skore_money_v33` (+0.24), `skore_money_v26` (+0.24), `skore_money_v25` (+0.23), `skore_money_v13` (+0.23), `skore_money_v14` (+0.21), `skore_money_v24` (+0.20).
 
 - **Best on cold requests** (new shopper, or a new product among the recent views — what the final is expected to bring): `skore_money_v9w`, 3.21 against the reference's 1.77.
 - **Best on the other requests** (known shoppers): `skore_money_v9`, 2.11 against 2.11. On cold requests every version of ours since v7 is 1.0 to 1.5 above the reference; on the other requests the best of ours are level with it. That is the gap still open.
-- **Code**: branch `javier`, last commit on `reco/` or `offline/`: `938b995 — skore_money_v32, v36: a trending product takes the organic factor of its neighbours (live since 21:51 UTC)`. Model files: `models/`.
+- **Code**: branch `javier`, last commit on `reco/` or `offline/`: `e2113fc — Findings 22: the reorder estimate under three attention curves (+2.5 % to +4.7 %), the organic factor as a choice model (8 se)`. Model files: `models/`.
 
-**Being measured against the record** (all on the v9 ranker, trend lift at full strength; live since 21:33 UTC on 14 Nov): `skore_money_v31` (30 %) v9 itself, `v32` (30 %) v9 × a third model of what shoppers go on to buy in the store, `v33` (20 %) v9's features retrained on all of Saturday, `v36` (20 %) `v32` with products added during the event × 1.5. `v31`, `v32` and `v33` have run since 20:35 UTC, until 21:33 next to `v34` (no trend lift) and `v35` (lift ^0.5). Read the night with `python scripts/arms.py 21:35 07:30 | python realtime_analyisi_leaderboard/pool_arms.py 'v9=31' 'v9 x organic=32' 'organic, new x1.5=36' 'v9b=33'` on Sunday morning. Before them, 17:45–20:30 UTC, `v21`–`v28` compared v9, v9w cold + v9 warm, v16 and v16w cold + v16 warm, each with the trend lift off and at ^0.75: v9 everywhere led (+0.38 over the reference on 7,186 requests), v16 lost on warm requests (1.78 against 1.97, 2.7 standard errors) and the lift at ^0.75 changed nothing.
+**Being measured against the record** (all on the v9 ranker, trend lift at full strength; live since 22:23 UTC on 14 Nov): `skore_money_v31` (30 %) v9 itself, `v32` (30 %) v9 × a third model of what shoppers go on to buy in the store, `v37` (20 %) v9 picks the ten and the organic factor only orders them, `v36` (20 %) `v32` with products added during the event × 1.5 for known shoppers. `v32` and `v36` count from 21:55 UTC (before that the organic factor flooded lists during a trend), `v37` from 22:25. Read the night with `python scripts/arms.py 22:25 07:30 | python realtime_analyisi_leaderboard/pool_arms.py 'v9=31' "organic orders v9's ten=37" 'v9 x organic=32' 'organic, new x1.5=36'` on Sunday morning; every test of the day, with what it gave and what it cost, is in `realtime_analyisi_leaderboard/experiments.md`. Earlier: `v33` (v9 retrained on all of Saturday) was level with v9 and left at 22:23 UTC; `v34` (no trend lift) and `v35` (lift ^0.5) ran 20:35–21:33 without a trend to measure. Before them, 17:45–20:30 UTC, `v21`–`v28` compared v9, v9w cold + v9 warm, v16 and v16w cold + v16 warm, each with the trend lift off and at ^0.75: v9 everywhere led (+0.38 over the reference on 7,186 requests), v16 lost on warm requests (1.78 against 1.97, 2.7 standard errors) and the lift at ^0.75 changed nothing.
 
 ## Putting the record back
 
@@ -24,26 +24,26 @@ Ranked by the margin over the reference in the half hours each version was live 
 |---|---|---|---|---|---|---|---|---|---|
 | `skore_money_v22` (tied) | v9 everywhere, trend lift ^0.75 | 17:30–20:30 | 5,454 | 2.37 | 1.98 | **+0.40** | 2.93 (+1.12) | 2.05 (-0.04) | 1.17 |
 | `skore_money_v23` (tied) | routed v9w cold / v9 warm, trend lift off | 18:00–20:30 | 1,637 | 2.39 | 1.99 | **+0.39** | 3.18 (+1.38) | 1.88 (-0.23) | 1.07 |
-| `skore_money_v36` (tied) | v32 (v9 × organic, trend lift ^1.0) with products added during the event × 1.5 for known shoppers | 21:30–22:20 | 1,724 | 2.31 | 1.93 | **+0.39** | 3.06 (+1.32) | 1.86 (-0.18) | 1.16 |
 | `skore_money_v27` (tied) | routed v16w cold / v16 warm, trend lift off | 17:30–20:30 | 1,743 | 2.36 | 1.98 | **+0.39** | 3.17 (+1.35) | 1.88 (-0.20) | 1.15 |
+| `skore_money_v36` (tied) | v32 (v9 × organic, trend lift ^1.0) with products added during the event × 1.5 for known shoppers | 21:30–22:25 | 1,888 | 2.29 | 1.92 | **+0.36** | 3.07 (+1.30) | 1.81 (-0.20) | 1.13 |
 | `skore_money_v12` | variant served 16:29–16:53 UTC next to v11 (see docs/findings.md) | 16:30–17:00 | 838 | 2.36 | 2.00 | **+0.36** | 2.43 (+0.75) | 2.32 (+0.14) | 1.31 |
-| `skore_money_v32` (tied) | v9 × organic ^0.5 (a third model: what shoppers go on to buy in the store), trend lift ^1.0 | 20:30–22:20 | 5,876 | 2.34 | 1.98 | **+0.35** | 2.97 (+1.18) | 1.94 (-0.16) | 1.20 |
 | `skore_money_v9` **← record** | attributes + carts by subcategory; learned from the old log and today's feedback | 15:30–16:30 | 2,822 | 2.37 | 2.02 | **+0.35** | 2.84 (+0.98) | 2.11 (-0.00) | 1.27 |
 | `skore_money_v9w` (tied) | v9 with today's feedback weighted ×20 (best on cold requests) | 16:00–17:00 | 2,533 | 2.32 | 1.99 | **+0.34** | 3.21 (+1.44) | 1.87 (-0.24) | 1.30 |
+| `skore_money_v32` (tied) | v9 × organic ^0.5 (a third model: what shoppers go on to buy in the store), trend lift ^1.0 | 20:30–22:25 | 6,138 | 2.31 | 1.98 | **+0.34** | 2.93 (+1.12) | 1.93 (-0.16) | 1.17 |
 | `skore_money_v7` | + product attributes from the description (20 phrases, 2 per product) | 15:00–15:30 | 1,432 | 2.42 | 2.09 | **+0.34** | 2.88 (+1.15) | 2.17 (-0.10) | 1.28 |
 | `skore_money_v21` (tied) | v9 everywhere, trend lift off | 17:30–20:30 | 1,733 | 2.30 | 1.98 | **+0.32** | 3.06 (+1.25) | 1.87 (-0.22) | 1.03 |
 | `skore_money_v28` (tied) | routed v16w cold / v16 warm, trend lift ^0.75 | 17:30–20:30 | 5,547 | 2.27 | 1.98 | **+0.30** | 3.04 (+1.24) | 1.79 (-0.29) | 1.11 |
 | `skore_money_v8c` | variant of v8 (see docs/findings.md) | 15:30–16:00 | 924 | 2.38 | 2.10 | **+0.28** | 3.30 (+1.34) | 1.84 (-0.33) | 1.11 |
 | `skore_money_v15` (tied) | v11 + weaker trend lift (no trend ran while it was live) | 17:00–18:00 | 1,764 | 2.28 | 2.04 | **+0.25** | 3.06 (+1.19) | 1.88 (-0.25) | 1.11 |
 | `skore_money_v8` (tied) | v7 without the brand features, refit on all the data | 15:00–16:00 | 2,665 | 2.35 | 2.10 | **+0.25** | 3.22 (+1.30) | 1.88 (-0.31) | 1.24 |
+| `skore_money_v33` (tied) | v9b = v9's 52 features retrained on all of 14 Nov, trend lift ^1.0 | 20:30–22:25 | 4,050 | 2.22 | 1.98 | **+0.24** | 2.80 (+1.00) | 1.87 (-0.22) | 1.05 |
 | `skore_money_v26` (tied) | v16 everywhere, trend lift ^0.75 | 17:30–20:30 | 5,450 | 2.22 | 1.98 | **+0.24** | 3.02 (+1.21) | 1.73 (-0.36) | 1.17 |
 | `skore_money_v25` (tied) | v16 everywhere (retrained on all of 14 Nov), trend lift off | 17:30–20:30 | 1,821 | 2.21 | 1.98 | **+0.23** | 2.90 (+1.09) | 1.78 (-0.31) | 1.01 |
 | `skore_money_v13` (tied) | routed: v9w for cold requests, v10 for the rest | 16:30–17:30 | 1,726 | 2.36 | 2.12 | **+0.23** | 2.76 (+0.95) | 2.14 (-0.15) | 1.31 |
-| `skore_money_v33` (tied) | v9b = v9's 52 features retrained on all of 14 Nov, trend lift ^1.0 | 20:30–22:20 | 3,928 | 2.20 | 1.98 | **+0.22** | 2.75 (+0.97) | 1.86 (-0.23) | 1.02 |
 | `skore_money_v14` (tied) | v11 + trend lift (no trend ran while it was live: same behaviour as v11) | 16:30–18:00 | 3,558 | 2.28 | 2.08 | **+0.21** | 2.98 (+1.14) | 1.89 (-0.32) | 1.00 |
 | `skore_money_v24` (tied) | routed v9w cold / v9 warm, trend lift ^0.75 | 17:30–20:30 | 5,438 | 2.18 | 1.98 | **+0.20** | 2.53 (+0.72) | 1.97 (-0.12) | 1.05 |
 | `skore_money_v35` | v9 everywhere, trend lift ^0.5 (dose) | 20:30–21:30 | 1,024 | 2.19 | 2.02 | **+0.17** | 2.51 (+0.69) | 1.97 (-0.18) | 0.91 |
-| `skore_money_v31` | v9 everywhere, trend lift at full strength (^1.0) | 20:30–22:20 | 5,679 | 2.14 | 1.98 | **+0.16** | 2.60 (+0.81) | 1.86 (-0.24) | 1.02 |
+| `skore_money_v31` | v9 everywhere, trend lift at full strength (^1.0) | 20:30–22:25 | 5,960 | 2.14 | 1.98 | **+0.17** | 2.65 (+0.85) | 1.83 (-0.25) | 1.02 |
 | `skore_money_v9d` | variant of v9 (see docs/findings.md) | 16:00–16:30 | 1,668 | 2.12 | 1.98 | **+0.14** | 2.96 (+1.15) | 1.69 (-0.38) | 0.99 |
 | `skore_money_v11` | routed: v9w for cold requests, v9 for the rest | 16:30–18:00 | 4,400 | 2.15 | 2.06 | **+0.08** | 2.91 (+1.10) | 1.68 (-0.52) | 0.86 |
 | `skore_money_v34` | v9 everywhere, no trend lift (control for the trends) | 20:30–21:30 | 997 | 2.06 | 2.03 | **+0.04** | 2.96 (+1.14) | 1.50 (-0.64) | 1.14 |
