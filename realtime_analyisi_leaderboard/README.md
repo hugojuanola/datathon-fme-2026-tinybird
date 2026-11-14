@@ -39,25 +39,27 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## Current reading
 
-_Updated 14 Nov 2026, 15:22 CET._
+_Updated 14 Nov 2026, 15:45 CET._
 
-- **Warning — v5 converts half as much since 14:06 UTC.** 1.22% (18 purchases in 1,473 requests) against
-  2.35% in the 32 minutes before (73 in 3,105); 2.6 standard errors. Lists, order, shoppers and the organic
-  stream are unchanged; known shoppers click as before but buy 15% of what they click instead of 36%. Either
-  the instance started at 14:06:31 or the store itself (a second batch of products at 14:00 UTC). See
-  [the 15:20 note](notes/2026-11-14_1520_conversion-drop-after-1406.md).
-- **Reliability is down again**: 5.5% of requests unanswered since 14:06, p95 2.6 s, `on_time` 91.4% on the
-  leaderboard. OneDrive is closed but the uplink is still full (113–124 KB/s): the browser and Discord.
-- **Leaderboard**: conversion 1.52 (rank 1; team_09 at 1.34 and closing), cold 2.13; reference 2.10 / 1.96.
-  The hourly window still holds the good 13:34–14:06 stretch; if the last ten minutes continue, it will fall.
-- **Earlier result that still stands**: in the A/B (13:34–13:57 UTC) the learned ranker beat the rules, 2.50%
-  against 1.50%, with the gain on known shoppers ([15:00 note](notes/2026-11-14_1500_v5-ab-result.md)).
-- **Live since 14:06:31 UTC**: 80% `skore_money_v5`, 20% `skore_money_v5_explore`.
+- **Leaderboard**: 1.53, rank 2 — team_19 passed us with 1.54; team_09 at 1.42. Reference 2.10, baseline 0.73.
+  Cold conversion 2.18, above the reference's 1.96.
+- **The model is better than the board shows.** On the requests it serves, `skore_money_v5` converts 1.94%
+  (142 purchases in 7,328 requests) and earns more per request than the reference. The board loses about
+  0.12 points to unanswered requests (8.3% since 15:06 CET) and about 0.22 to the exploration arm (20% of
+  traffic at 0.83%). See [the 15:40 note](notes/2026-11-14_1540_path-to-the-reference.md).
+- **What is left to reach the reference is on known shoppers**: the `home` page (0.59% against 1.8–2.0% on
+  the other pages, worth ≈0.13), repeat visits (0.95% against 1.89% on a first visit, worth ≈0.11), and
+  shoppers with a medium history (no gain from v5).
+- **The 15:06 drop eased**: per six minutes 1.15, 1.13, 1.40, 1.56, 1.93, 1.47. The 2.35% of 14:34–15:06 was
+  probably a lucky stretch; the average since v5 went live is the better estimate.
+- **Reliability**: a new server instance with hedged requests started at 15:35 CET; first minutes clean.
+- **Live**: 80% `skore_money_v5`, 20% `skore_money_v5_explore`.
 
 ## Notes
 
 | When (CET) | Finding |
 |---|---|
+| [14 Nov 15:40](notes/2026-11-14_1540_path-to-the-reference.md) | **The path to the reference**: v5 converts 1.94% on what it serves; the board loses ≈0.12 to unanswered requests and ≈0.22 to exploration; the remaining model gap is on known shoppers — `home` page, repeat visits, medium-history shoppers — with a size for each and what to do |
 | [14 Nov 15:20](notes/2026-11-14_1520_conversion-drop-after-1406.md) | **v5 converts half as much since 14:06 UTC** (1.22% vs 2.35%) with unchanged lists, order, shoppers and organic stream; what was ruled out, what is left, and the test that separates the two remaining causes. Also: repeat visits convert half as much as first visits |
 | [14 Nov 15:00](notes/2026-11-14_1500_v5-ab-result.md) | **A/B result**: the learned ranker converts 2.50% against 1.50% for the rules (2.4 standard errors); the gain is on known shoppers (2.10% vs 0.97%); v5 puts 62% of known-shopper impressions in purchase-history subcategories against 34%. At the reference's level on served requests |
 | [14 Nov 14:30](notes/2026-11-14_1430_why-far-from-reference.md) | **Why we are far from the reference**: the gap is all on known shoppers; their purchases follow their purchase-history subcategories (63%), not the session's category (21%); arithmetic of what the lever is worth; a proposed A/B arm |
