@@ -107,3 +107,33 @@ Sources: [OTTO: co-visitation candidates and a GBDT reranker](https://towardsdat
 [OTTO, 3rd place team](https://github.com/bschifferer/Kaggle-Otto-Comp) ·
 [H&M 1st place, summary](https://goldandrabbit.github.io/2022/05/15/H&M%20Recommendation%20Competition%20Top1%20%E6%96%B9%E6%A1%88) ·
 [H&M winners used LightGBM and CatBoost rankers](https://arxiv.org/pdf/2310.03778v1.pdf)
+
+## Update, 23:40 CET — do they come back on a separate window? And region, device
+
+A finding kept only if it repeats. The properties come from the 60-day history, which ends before the
+event, so two windows of today are two independent tests: A = 15:30-18:30 UTC (2,275 clicked lists),
+B = 18:30-21:35 UTC (2,428). Coefficients on clicks (z):
+
+| Shoppers | Property | Window A | Window B | Verdict |
+|---|---|---|---|---|
+| Known | `co_hist`, per sd | +0.175 (+4.0) | +0.153 (+3.3) | **holds**; slots 3-10: +0.195 (+3.4) and +0.165 (+2.6) |
+| New | `co_view`, per sd | +0.215 (+3.9) | +0.187 (+3.6) | **holds**; slots 3-10: +0.296 (+3.9) and +0.207 (+2.8) |
+| Known | new product | +0.690 (+4.2) | +1.036 (+6.6) | **holds** |
+| New | new product | +0.901 (+3.5) | +0.509 (+2.3) | **holds** |
+| Known | `co_view`, per sd | +0.010 (+0.3) | +0.128 (+3.4) | does not repeat: dropped for known shoppers |
+| Known | attribute affinity, per log unit | +0.167 (+1.7) | +0.325 (+3.3) | same sign; already a feature |
+
+On the purchases of window B alone (742 lists) the new-product term is +1.63 (+5.0) for known shoppers;
+`co_hist` is +0.143 (+1.4) and `co_view` for new shoppers +0.159 (+1.8): the right sign, too few purchases in
+half a day to stand alone. On all the purchases since 15:30 they are +0.213 (+3.0) and +0.247 (+3.8).
+
+**Region and device** (how much the product's subcategory over-sells in the request's region or on its
+device, from the purchase history; subcategory shares differ by region with a standard deviation of 0.18
+in log, by device 0.17): nothing for known shoppers (0.00 and +0.01) and nothing for the device. For new
+shoppers the region reads +0.053 (+1.8) on all slots and +0.116 (+2.9) in slots 3-10, about the same in
+both windows: a small signal (x1.05 to x1.12 per sd) for the shoppers we know nothing else about. Third in
+line, after the two co-purchase terms.
+
+What stands, then: `co_hist` for known shoppers, `co_view` for new shoppers, and the new-product
+multiplier. The model session put the last one live at 21:33 UTC as `skore_money_v36` (`v32` with products
+added during the event x1.5), which measures it directly against `v32`.
