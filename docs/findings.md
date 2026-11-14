@@ -502,3 +502,79 @@ path to RawTree, not our process. What we checked:
 
 The monitor keeps logging one line per second, so the next burst will show whether the router stopped
 answering (Wi-Fi) or only RawTree did (the line or the internet).
+
+**The worst loss of the day had nothing to do with the network.** At 18:53:15 UTC the console window the
+server was running in was closed by mistake. Nobody answered for four minutes (723 requests; on-time 73 %
+in that quarter of an hour, third on the board for that window) until it was started again. The connection
+monitor, in a sibling window, wrote its last line the same second. Since 19:11 UTC the server has **no
+window**: `scripts/swap_server.ps1` starts `pythonw -m reco.supervise` through Windows itself, so it is not
+a child of any terminal or assistant session; the supervisor runs the server hidden, restarts it two
+seconds after any exit, and the server ignores Ctrl+C. Since then: 99.8 % answered, no restart in the log.
+
+## 19. A faster judge: what the shopper goes on to buy (`python -m offline.next_purchase`)
+
+A live A/B needs hours to separate two rankers (§15), and our own feedback only says how the 10 products
+we showed did. The organic stream answers a sharper question for free: **10 % of our requests are followed,
+within half an hour, by a purchase of the same shopper somewhere in the store** (5,635 requests in five and
+a half hours). A ranker that understands the shopper should have had that product in its list. No ranker
+chose what was bought, so the comparison is fair, and it rests on thousands of purchases. The stream is
+replayed in time order and, at each of those requests, every ranker in `models/` orders the same 1,000
+candidates.
+
+Share of the next purchases (products not bought before) that were in the ranker's first 10 — 2,384
+purchases after requests of 13:14–18:44 UTC, one standard error about 0.7 points:
+
+| | rules | v5 | v8 | v9 | v9w (live ×20) | v10 | v16 | v16w (live ×20) |
+|---|---|---|---|---|---|---|---|---|
+| All shoppers | 7.5 % | 10.1 % | 12.8 % | 12.5 % | 11.5 % | 12.4 % | 12.7 % | 12.2 % |
+| Known shoppers (1,819) | 6.8 % | 9.9 % | 12.9 % | 12.1 % | 11.6 % | 12.1 % | 12.5 % | 12.2 % |
+| New shoppers (565) | 9.6 % | 10.8 % | 12.7 % | 13.5 % | 11.2 % | 13.5 % | 13.3 % | 12.0 % |
+
+- It orders the versions as the live metric did (rules 1.45 → v5 1.81 → the attribute family 2.3–2.4), so
+  it is a usable first filter: an idea that does not move it is not worth an arm.
+- Weighting live feedback ×20 does not help anybody on this measure either, new shoppers least of all.
+  With §17 that makes three measurements against routing by kind of request: one ranker for everyone.
+- It is not the organisers' metric: a shopper who goes and buys something was looking for it, and a
+  carousel also has to tempt the one who was not.
+
+**Where those purchases are** (v16; "retrieved" = among the 1,000 candidates the rules hand to the ranker):
+
+| The product bought next… | Share of the purchases | In our 10 | Retrieved |
+|---|---|---|---|
+| was in an abandoned cart | 12 % | 43 % | 99 % |
+| is in a subcategory the shopper had bought in | 53 % | 17 % | 96 % |
+| is in the category of the last view | 25 % | 19 % | 98 % |
+| is in a subcategory the shopper had never bought in | 47 % | 8 % | 72 % |
+| had been viewed in the session (`recent_views`) | 0.6 % | 67 % | 100 % |
+| is a product added during the event | 7 % | 32 % | 92 % |
+
+Three quarters of what a shopper buys next is outside the category they are looking at, and almost never
+something they have just viewed: the session says where they are, their history says what they buy.
+
+**What is left of a subcategory.** Two thirds of a known shopper's next purchases fall in a subcategory
+they already bought in, where they own 5 products on average (and never buy one twice). Where the product
+stands by popularity:
+
+| Popularity rank… | 1st | 2–3 | 4–10 | 11–30 | 31+ |
+|---|---|---|---|---|---|
+| among all the products of the subcategory | 7.5 % | 12.4 % | 25.9 % | 34.5 % | 19.7 % |
+| among those the shopper has not bought yet | 12.0 % | 14.1 % | 27.9 % | 30.6 % | 15.4 % |
+
+For shoppers who own 11 or more products of the subcategory, the purchase is in its overall top 10 in 25 %
+of the cases — and in the top 10 of what is left for them in 50 %. Our rankers knew only the first row
+(popularity against the whole subcategory) and found 39 % of the purchases at ranks 1–3 but 7 % of those at
+ranks 11–30. Hence two features, `rank_left` and `pop_vs_left` (`reco/features.py`): how many better
+sellers of the subcategory the shopper has not bought yet, and the product's popularity against the best of
+those.
+
+**Checked on the way, and ruled out:**
+
+- *The shopper's price tier inside a subcategory.* It is a stable trait (a purchase and the mean of the
+  earlier ones correlate 0.49; the two halves of a shopper's history 0.87; against 0.26 for the absolute
+  price we use), yet it does not pick the product: popularity alone orders the products of a subcategory with
+  AUC 0.839, popularity plus distance to the shopper's tier 0.841.
+- *Miscalibration between kinds of product.* On three hours v9 had not seen, observed over predicted
+  purchases are 0.89 for abandoned carts, 0.91 for bought subcategories, 1.04 for the category of the last
+  view; nothing to correct by hand.
+- *Where the value of a list is.* The top fifth of our impressions by score holds 89 % of the purchases,
+  the bottom three fifths 1 %: the first slots decide.

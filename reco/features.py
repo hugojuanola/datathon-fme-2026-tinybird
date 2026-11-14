@@ -31,7 +31,7 @@ FEATURES = [
     "recent_attr_max", "recent_attr_mean",
     # how it matches this shopper
     "u_views", "u_purch", "u_buy_rate", "u_cat_view", "u_cat_purch", "u_sub_view", "u_sub_purch",
-    "u_sub_purch_n", "u_sub_rank", "u_sub_bought_frac", "u_sub_cart", "u_cat_cart", "u_brand_purch", "u_brand_purch_n", "u_attr_p", "u_attr_p_lo", "u_attr_c", "u_attr_c_lo", "u_attr_v", "u_attr_v_lo",
+    "u_sub_purch_n", "u_sub_rank", "u_sub_bought_frac", "rank_left", "pop_vs_left", "u_sub_cart", "u_cat_cart", "u_brand_purch", "u_brand_purch_n", "u_attr_p", "u_attr_p_lo", "u_attr_c", "u_attr_c_lo", "u_attr_v", "u_attr_v_lo",
     "u_bought_n",
     "u_carted", "u_cart_age", "u_n_carted", "u_dprice",
     # context
@@ -257,6 +257,13 @@ class Catalog:
             best_in_cat[k] = self.pop[members].max()
         self.pop_vs_sub = self.pop - best_in_sub[self.sub]
         self.pop_vs_cat = self.pop - best_in_cat[self.cat]
+        # inside its subcategory: 0 = the best seller, and the popularities in that order (for "what is left")
+        self.rank_in_sub = np.zeros(n, dtype=int)
+        self.sub_pop_sorted: dict[int, np.ndarray] = {}
+        for k, members in self.by_sub.items():
+            order = np.argsort(-self.pop[members], kind="stable")
+            self.rank_in_sub[members[order]] = np.arange(len(members))
+            self.sub_pop_sorted[int(k)] = self.pop[members[order]]
         self.is_new_item = self.is_new.astype(float)
         # attr_share: share of all purchases that are of a product with the attribute (what "everybody" likes);
         # attr_prior: how well products with this product's attributes sell on average (log lift over the
@@ -377,6 +384,23 @@ def featurize(cat: Catalog, shopper: Shopper | None, page: int, device: int, reg
     x[:, F["u_purch"]] = log(1 + u.purchases)
     x[:, F["u_buy_rate"]] = (u.purchases + 2.5) / (u.views + 50.0)
     x[:, F["u_bought_n"]] = log(1 + len(u.bought))
+    # what is left of the subcategory for this shopper: how many better sellers they have not bought yet, and
+    # the product's popularity against the best of those (a shopper never buys the same product twice)
+    ranks = cat.rank_in_sub[idx]
+    x[:, F["rank_left"]] = np.log1p(ranks)
+    x[:, F["pop_vs_left"]] = cat.pop_vs_sub[idx]
+    if u.bought:
+        mine = np.fromiter(u.bought, dtype=int)
+        mine = mine[mine < len(cat.sub)]
+        mine_sub, mine_rank = cat.sub[mine], cat.rank_in_sub[mine]
+        for s in np.unique(mine_sub).tolist():
+            rows = np.flatnonzero(sub == s)
+            if len(rows):
+                taken = np.sort(mine_rank[mine_sub == s])
+                free = int(np.argmax(taken != np.arange(len(taken)))) if (taken != np.arange(len(taken))).any() else len(taken)
+                pops = cat.sub_pop_sorted[s]
+                x[rows, F["rank_left"]] = np.log1p(ranks[rows] - np.searchsorted(taken, ranks[rows]))
+                x[rows, F["pop_vs_left"]] = cat.pop[idx[rows]] - pops[min(free, len(pops) - 1)]
     if u.views:
         seen = dict(u.sub_views)        # copies: another thread updates the shopper while we read
         sub_views = np.zeros(n_sub)

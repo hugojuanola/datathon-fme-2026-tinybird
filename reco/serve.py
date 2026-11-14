@@ -35,16 +35,22 @@ from reco.recommend import Ranker, is_valid, recommend, safe_list
 from reco.state import State
 
 # (model_version written with each answer and shown on the public leaderboard, policy, ranker in models/,
-#  the store moves it reacts to — {"trend": exponent or "model", "price": elasticity}, see recommend —,
-#  % of the traffic). A ranker "A|B" routes by kind of request: A answers the cold ones (see is_cold), B the rest.
+#  what it adds to the ranker — {"trend": exponent or "model", "organic": power, "price": elasticity}, see
+#  recommend —, % of the traffic). A ranker "A|B" routes by kind of request: A answers the cold ones, B the rest.
 #
-# The night of 14 Nov: four ranker set-ups x trend lift off / on, so that both questions are read from the
-# same requests (rankers: all the traffic, pooling off and on; the lift: the minutes a trend is running).
-# Three quarters of every set-up already apply the lift: it is our best guess if nobody is there to choose.
-ARMS = (("skore_money_v21", "model", "v9", {}, 6),              ("skore_money_v22", "model", "v9", {"trend": 0.75}, 19),
-        ("skore_money_v23", "model", "v9w|v9", {}, 6),          ("skore_money_v24", "model", "v9w|v9", {"trend": 0.75}, 19),
-        ("skore_money_v25", "model", "v16", {}, 6),             ("skore_money_v26", "model", "v16", {"trend": 0.75}, 19),
-        ("skore_money_v27", "model", "v16w|v16", {}, 6),        ("skore_money_v28", "model", "v16w|v16", {"trend": 0.75}, 19))
+# The night of 14 to 15 Nov. One ranker for every request (weighting live feedback x20 for cold requests did
+# not help on any of three measurements). v9 is the best proven; a trending product sells x8.3 in our
+# carousel, which is what the detector estimates, so the lift is applied in full (exponent 1).
+#   v31  v9 + lift                      the version to beat
+#   v32  v9 x organic + lift            + what shoppers go on to buy in the store (offline/organic.py)
+#   v33  v9b + lift                     v9's features retrained on all of Saturday
+#   v34  v9, no lift  /  v35  v9, lift ^ 0.5     the dose of the lift, read while a trend runs
+# Outside a trend v31, v34 and v35 are the same ranker: pool them against v32 and v33.
+ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 30),
+        ("skore_money_v32", "model", "v9o", {"trend": 1.0, "organic": 1.0}, 30),
+        ("skore_money_v33", "model", "v9b", {"trend": 1.0}, 20),
+        ("skore_money_v34", "model", "v9", {}, 10),
+        ("skore_money_v35", "model", "v9", {"trend": 0.5}, 10))
 POLLERS = 4
 POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
 SENDERS = 4
