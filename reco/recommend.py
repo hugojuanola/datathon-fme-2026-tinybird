@@ -123,8 +123,13 @@ def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrie
     return score
 
 
+def new_shopper(req: dict) -> bool:
+    """The request says so (is_new_user): a shopper the 60-day history knows nothing about."""
+    return str(req.get("is_new")).lower() in ("true", "1")
+
+
 def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candidates: int | None = None,
-              trend: float | str = 0.0, price: float = 0.0, organic: float = 0.0,
+              trend: float | str = 0.0, price: float = 0.0, organic: float = 0.0, fresh: float = 1.0,
               trend_lift: np.ndarray | None = None) -> tuple[list[str], list[str]]:
     """(10 product ids, why each is there) for a request {user, rv, page, device, region}.
 
@@ -136,6 +141,11 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
            (measured on 14 Nov: a 19 % drop sells x1.3-1.45, an elasticity of about 1.6).
     organic: how much to listen to what shoppers go on to buy in the store: the ranker's score is multiplied by
            its organic propensity ** organic (0 = carousel models alone; needs organic.txt in the ranker).
+    fresh: a product added during the event has its score multiplied by this when the shopper is a known one
+           (1 = nothing). Measured on 14 Nov on 30,000 lists the ranker had not seen: after a click, a known
+           shopper buys such a product 37 % of the time, against 25 % for the original catalogue; the ranker,
+           trained when few of them had been sold, expected 26 % (observed / predicted purchases 1.37 against
+           0.90). New shoppers buy both alike, and the ranker knows it.
     why: v = just viewed · c = abandoned cart · t = trending subcategory · b = the shopper bought in that
          subcategory before · s = subcategory of the last view · k = its category · g = none of those
     """
@@ -174,6 +184,8 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
         p = ranker.score(x)
         if lift is not None:
             p = p * lift[top]
+        if fresh != 1.0 and not new_shopper(req):
+            p = np.where(cat.is_new[top], p * fresh, p)
         if organic and ranker.organic is not None:
             # the organic model is the slow one (1,500 trees), and beyond the best few hundred candidates it
             # cannot change the first 10: on 250 requests, applying it to the best 200 gave the same lists
