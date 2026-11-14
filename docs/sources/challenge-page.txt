@@ -1,0 +1,184 @@
+ 
+ RawTree Challenge · Real-Time Recommendation 
+ RawTree × Datathon FME 2026 
+ Challenge Data Timeline Scoring FAQ 
+ GitHub 
+ Leaderboard 
+ Leaderboard 
+ GitHub repo ↗ 
+ Challenge How it works Data Submit Timeline Scoring Get started FAQ 
+ Datathon FME 2026 · RawTree challenge
+ Real-time recommendation for shoppers who won't wait
+ A shopper arrives every few seconds. You have 3 seconds to choose the 10 products they will see. A hidden model simulates each shopper's decision to click and buy.
+ Start the challenge 
+ Live leaderboard 
+ Stream opens in 
+ 00 days 
+ 00 hours 
+ 00 min 
+ 00 sec 
+ 14–15 November 2026 · UPC Barcelona Practice from Sat 10:00 CET Final round Sun 10:00–12:00 CET 
+ 3 s to answer each shopper 
+ 10 products, ranked 
+ ~5,000 products in 10 categories 
+ 3 / s shoppers, day and night 
+ 2 h final round that counts 
+ The challenge
+ Sell more than the best sellers
+ On the home page and on every product page there is a row of ten recommended products. Right now it just shows the best sellers of the category the shopper is looking at. Build something that sells more, tested live on shoppers arriving in real time.
+ 01 Read requests
+ Every request describes a shopper and what they just did in this session: device, region, page and the products they viewed.
+ 02 Answer in 3 seconds
+ Write back an ordered list of 10 product IDs. Late or invalid answers are replaced by the best sellers.
+ 03 Learn as you go
+ Private feedback on every answer (clicks, purchases, revenue) and a shared stream of everything happening in the store.
+ How it works
+ Your system is your submission
+ No files to upload: a loop that runs on its own, all weekend, against RawTree.
+ STEP 1 A shopper arrives
+ A new record lands in shop.requests , about 3 per second.
+ STEP 2 Your system reads it
+ Poll the table, compute features, rank the catalogue.
+ STEP 3 You answer
+ Insert 10 product IDs into team_NN.submissions in 3 s.
+ STEP 4 The shopper reacts
+ A hidden model simulates the decision to click and buy, and writes team_NN.feedback .
+ Read your feedback and the live shop.events stream, improve, redeploy. Every team gets the same shoppers at the same time.
+ The data
+ Everything lives in RawTree
+ One API key per team: read the shared shop database, read and write your own team_NN . JSON in, SQL out, no schema.
+ shop.catalog ~5,000 products: category, subcategory, brand, price, a short description, active flag.
+ shared 5K records 
+ shop.history_sessions 60 days of carousel impressions from the old system: what was shown, clicked and bought, plus propensities.
+ shared 2M records 
+ shop.history_events 60 days of organic activity outside the carousel: views, add-to-cart, purchases.
+ shared 12M records 
+ shop.requests One record per shopper arriving at the carousel. This is what you answer.
+ live 3 / s 
+ shop.events · catalog_updates Organic activity in real time (spot the trends) and catalogue changes: new products, prices, stock-outs.
+ live ~50 / s 
+ team_NN.feedback · scratch What happened with each of your answers, only visible to you. Plus a free table for your own features.
+ your team only 
+ shop.requests 
+ {
+ "request_id" : "r_01JD8K3..." ,
+ "ts" : "2026-11-14T16:02:11.482Z" ,
+ "user_id" : "u_7f21c9" ,
+ "is_new_user" : false ,
+ "context" : { "device" : "ios" , "region" : "Catalunya" , "page" : "product" },
+ "recent_views" : [
+ { "product_id" : "p_5a1e" , "ts" : "2026-11-14T16:01:40Z" }
+ ]
+}
+ team_NN.feedback 
+ {
+ "request_id" : "r_01JD8K3..." ,
+ "shown" : [ "p_91aa" , "p_5a1e" , "..." ],
+ "served_by" : "team" , // or "fallback" 
+ "fallback_reason" : "" , // missing · late · invalid 
+ "latency_ms" : 840 ,
+ "clicked" : "p_91aa" ,
+ "purchased" : "p_91aa" ,
+ "revenue_eur" : 34.99 
+}
+ What you submit
+ One record per request
+ Insert into team_NN.submissions through the RawTree API.
+ POST /v1/tables/submissions?database=team_NN 
+ [{
+ "request_id" : "r_01JD8K3..." ,
+ "items" : [ "p_91aa" , "p_5a1e" , "p_c302" , "p_77d0" , "p_0e12" ,
+ "p_a4b8" , "p_19f3" , "p_6d2c" , "p_e801" , "p_3b5a" ],
+ "model_version" : "v3-mf-bandit" 
+}]
+ Exactly 10 distinct, active product IDs. Products go out of stock during the event. 
+ Within 3 seconds of the request ts , measured by the organisers. The starter baseline answers in about 1 s. 
+ One answer per request. Batch your inserts, e.g. every half second. 
+ Order matters. Shoppers look at the first slots much more than at the last ones. 
+ Timeline
+ Practise on Saturday, count on Sunday
+ All times Barcelona time (CET, UTC+1).
+ Saturday · opening Kick-off
+ Data, keys and starter kit released. Get your key at the RawTree stand.
+ Sat 10:00 → Sun 10:00 Practice round
+ Live stream and public leaderboard, updated every 10 minutes. Iterate as much as you like.
+ Sun 10:00 → 12:00 Final round
+ New shoppers, new products, new trends. The leaderboard goes dark; only a status light per team.
+ Sunday 12:00 Results
+ The stream stops and the final ranking appears on the leaderboard. Then, presentations.
+ Make sure your best version is running by 10:00 on Sunday. Whatever it answers between 10:00 and 12:00 is what gets scored, and shoppers keep arriving while you sleep.
+ Evaluation
+ 70 points from the stream, 30 from the jury
+ Only the final round counts. The practice round is there for you to learn. The leaderboard shows the 70 stream points normalised to a score out of 100 (about 71 conversion, 14 cold start, 14 reliability).
+ Conversion expected purchases per 100 requests, so luck does not count 
+ 50 
+ Cold start the same, on cold requests only 
+ 10 
+ Reliability share of requests answered validly and on time 
+ 10 
+ Method sound approach, validated offline before going live 
+ 10 
+ Learning from the stream exploration, trends, price changes, cold start 
+ 10 
+ Use of RawTree features in SQL, embeddings, the pipeline 
+ 5 
+ Communication would a product manager get it? 
+ 5 
+ score = 100 × (team − baseline) / (oracle − baseline), clipped to [0, 100]
+ Two yardsticks
+ 0 → 100
+ Baseline (0) = the 10 all-time best sellers that are in stock (the starter kit). Oracle (100) = the 10 products the hidden model itself would pick. The leaderboard also shows the organisers' reference recommender as a benchmark. It can be beaten.
+ A request is cold when the shopper is new ( is_new_user ) or their recent_views include a product added during the event.
+ The jury part is a short presentation with a demo on Sunday afternoon. Tie-breaker: expected revenue per request in the final round.
+ The store moves
+ Teams that generalise beat teams that memorise
+ ◍ New shoppers Many arrive with no history at all. 
+ ✦ New products Only a description, no interactions yet. 
+ ↗ Trends Visible early in the live events. 
+ € Price changes Announced in the catalogue updates. 
+ ∅ Stock-outs Inactive products are invalid answers. 
+ Get started
+ On the leaderboard in 30 minutes
+ The starter kit has a 50-line baseline, SQL examples and an offline evaluation notebook.
+ Get your key
+ At the RawTree stand when you register your team: a TEAM_ID like team_07 and a RAWTREE_API_KEY . One per team, keep it private.
+ Clone the repo
+ Copy .env.example to .env and fill in your credentials.
+ $ git clone <repo URL, published at the opening> Copy 
+ Run the baseline
+ It polls new requests, answers with the best sellers of the category of the last product viewed and inserts in batches.
+ $ pip install -r starter/requirements.txt && python starter/recommender.py Copy 
+ Meet RawTree, beat the baseline
+ RawTree is built for agents: point yours at the docs and let it find its way. Then explore the history, evaluate offline, deploy, read your feedback, repeat.
+ $ curl -fsSL https://rawtree.com/install.sh | bash Copy 
+ Docs for agents ↗ 
+ RawTree docs ↗ 
+ Starter kit ↗ 
+ FAQ
+ Questions teams ask
+ Can we use AI coding agents and LLMs? Yes. Everything you present has to be yours to explain: anything a team cannot explain may be penalised.
+ What happens if my system is down or slow? That shopper sees the best sellers (the fallback) and you lose reliability points. Your feedback tells you why: missing , late or invalid .
+ Does the practice round count? No. Only Sunday 10:00–12:00 counts. Practice is for learning, and the public leaderboard shows the last hour.
+ Can I keep changing my code during the final? Yes, your system keeps answering while you work. You will not see the ranking until 12:00, so have your best version running by 10:00.
+ Do we need a server? No, a laptop works if it stays awake and online all night. Requests not answered get the fallback.
+ "Illegal type Dynamic" in my SQL? RawTree is schemaless: every column is Dynamic . Cast join keys and a few aggregates, e.g. a.product_id::String = b.product_id::String .
+ Why do queries on shop.requests fail before Saturday 10:00? The live tables ( shop.requests , shop.events , shop.catalog_updates ) are empty until the stream opens, so their columns do not exist yet and you get Unknown expression identifier . They fill at 10:00; the baseline just retries. Explore the history meanwhile.
+ Does luck affect the ranking? No. Whether a shopper buys is random, so the score uses each shopper's probability of buying the products you showed, from the simulator's hidden model, not the coin flip. Your feedback shows the realised clicks and purchases; on average they agree. A shopper who already bought a product tends not to want it again, so real purchases still feed later scores a little.
+ Is the data real? No. Shoppers, sessions and outcomes come from a simulator with a secret seed. Finding a public dataset gives you nothing you do not already have.
+ Can we share keys or feedback with other teams? No. Feedback is private to each team, and recommendations must be produced by your code.
+ Ready when the shoppers are
+ Get your key at the RawTree stand, run the baseline, and climb the leaderboard.
+ Get the starter kit Live leaderboard 
+ RawTree 
+ No schema. No indexes. No materialized views. Any scale.
+ in X 
+ Challenge
+ Brief Leaderboard Starter kit 
+ Pages
+ Home Docs Blog 
+ Information
+ Contact Terms of use 
+ RawTree
+ © 2026 RawTree · Datathon FME, Universitat Politècnica de Catalunya
+ A Tinybird product
+

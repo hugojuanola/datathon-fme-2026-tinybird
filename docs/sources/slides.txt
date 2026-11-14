@@ -1,0 +1,347 @@
+RawTree Challenge · Datathon FME 2026
+--- slide ---
+ Tinybird RawTree
+Datathon FME.
+ Real-time recommendation challenge.
+ 14 - 15 November, 2026.
+ rawtree.com
+--- slide ---
+ Who are we?
+--- slide ---
+ Who we are
+ Datathon FME 2026
+ We are Tinybird.
+A real-time data infrastructure
+for developers.
+ 8 years
+ Building and running analytical
+databases in production.
+ 1 PB+
+ Of data processed every day
+for our customers.
+ RawTree
+--- slide ---
+ Who we are
+ Datathon FME 2026
+ Customers like
+ RawTree
+--- slide ---
+ What is Tinybird
+RawTree?
+ Is our new database for semi-structured data,
+built for agents
+ Powered by RawTree DB
+--- slide ---
+ Tinybird RawTree
+ rawtree.com
+ RawTree is the cloud database for raw analytical data.
+ A schema-free OLAP database that adapts to your workloads.
+Send raw events or telemetry as JSON, query with SQL.
+ 01
+ Schema-free, without losing performance.
+ Real-time analytics over structured or semi-structured data. Ingest first and query immediately.
+ 02
+ Adapts to
+your workloads.
+ Keys and projections adapt to real query patterns, so there is far less manual tuning.
+ 03
+ ClickHouse® power
+and features.
+ Fully ClickHouse compatible,
+with all its features still available
+under the hood.
+ RawTree
+--- slide ---
+ Performance
+ RawTree vs ClickHouse · querying data on S3
+ Fast on raw data, even straight from S3.
+ Five queries over the same data on S3,
+with cold (empty caches) and hot runs.
+ 16.0x
+ faster
+ Cold queries, median.
+ 7.8x
+ faster
+ Hot queries.
+ 10.9x
+ less
+ Data decompressed.
+ 7.0x
+ fewer
+ S3 GET requests.
+ RawTree
+--- slide ---
+ Built for agents (and humans)
+ rawtree.com/llms.txt
+ Fully self-service over every surface.
+ Docs written for agents: point yours
+at them and let it find its way.
+ APIapi.rawtree.com
+ CLIrtree
+ MCPmcp.rawtree.com/mcp
+ Agent docsrawtree.com/llms.txt
+ CLIAPIMCPTypeScript
+# Install the CLI
+$ curl -fsSL https://rawtree.com/install.sh | bash
+# Sign in
+$ rtree login
+# Insert data: just JSON, no schema
+$ rtree insert --table events \
+ --data '{"action":"click","user":"alice","value":42}'
+# Query your data
+$ rtree query "SELECT action, count()
+ FROM events GROUP BY action"
+# Insert data
+$ curl -X POST https://api.rawtree.com/v1/tables/events \
+ -H "Authorization: Bearer $RAWTREE_API_KEY" \
+ -H "Content-Type: application/json" \
+ -d '{"action":"click","user":"alice","value":42}'
+# Query your data
+$ curl -X POST https://api.rawtree.com/v1/query \
+ -H "Authorization: Bearer $RAWTREE_API_KEY" \
+ -H "Content-Type: application/json" \
+ -d '{
+ "sql": "SELECT action, count() FROM events GROUP BY action"
+ }'
+# Install the RawTree skill
+$ npx skills add rawtreedb/agent-skills
+# Claude Code
+$ claude mcp add --transport http rawtree \
+ https://mcp.rawtree.com/mcp
+# Codex
+$ codex mcp add rawtree --url https://mcp.rawtree.com/mcp
+# OpenCode
+$ opencode mcp add rawtree --url https://mcp.rawtree.com/mcp
+import { RawTree } from "@rawtree/sdk";
+const rawtree = new RawTree({
+ apiKey: process.env.RAWTREE_API_KEY!,
+});
+await rawtree.insert({
+ table: "events",
+ values: [{ action: "click", user: "alice", value: 42 }],
+});
+await rawtree.query({
+ sql: "SELECT action, count() FROM events GROUP BY action",
+});
+ RawTree
+--- slide ---
+ “It’s the S3 of the
+analytics category.
+Ingest and query.
+It just works.”
+ Guillermo RauchCEO, Vercel
+--- slide ---
+ The RawTree
+challenge
+ Real-time recommendation
+for shoppers who won’t wait
+ 14–15 November | UPC Barcelona
+--- slide ---
+ The story
+ datathon.rawtree.dev
+ Sell more than the best sellers.
+ An online store shows a row of ten recommended products on every page. Today it just shows the best sellers of the category of the last product viewed. Build something that sells more, tested live on shoppers arriving in real time.
+ 3sto answer
+each shopper.
+ 10products,
+ranked.
+ ~5Kproducts in
+10 categories.
+ 3/sshoppers,
+day and night.
+ 2hfinal round
+that counts.
+ RawTree
+--- slide ---
+ What you build
+ datathon.rawtree.dev
+ A system that runs
+on its own, all weekend.
+ No files to upload and nobody pressing buttons:
+your system is your submission.
+ 01
+ Read requests.
+ Each one describes a shopper
+and what they just did in this session: device, region, page and the products they viewed.
+ 02
+ Answer in 3 seconds.
+ Write back an ordered list
+of 10 product IDs. Late or invalid
+answers are replaced by the best sellers.
+ 03
+ Learn as you go.
+ Private feedback on every answer
+(clicks, purchases, revenue) and a shared stream of everything
+happening in the store.
+ RawTree
+--- slide ---
+ How it works
+ datathon.rawtree.dev
+ One loop,
+three times a second.
+ 01
+ A shopper arrives.
+ A new record lands in shop.requests, about 3 per second.
+ 02
+ Your system reads it.
+ Poll the table, compute features, rank the catalogue.
+ 03
+ You answer.
+ Insert 10 product IDs into team_NN.submissions
+within 3s.
+ 04
+ The shopper reacts.
+ A hidden model simulates the decision
+to click and buy, and writes team_NN.feedback.
+ Read your feedback and the live shop.events, improve, redeploy.
+Every team gets the same shoppers at the same time.
+ RawTree
+--- slide ---
+ The data
+ Every column is Dynamic · cast join keys: product_id::String
+ Everything lives in RawTree.
+ One API key per team: read the shared shop database,
+read and write your own team_NN. JSON in, SQL out, no schema.
+ shop.catalog
+ ~5,000 products: category, subcategory, brand, price, a short description, active flag.
+ 5K recordsshared
+ shop.history_sessions
+ 60 days of carousel impressions from the old system: shown, clicked, bought, plus propensities.
+ 2M recordsshared
+ shop.history_events
+ 60 days of organic activity outside the carousel: views, add-to-cart, purchases.
+ 12M recordsshared
+ shop.requests
+ One record per shopper arriving at the carousel. This is what you answer.
+ 3 / slive
+ shop.events · catalog_updates
+ Store activity in real time (spot the trends) and catalogue changes: new products, prices, stock-outs.
+ ~50 / slive
+ team_NN.feedback · scratch
+ What happened with each of your answers, only visible to you. Plus a free table for your own features.
+ privateyour team
+ RawTree
+--- slide ---
+ What you submit
+ POST /v1/tables/submissions?database=team_NN
+ One record
+per request.
+ team_NN.submissions
+[{
+ "request_id": "r_01JD8K3...",
+ "items": ["p_91aa", "p_5a1e", "p_c302",
+ "p_77d0", "p_0e12", "p_a4b8",
+ "p_19f3", "p_6d2c", "p_e801",
+ "p_3b5a"],
+ "model_version": "v3-mf-bandit"
+}]
+ 01Exactly 10 distinct, active product IDs.Products go out of stock during
+the event.
+ 02Within 3 seconds of the request ts.Measured by the organisers.
+The baseline answers in about 1s.
+ 03One answer per request.Batch your inserts, for example
+every half second.
+ 04Order matters.Shoppers look at the first slots
+much more than at the last ones.
+ RawTree
+--- slide ---
+ The store moves
+ datathon.rawtree.dev
+ Teams that generalise beat teams that memorise.
+ The final round brings new shoppers,
+new products and new trends.
+ 01New shoppers.Many arrive with no history at all.
+ 02New products.Only a description, no interactions yet.
+ 03Trends.Visible early in the live events.
+ 04Price changes.Announced in the catalogue updates.
+ 05Stock-outs.Inactive products are invalid answers.
+ RawTree
+--- slide ---
+ Timeline
+ Barcelona time (CET, UTC+1)
+ Practise on Saturday, count on Sunday.
+ A full day of practice on the live stream,
+two hours that decide it all.
+ Saturday · now
+ Kick-off.
+ Data, keys and starter kit released. Get your key at the RawTree stand.
+ Sat 10:00 – Sun 10:00
+ Practice round.
+ Live stream and a public leaderboard, updated every 10 minutes.
+ Sun 10:00 – 12:00
+ Final round.
+ New shoppers, new products, new trends. The leaderboard goes dark: only a status light per team.
+ Sunday 12:00
+ Results.
+ The stream stops and the final ranking appears on its own. Then, presentations.
+ Have your best version running by Sunday 10:00. Shoppers keep arriving while you sleep: unanswered requests get the fallback.
+ RawTree
+--- slide ---
+ Evaluation
+ Only Sun 10:00 – 12:00 CET counts
+ 70 points from the stream,
+30 from the jury.
+ 0123456789001234567890Final roundAutomatic.
+ 0123456789001234567890PresentationJury.
+ ConversionExpected purchases per 100 requests0123456789001234567890
+ Cold startNew shopper, or a session viewing a new product0123456789001234567890
+ ReliabilityValid answers, on time0123456789001234567890
+ Method0123456789001234567890
+ Learning from the stream0123456789001234567890
+ Use of RawTree01234567890
+ Communication01234567890
+ RawTree
+--- slide ---
+ Scoring
+ Conversion and cold start
+ Beat the baseline. Chase the oracle.
+ 0
+ BaselineBest sellers of the category of the last product viewed: the starter kit.
+ OracleThe best list possible, picked by the hidden model itself. Out of reach.
+ The formula
+ 100 × (team − base) ÷ (oracle − base)
+ No luck
+ Purchase probability, not the coin flip; bought items lose appeal.
+ Tie-breaker
+ Expected revenue per request.
+ RawTree
+--- slide ---
+ Get started
+ AI coding agents welcome · you must be able to explain everything
+ On the leaderboard
+in 30 minutes.
+ The starter kit already answers the stream.
+Your job is to answer it better.
+ 01Get your key.At the RawTree stand. One per team, keep it private.TEAM_ID
+RAWTREE_API_KEY
+ 02Clone the repo.github.com/rawtreedb/datathon-fme-2026
+cp .env.example .env
+ 03Run the baseline.pip install -r starter/requirements.txt
+python starter/recommender.py
+ 04Beat it.Point your agent at the docs. Explore, evaluate offline, deploy, read your feedback, repeat.rawtree.com/llms.txt
+ RawTree
+--- slide ---
+ Side challenge
+ Onboarding at the RawTree stand
+ Best agentic use
+of RawTree.
+ An AI agent that relies on RawTree to store, analyse
+and act on data. The agent is the protagonist, not a wrapper.
+ 01
+ Open to all teams.
+ Whatever main challenge
+you are working on.
+ 02
+ The agent drives.
+ It decides what to ingest, which questions to ask and what to do with the answers, through the CLI, API, SDK or MCP.
+ 03
+ Tell the story.
+ A repo with a README and a short demo. A small project with a great story wins.
+ RawTree
+--- slide ---
+ Good luck!
+Speed wins!
+ Tinybird RawTree.
+ Challenge pagedatathon.rawtree.dev
+ Repo & starter kitgithub.com/rawtreedb/datathon-fme-2026
+ rawtree.com/llms.txt
