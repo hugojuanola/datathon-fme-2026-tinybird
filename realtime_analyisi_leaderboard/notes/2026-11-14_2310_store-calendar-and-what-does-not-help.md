@@ -70,3 +70,43 @@ Also checked: v9 is calibrated by slot (observed / predicted clicks 1.00 in slot
 What this says: for a given shopper and a given list the score is about as good as these signals allow.
 What moves the board from here is how fast and how well the system follows the store: trends, promotions,
 new products, and the organic factor, which are the arms now running.
+
+## Update, 23:15 CET — the promotion candidate is closed, and where the gap comes from
+
+**Promotions: a price multiplier adds nothing.** The model session ran the test on a longer table (lists
+from 16:14 UTC, 38,629 lists, 904 purchases; 7.5 % of impressions on a promoted product, 60 purchases):
+observed over v9's prediction is 1.05 ± 0.07 on clicks and 1.06 ± 0.14 on purchases on promotion, against
+0.93 and 0.94 at catalogue price. A ratio of 1.13 where the shorter window above read 1.32: the same
+direction, both inside the noise. The test that decides, where the purchased product ends up among the ten
+when the score is multiplied by (price / catalogue price) ^ -e: 0.384 for v9 at e = 0, 0.8, 1.6 and 2.5;
+0.406 for v9 x organic at all four. No arm for it. The calendar is now in `docs/data.md`.
+
+So five ideas are closed with the same control: co-purchase, spreading a list, recency, waiting for the
+shopper's events, a price multiplier. One was kept (new products for known shoppers, live as `v36`).
+
+**Where our gap to the next team comes from**, by quarter-hour (UTC), conversion of the whole team against
+the best of team_03, team_14, team_22 and team_42:
+
+| Window | What the store was doing | Us | Best of the four | Gap |
+|---|---|---|---|---|
+| 19:25-19:40 | Game Consoles trend starts (19:30) | 2.66 | 2.53 | +0.13 |
+| 19:40-19:55 | trend | 2.61 | 2.28 | +0.33 |
+| 19:55-20:10 | trend | 2.70 | 2.47 | +0.23 |
+| 20:10-20:25 | trend ends (20:15) | 2.11 | 2.06 | +0.05 |
+| 20:25-20:40 | nothing | 2.40 | 2.39 | 0.00 |
+| 20:40-20:55 | nothing | 2.21 | 2.14 | +0.07 |
+| 20:55-21:10 | nothing | 2.24 | 2.22 | +0.02 |
+| 21:10-21:25 | nothing | 2.20 | 2.09 | +0.11 |
+| 21:25-21:40 | Face Cream trend starts (21:30) | 2.28 | 2.25 | +0.03 |
+| 21:40-21:55 | trend (our organic arms flawed until 21:51) | 2.18 | 2.14 | +0.04 |
+| 21:55-22:10 | trend; 100 new products at 22:00 | 2.02 | 1.95 | +0.07 |
+
+Outside a large trend the four teams are level with us to within 0.05 on average: their rankers have
+reached ours. The gap was made in the one large trend (0.13 to 0.33 for 45 minutes) and it did not open in
+the small one. Two things can widen it from here, and both are already live as arms: the organic factor
+(`v32` read 2.44 against 2.16 for v9 before its flaw; if that holds and it takes all the traffic, the team's
+number rises by about 0.14), and whatever a large trend gives.
+
+One thing can close it at once: answers lost. Four minutes without answering, as at 19:53 CET, cost 723
+requests; in a two-hour final that is 3.3 % of the requests answered by the fallback instead of us, about
+0.06 of conversion — the whole of today's gap — plus the reliability points.
