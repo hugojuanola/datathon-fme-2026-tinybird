@@ -154,7 +154,7 @@ def new_shopper(req: dict) -> bool:
 
 def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candidates: int | None = None,
               trend: float | str = 0.0, price: float = 0.0, organic: float = 0.0, fresh: float = 1.0,
-              trend_lift: np.ndarray | None = None) -> tuple[list[str], list[str]]:
+              pool: int | None = None, trend_lift: np.ndarray | None = None) -> tuple[list[str], list[str]]:
     """(10 product ids, why each is there) for a request {user, rv, page, device, region}.
 
     The store moves, and the organic stream shows by how much before our own feedback can:
@@ -165,6 +165,10 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
            (measured on 14 Nov: a 19 % drop sells x1.3-1.45, an elasticity of about 1.6).
     organic: how much to listen to what shoppers go on to buy in the store: the ranker's score is multiplied by
            its organic propensity ** organic (0 = carousel models alone; needs organic.txt in the ranker).
+    pool: how many of the carousel models' best candidates the organic factor is applied to (ORGANIC_TOP if
+           not given). 10 = the carousel models pick the ten and the organic factor only orders them: no
+           product enters the list on the organic model's word. That is exactly what was measured on held-out
+           lists (14 Nov, 38,627 lists, position-based estimate): +4.7 % purchases, 2.9 standard errors.
     fresh: a product added during the event has its score multiplied by this when the shopper is a known one
            (1 = nothing). Measured on 14 Nov on 30,000 lists the ranker had not seen: after a click, a known
            shopper buys such a product 37 % of the time, against 25 % for the original catalogue; the ranker,
@@ -213,7 +217,8 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
         if organic and ranker.organic is not None:
             # the organic model is the slow one (1,500 trees), and beyond the best few hundred candidates it
             # cannot change the first 10: on 250 requests, applying it to the best 200 gave the same lists
-            best = np.argpartition(-p, ORGANIC_TOP - 1)[:ORGANIC_TOP] if len(p) > ORGANIC_TOP else np.arange(len(p))
+            n_best = pool or ORGANIC_TOP
+            best = np.argpartition(-p, n_best - 1)[:n_best] if len(p) > n_best else np.arange(len(p))
             want = ranker.propensity(x[best]) ** organic
             if hot is not None and hot[top[best]].any():
                 want = level_trending(want, p[best], hot[top[best]])
