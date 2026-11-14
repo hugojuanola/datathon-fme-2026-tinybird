@@ -1,7 +1,7 @@
 # The trend lift, read on a real trend; and the warm ranker (14 Nov, 21:30 CET)
 
 **In one line**: on the first trend with the lift live (Game Consoles, 19:30-20:15 UTC) the lift at ^0.75
-neither helped nor hurt: 2.60 expected purchases per 100 requests with it, 2.63 without (+0.03 ± 0.17 once
+neither helped nor hurt: 2.60 expected purchases per 100 requests with it, 2.63 without (+0.03 ± 0.20 once
 the arms' earlier difference is taken out). The trend products it adds do sell, and the products they push
 down lose as much. The same window settled something else: on warm requests `v9` beats `v16`.
 
@@ -25,7 +25,7 @@ Odd versions have no lift, even versions have it.
 
 In the 105 minutes before the trend both groups ran the same code and showed 0.13 Game Consoles products per
 list; the expected metric read 2.186 and 2.122. So the lift's effect on the organisers' number is
-(2.602 - 2.632) - (2.122 - 2.186) = **+0.03, with a standard error of about 0.17**. The reference read 2.14.
+(2.602 - 2.632) - (2.122 - 2.186) = **+0.03, with a standard error of about 0.20**. The reference read 2.14.
 
 Three things are measured, and they fit together:
 
@@ -44,7 +44,7 @@ others. Only arms at different strengths, or a lift that never takes slot 1, can
 
 **What to do**: nothing on this evidence. If the two-hour pattern holds there are trends at 21:30, 23:30,
 01:30, 03:30, 05:30 and 07:30 UTC; each adds about 8,100 requests, and by Sunday morning the comparison
-with and without the lift has a standard error near 0.06. Optional, and only with Javier's go-ahead for a
+with and without the lift has a standard error near 0.08. Optional, and only with Javier's go-ahead for a
 swap tonight: give half of the even arms a second strength (for instance ^1.5) so the night also measures
 the dose.
 
@@ -61,7 +61,7 @@ the dose.
 | Outside the trend | v9 | 5,682 | 1.82 | |
 | Outside the trend | v16 | 5,663 | 1.72 | |
 
-A lead of 0.24 on 8,150 requests each is about four standard errors, in the same direction in and out of
+A lead of 0.24 on 8,150 requests each is about three standard errors (the spread between arms running the same code is 4.75 per warm request, measured in `pool_arms.py`), in the same direction in and out of
 the trend, and with all four `v9` arms at or above 1.99 in the trend window against 1.68 to 2.21 for the
 `v16` arms. This passes the bar set in the 20:30 note (more than 0.15 and two standard errors): **warm
 requests go to `v9`**. Most of the lead was made during the trend, which is also when the final's points
@@ -69,7 +69,7 @@ are made: `v9` was above the reference there (2.39 against 2.19), `v16` well bel
 
 Cold requests are not settled: `v9` 2.97, `v9w` 2.63, `v16` 3.07, `v16w` 3.14 on about 2,500 each
 (reference 1.82). The lead of `v16` over `v9` seen at 95 minutes is gone; `v9w` trails `v16w` by 0.51, about
-2.4 standard errors.
+two standard errors.
 
 For the final's single arm, as it stands: `v9` for warm requests; for cold ones `v9`, `v16` or `v16w`,
 level so far, and not `v9w`. `v9` everywhere (`v21` / `v22`) is the simplest set-up that satisfies both and

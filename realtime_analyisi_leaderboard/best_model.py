@@ -52,6 +52,11 @@ WHAT = {  # what each version is, in one line (details: docs/findings.md)
     "skore_money_v23": "routed v9w cold / v9 warm, trend lift off", "skore_money_v24": "routed v9w cold / v9 warm, trend lift ^0.75",
     "skore_money_v25": "v16 everywhere (retrained on all of 14 Nov), trend lift off", "skore_money_v26": "v16 everywhere, trend lift ^0.75",
     "skore_money_v27": "routed v16w cold / v16 warm, trend lift off", "skore_money_v28": "routed v16w cold / v16 warm, trend lift ^0.75",
+    "skore_money_v31": "v9 everywhere, trend lift at full strength (^1.0)",
+    "skore_money_v32": "v9 × organic ^0.5 (a third model: what shoppers go on to buy in the store), trend lift ^1.0",
+    "skore_money_v33": "v9b = v9's 52 features retrained on all of 14 Nov, trend lift ^1.0",
+    "skore_money_v34": "v9 everywhere, no trend lift (control for the trends)",
+    "skore_money_v35": "v9 everywhere, trend lift ^0.5 (dose)",
 }
 RANKER = {  # the ranker spec each version uses in `reco/serve.py` ("a|b" = a for cold requests, b for the rest)
     "skore_money_v5": "v5", "skore_money_v8": "v8", "skore_money_v9": "v9", "skore_money_v9w": "v9w",
