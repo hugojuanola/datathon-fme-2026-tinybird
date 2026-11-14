@@ -4,7 +4,7 @@
 Reads $SKORE_DATA_DIR/eda/*.parquet (run eda_pull.py first), writes the figures to figures/*.png and the headline
 numbers to numbers.json, both next to this script. The findings are written up in README.md.
 
-    .venv/Scripts/python.exe avanced_data_analysis/eda.py
+    python avanced_data_analysis/eda.py
 """
 from __future__ import annotations
 

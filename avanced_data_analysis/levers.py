@@ -3,7 +3,7 @@
 
 Reads numbers.json (written by eda.py) and writes figures/10_score_levers.png.
 
-    .venv/Scripts/python.exe avanced_data_analysis/levers.py
+    python avanced_data_analysis/levers.py
 """
 from __future__ import annotations
 

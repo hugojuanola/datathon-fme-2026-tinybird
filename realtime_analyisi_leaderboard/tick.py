@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """One watch tick: where we stand on the leaderboard and how the live model is doing, by kind of shopper.
 
-    .venv/Scripts/python.exe realtime_analyisi_leaderboard/tick.py            # last 30 minutes of our feedback
-    .venv/Scripts/python.exe realtime_analyisi_leaderboard/tick.py --window 60
-    .venv/Scripts/python.exe realtime_analyisi_leaderboard/tick.py --since "2026-11-14 13:34:00"   # UTC
+    python realtime_analyisi_leaderboard/tick.py            # last 30 minutes of our feedback
+    python realtime_analyisi_leaderboard/tick.py --window 60
+    python realtime_analyisi_leaderboard/tick.py --since "2026-11-14 13:34:00"   # UTC
 
 Read-only (leaderboard API + SELECTs on the live tables only). Appends one row to history.csv and rewrites
 latest.md, both next to this script. The interpretation of the numbers lives in README.md and notes/.

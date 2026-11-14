@@ -6,8 +6,8 @@ sits in a OneDrive folder and bulky files there compete with the live server for
 
 Aggregations run inside RawTree; only summaries and a 10% sample of the carousel log come down.
 
-    .venv/Scripts/python.exe avanced_data_analysis/eda_pull.py            # skip files that already exist
-    .venv/Scripts/python.exe avanced_data_analysis/eda_pull.py --force    # re-pull everything
+    python avanced_data_analysis/eda_pull.py            # skip files that already exist
+    python avanced_data_analysis/eda_pull.py --force    # re-pull everything
 """
 from __future__ import annotations
 

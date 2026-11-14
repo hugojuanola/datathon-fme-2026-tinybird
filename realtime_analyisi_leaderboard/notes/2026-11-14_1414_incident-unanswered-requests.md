@@ -63,3 +63,22 @@ queries at about 14:00:15, overlapping the stall without clearly preceding it.
 
 Changes on the watch side, in case it contributes: one tick per 15 minutes instead of two runs, never within
 a minute of a 5-minute mark, no extra diagnostic queries while the server is unhealthy.
+
+## Update, 15:10 CET — the cause of both stalls, from the session that owns the server
+
+The Python environment (`.venv`, 669 MB) was inside the repository, and the repository is inside OneDrive.
+OneDrive had been uploading it since 13:15 CET at a steady ≈110 KB/s, which is the whole uplink of this
+connection. With the uplink full, any extra traffic from the laptop pushed the serving loop into read and
+connect timeouts: each stall coincided with a second process talking to RawTree (dry runs at 14:14, 14:20
+and 14:59–15:01 CET). The watch tick was probably not the cause.
+
+What changed: the environment moved to `C:/Users/javil/skore_money/venv` (outside OneDrive), like the data
+and the logs before it; the server now uses three staggered pollers and two senders, so one slow call no
+longer blocks the loop.
+
+For the final, in order of importance:
+
+1. **Pause OneDrive on the serving laptop** for the whole final, and check the uplink is idle before 10:00.
+2. Nothing bulky inside the repository folder: environment, data, models and logs live outside it.
+3. Nothing else that talks to RawTree from this laptop during the final, apart from the server and, at most,
+   one light watch tick away from the 5-minute marks.

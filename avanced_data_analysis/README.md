@@ -4,9 +4,13 @@ Exploratory analysis of the challenge data, done on **Sat 14 Nov 2026 ≈ 13:30 
 round). Everything here is reproducible:
 
 ```bash
-.venv/Scripts/python.exe avanced_data_analysis/eda_pull.py   # RawTree → $SKORE_DATA_DIR/eda/*.parquet (outside the repo), ~1 min
-.venv/Scripts/python.exe avanced_data_analysis/eda.py        # → figures/*.png + numbers.json, ~3 min on a laptop CPU
+python avanced_data_analysis/eda_pull.py   # RawTree → $SKORE_DATA_DIR/eda/*.parquet (outside the repo), ~1 min
+python avanced_data_analysis/eda.py        # → figures/*.png + numbers.json, ~3 min on a laptop CPU
 ```
+
+Run these with the project's Python environment. On the serving laptop it is
+`C:/Users/javil/skore_money/venv/Scripts/python.exe`; it lives outside the repository because the
+repository is in a OneDrive folder and syncing an environment saturates the uplink the live server needs.
 
 | File | What |
 |---|---|
