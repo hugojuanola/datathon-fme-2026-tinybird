@@ -13,6 +13,7 @@ for whoever is training or tuning the model: read `latest.md` for the numbers an
 | [`best_model.py`](best_model.py) | Keeps the record of the best model: writes [`../best_model.md`](../best_model.md) with every version we served, its expected conversion and its margin over the reference in the same minutes |
 | [`next_purchase.py`](next_purchase.py) | What shoppers buy organically right after we answer them, whether it was in our 10, and what pointed at the purchases we missed |
 | [`price_and_revenue.py`](price_and_revenue.py) | What price does to a sale on our carousel: purchases and revenue per impression by price band and by slot, and whether a dear product is chosen less than its slot predicts inside a list |
+| [`trend_read.py`](trend_read.py) | Reads a trend: how many products of the trending subcategory the arms with and without the trend lift put in their lists, in which slots, and what an impression of it brought against an impression of anything else |
 | [`tick.py`](tick.py) | Produces `latest.md` and a row of `history.csv`. Read-only and light: leaderboard API + three `SELECT`s on the last minutes of the live tables; the 60-day purchase history comes from a local cache, not from a scan |
 | [`queries/`](queries/) | The SQL behind the notes, runnable with `python scripts/rt.py -f <file>` |
 
