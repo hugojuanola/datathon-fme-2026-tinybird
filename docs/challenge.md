@@ -83,6 +83,25 @@ score = 100 × (team − baseline) / (oracle − baseline), clipped to [0, 100]
   later scores.
 - **Tie-breaker**: expected revenue per request in the final round.
 
+### Where the oracle is (measured 14 Nov, 20:30 CET)
+
+The leaderboard hides the score during practice (`"hidden": true`), but `/api/state` carries a `progress`
+series: one number per team per hour (the hour starting at that timestamp). Across the 42 teams it is exactly
+`slope × (conversion − baseline)` for the same hour (error under 0.01; cold start and `on_time` add nothing):
+it is the **conversion score**, and `100 / slope` is `oracle − baseline`.
+
+| Hour (UTC) | Oracle | Baseline | Reference (score) | Us: conversion → score | `on_time` | Best rival (score) |
+|---|---|---|---|---|---|---|
+| 15:00 | 3.49 | 0.67 | 2.10 (50.5) | 2.13 → 51.6 | 100.0 | team_26 (40.8) |
+| 16:00 | 3.33 | 0.54 | 1.99 (51.8) | 2.16 → 57.9 | 95.6 | team_26 (45.7) |
+| 17:00 | 3.32 | 0.59 | 2.03 (52.9) | 2.21 → 59.4 | 99.9 | team_42 (49.8) |
+| 18:00 | 3.10 | 0.45 | 1.84 (52.6) | 1.95 → 56.8 | 93.3 | team_42 (48.9) |
+
+- The oracle sells 3.1–3.5 per 100 requests; the organisers' reference is at 50–53 % of the way, we are at 57–60 %.
+- A lost answer scores as the baseline, so it costs conversion as well as reliability: the hour with 93.3 %
+  on time scored 2.6 points less than the clean hour before it.
+- The cold-start oracle is not derivable from the API (no series for it).
+
 ### 30 points — jury (Sunday afternoon, short presentation + demo)
 
 | Criterion | Points | What they look at |
