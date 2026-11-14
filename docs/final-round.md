@@ -35,9 +35,10 @@ connection being busy with something else (docs/findings.md §8). So the checkli
    real requests: all lines must read `N/N valid lists`), and only then stops the old one and gives the GO;
    if anything is wrong the old one keeps answering. With no server running it simply starts one. The
    server it starts has **no window**: it is the two `python` processes with `reco.serve` in their command
-   line (Task Manager → Details), it hangs from Windows itself and not from a terminal, an editor or an
-   assistant session, and it starts again by itself if it ever exits. Since Saturday 18:58 CET the live
-   server already runs this way. After a restart of the laptop, run the command again.
+   line (Task Manager → Details) plus a `pythonw` supervisor that starts it again if it ever exits. It
+   hangs from Windows itself and not from a terminal, an editor or an assistant session, and there is no
+   window to close (on Saturday at 18:53 UTC a console window with the server in it was closed by mistake:
+   four minutes without answers). After a restart of the laptop, run the command again.
 3. Check it (each command is one small query):
 
    ```bash

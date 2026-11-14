@@ -38,7 +38,7 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`scripts/leaderboard.py`](scripts/leaderboard.py) | Print the public leaderboard |
 | [`scripts/arms.py`](scripts/arms.py) | **How we judge an A/B**: expected purchases per 100 requests per `model_version` (the organisers' own metric), cold and warm, over any window |
 | [`scripts/netmon.py`](scripts/netmon.py) | Router ping and RawTree connect time once per second: tells Wi-Fi from the rest when answers are lost |
-| [`scripts/swap_server.ps1`](scripts/swap_server.ps1), [`scripts/run_server.ps1`](scripts/run_server.ps1), [`docs/final-round.md`](docs/final-round.md) | Start or replace the live server without a gap, as a process of its own (it does not die with a terminal or an assistant session), and the runbook for the final |
+| [`scripts/swap_server.ps1`](scripts/swap_server.ps1), [`reco/supervise.py`](reco/supervise.py), [`docs/final-round.md`](docs/final-round.md) | Start or replace the live server without a gap. It runs with **no window** under a supervisor that restarts it (it does not die with a terminal or an assistant session, and there is nothing to close by mistake); the runbook for the final |
 | [`best_model.md`](best_model.md) | The best proven version, the line that puts it back, what is being measured against it, and the log of improvements |
 | [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (event-sourced live state), `features.py` (the one definition of every model feature, shared by training and serving), `recommend.py` (policies: rules, and rules-retrieve + model-rank), `rawtree.py` (client), `priority.py` |
 | [`offline/`](offline/) | Offline work: `pull_data.py` (export history / live stream), `build_dataset.py` (training table by replaying the store in time order), `train.py` (LightGBM click + conversion models, validated on the future), `evaluate.py` (policies on the held-out last week), `build_cache.py` (start-up cache for the server), `store_moves.py` (trends, price changes and new products in the organic stream, aggregated in RawTree, and the live trend detector replayed on them) |
@@ -201,8 +201,10 @@ Open for the final (findings §17 has the design; the humans decide, before Sund
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
 (outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:
-OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). Since 18:58 CET the live
-server is a process of its own started by `scripts/swap_server.ps1` (no window; `python` with `reco.serve` in
-Task Manager): it survives closing the assistant app. Never start one as a child of an assistant session. Commit at every deploy,
+OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). The live server is
+started only by `scripts/swap_server.ps1`: no window (`pythonw -m reco.supervise` and its child `python -m
+reco.serve` in Task Manager), it survives closing the assistant app and restarts itself. At 18:53 UTC on
+14 Nov a version that still had a console window was closed by mistake: four minutes without answers.
+Never start a server as a child of an assistant session or in a window. Commit at every deploy,
 with the `model_version` in the message, so the repository always matches what is serving. Update this
 section when that changes.

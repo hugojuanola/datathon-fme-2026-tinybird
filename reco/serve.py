@@ -300,7 +300,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if "--log" in sys.argv:     # write the log ourselves: the same plain UTF-8 whatever shell started us
+    if "--log" in sys.argv:     # unattended (reco.supervise): a stray Ctrl+C must not stop the answers, and
+        import signal           # we write the log ourselves: the same plain UTF-8 whatever started us
+
+        for name in ("SIGINT", "SIGBREAK"):
+            if hasattr(signal, name):
+                signal.signal(getattr(signal, name), signal.SIG_IGN)
         sys.stdout = sys.stderr = open(sys.argv[sys.argv.index("--log") + 1], "a", buffering=1,
                                        encoding="utf-8", errors="replace")
     while True:  # if anything escapes the loop, start again rather than leave shoppers to the fallback
