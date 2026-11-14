@@ -8,8 +8,9 @@
 
 The leaderboard API (`/api/state?by=model&from=..&to=..`) reports, per `model_version`, the EXPECTED
 purchases per 100 requests according to the hidden model — the number the final is scored on, without the
-coin flip of realised purchases. It serves windows of up to 3 hours; longer ones are read in 3-hour pieces
-and added up (every figure is an average per request, so pieces are weighted by their requests).
+coin flip of realised purchases. It serves windows of up to 3 hours and at most 10 versions per team in one
+answer, so a long window is read in pieces and added up (every figure is an average per request: pieces are
+weighted by their requests), and a piece that comes back with versions missing is read again in halves.
 
 How much to trust a difference: two arms running the SAME code on ~1,550 requests each differed by 0.12
 (14 Nov, 16:45-17:12 UTC), and three-arm quarters of an hour swing by ±0.3. Judge on hours, not minutes.
@@ -94,8 +95,17 @@ def main() -> None:
     rows: dict[tuple[str, str], Sum] = {}
     ref, base = Sum(), Sum()
     lo = hi = None
-    for piece in range(start, end, PIECE):
-        state = fetch(piece, min(piece + PIECE, end))
+    pieces = [(a, min(a + PIECE, end)) for a in range(start, end, PIECE)]
+    while pieces:
+        a, b = pieces.pop(0)
+        state = fetch(a, b)
+        cut = max((t.get("more_versions") or 0 for t in state["teams"] if t["team_id"] == me or everyone), default=0)
+        if cut and b - a >= 1800:      # versions left out of the answer: read this piece in two halves instead
+            mid = a + (b - a) // 2 // 300 * 300
+            pieces[:0] = [(a, mid), (mid, b)]
+            continue
+        if cut:
+            print(f"warning: {hhmm(a)}–{hhmm(b)} still leaves {cut} version(s) out", file=sys.stderr)
         lo, hi = (state["window"][0] if lo is None else lo), state["window"][1]
         # every team gets every request: the share of cold ones is read from our own versions
         traffic = max((t.get("requests") or 0 for t in state["teams"]), default=0)

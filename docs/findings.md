@@ -401,7 +401,12 @@ on the stream of 14 Nov (488 minutes, 179 groups):
 | Cutting Boards | 3 min | about 4 min | 5.6 | 7.1 |
 | Bike Helmets | 2 min | 2 min | 5.0 | 8.1 |
 
-False alarms: 5 group-minutes out of 87,352, all below ×3 and gone within two minutes. (A first version
+False alarms: 5 group-minutes out of 87,352, all below ×3 and gone within two minutes. Replayed again
+**every second**, as the server really runs it, from the server's own journal of the stream (9.5 hours,
+`python -m offline.store_moves seconds`): each trend is seen 49–120 seconds after it starts and dropped one
+to three minutes after it ends; purchases alone at ×2.5 fired on noise for 174 seconds of the day (three
+short ones showed up live at 18:20 UTC: purchases come in baskets), so that path now needs ×4 with 12
+purchases and the false alarms are 19 seconds in 9.5 hours. (A first version
 that used purchases alone saw the trends as fast but held on 5–9 minutes after they ended and
 underestimated them: lifts of 4–8.) The same statistic also watches categories and brands — a trend in the
 final could have another shape — and those levels only speak when no subcategory explains the move, because

@@ -1,6 +1,8 @@
 """How the store moves during the event, measured on the organic stream, and how the live detector sees it.
 
     python -m offline.store_moves          # every aggregate is computed in RawTree; a report on screen
+    python -m offline.store_moves seconds  # the detector every second, as the server runs it, replayed from
+                                           # the server's own journal of the stream (serving machine only)
 
 The brief says the final brings trends ("visible early in the live shop.events"), price changes and new
 products. The 60-day history has none of them, so the only place to learn their shape is today's stream:
@@ -17,7 +19,9 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from reco.features import BUY_WINDOW, LEVEL_SIZE, LEVELS, Trends
+import sys
+
+from reco.features import BUY_WINDOW, LEVEL_SIZE, LEVELS, Trends, group_keys, trend_names, usual_shares
 from reco.rawtree import query_tsv
 
 PRODUCTS = """(SELECT product_id::String AS product_id, category::String AS category, subcategory::String AS subcategory,
@@ -173,9 +177,49 @@ def prices_and_new() -> None:
               f"in the first hour, {100 * after.iloc[6:].mean():.2f} % later")
 
 
+def every_second(found: dict[str, tuple[int, int]]) -> None:
+    """The detector exactly as the server runs it — once per second — on the stream the server journalled."""
+    from offline.build_dataset import live_events, load_catalogs
+
+    _, cat = load_catalogs()
+    ev = live_events()
+    ev = ev[ev.ev.isin(["v", "p"]) & ev.product_id.isin(cat.pos)]
+    ts, bought = ev.ts.to_numpy(), (ev.ev == "p").to_numpy()
+    item = ev.product_id.map(cat.pos).to_numpy()
+    groups, usual, live = group_keys(cat), usual_shares(cat), Trends()
+    fired: dict[str, list[tuple[int, float]]] = {}
+    j = 0
+    for second in range(int(ts[0]), int(ts[-1]) + 1):
+        while j < len(ts) and ts[j] <= second:
+            live.add(int(ts[j]) // 60, groups[item[j]], bool(bought[j]))
+            j += 1
+        if second % 300 == 0:
+            live.forget()
+        for name, lift in trend_names(cat, live.lifts(*usual)).items():
+            fired.setdefault(name, []).append((second, lift))
+    print()
+    print(f"2b. DETECTOR, EVERY SECOND — {len(ts):,} views and purchases, {clock(ts[0])} to {clock(ts[-1])} UTC")
+    false = 0
+    for name, hits in sorted(fired.items()):
+        seconds, lifts = np.array([h[0] for h in hits]), np.array([h[1] for h in hits])
+        if name in found:
+            a, b = 60 * found[name][0], 60 * found[name][1]
+            on = (seconds >= a - 120) & (seconds <= b + 600)
+            print(f"      {name:<16} first seen {clock(seconds[on][0])}:{seconds[on][0] % 60:02d}, last {clock(seconds[on][-1])}:"
+                  f"{seconds[on][-1] % 60:02d}; lift in its first 3 minutes {lifts[on][:180].mean():.1f}, afterwards median "
+                  f"{np.median(lifts[on][180:]):.1f}")
+            seconds = seconds[~on]
+        false += len(seconds)
+        if len(seconds):
+            print(f"      false alarm: {name}, {len(seconds)} s from {clock(seconds[0])}, lift up to {lifts[-len(seconds):].max():.1f}")
+    print(f"      false alarms in all: {false} seconds of {int(ts[-1] - ts[0]):,}")
+
+
 if __name__ == "__main__":
     subcategories = trends()
     if subcategories:
         inside(subcategories)
         detector(subcategories)
+        if "seconds" in sys.argv:
+            every_second(subcategories)
     prices_and_new()

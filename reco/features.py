@@ -60,8 +60,10 @@ VIEW_MIN = 40            # …with at least this many views in the window
 VIEW_TO_BUY = 1.8        # purchases rise like views ** this (four trends: views x3.0-4.2, purchases x7.8-11.9)
 BUY_WINDOW = 5           # minutes of purchases the size of a trend is measured on
 BUY_PRIOR = 3.0          # pseudo-purchases, at the ratio the views imply (or at 1 when views say nothing)
-BUY_GATE = 2.5           # purchases alone also count as a trend: this many times the usual share…
-BUY_MIN = 8              # …with this many purchases, and still selling in the last VIEW_WINDOW minutes
+BUY_GATE = 4.0           # purchases alone also count as a trend: this many times the usual share…
+BUY_MIN = 12             # …with this many purchases, and still selling in the last VIEW_WINDOW minutes.
+                         # (2.5 / 8 fired on noise: purchases come in baskets. Replayed every second on
+                         # 14 Nov: 174 s of false alarms in 9.5 h with 2.5 / 8, 19 s with 4 / 12.)
 TREND_CAP = 12.0
 
 
