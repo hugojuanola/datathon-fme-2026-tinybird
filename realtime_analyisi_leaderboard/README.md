@@ -42,24 +42,25 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## Current reading
 
-_Updated 14 Nov 2026, 16:45 CET._
+_Updated 14 Nov 2026, 16:57 CET._
 
-- **In the last 15 minutes we are above the reference**: 2.135 against 2.011 on the official board (expected
-  purchases, 2,700 requests, 100% on time). Last 30 minutes: 2.035 against 2.048. Last hour: 2.00 against
-  2.14 — 90% of the way, 0.14 missing, and closing as the older minutes roll out.
-- **Cold conversion** 2.69 against the reference's 2.00 (hour) — well ahead.
-- **Best rival**: team_26 at 1.79 (hour) and 1.82 (15 minutes).
-- **Live since 16:25 CET**: `skore_money_v8` 60% (product attributes, no brand features), `skore_money_v5` 30%
-  as control, `skore_money_v8_explore` 10%. The arms stay fixed until about 17:25 CET.
-- **Still to confirm with our own feedback**: v8 against v5 over the same minutes, known and new shoppers
-  separately ([16:25 note](notes/2026-11-14_1625_v7-live-mechanism.md) has the mechanism check).
-- **The board can be read for any window** of 15 minutes or more: `tick.py` now reports the last hour and the
-  last 15 minutes side by side (`https://datathon.rawtree.dev/api/state?from=<unix>&to=<unix>`).
+- **How much is missing**: last hour 2.027 against the reference's 2.063 — **0.036, 97% of the way**. Last 15
+  minutes 2.115 against 1.985 — **above by 0.13**, for the second reading in a row. 100% on time.
+- **Cold conversion** 2.69 against 1.89 (hour). **Best rival** team_26 at 1.80. Revenue per request 1.03 €
+  against the reference's 0.89 €.
+- **A/B verdict, attribute models against v5** (15:12–15:41 UTC): ahead on new shoppers (3.56% against 2.63%,
+  not conclusive), level on known shoppers (1.49% against 1.33%). The products the attribute models add for
+  known shoppers sell less than the ones v5 had picked. See
+  [the 16:55 note](notes/2026-11-14_1655_at-the-reference-and-ab-verdict.md).
+- **Live since 16:41 CET**: `skore_money_v8`, `skore_money_v8c`, `skore_money_v9` and an exploration arm; no v5
+  control any more. v9's first ten minutes: 3.39% (18 / 531) — too early.
+- **Reliability**: every request answered, p95 1.6 s.
 
 ## Notes
 
 | When (CET) | Finding |
 |---|---|
+| [14 Nov 16:55](notes/2026-11-14_1655_at-the-reference-and-ab-verdict.md) | **At the reference**: 0.036 missing on the hourly board, above it over the last 15 minutes twice running. A/B verdict: the attribute models gain on new shoppers and are level with v5 on known ones; why (the products added at the margin sell less; lists leave the shopper's subcategories) |
 | [14 Nov 16:25](notes/2026-11-14_1625_v7-live-mechanism.md) | **v7 is live and pulls the attribute lever** (low-affinity impressions 38% → 10%, attribute-sharing with the last view doubled); conversion not readable after ten minutes; v6 replaced; brand history is not a stand-in for attributes but adds nothing to the model |
 | [14 Nov 16:12](notes/2026-11-14_1612_attributes-confirmed-on-carousel.md) | **Attributes confirmed on the live carousel**, adjusted for slot: 10× between low and high attribute affinity for known shoppers, inside and outside their subcategories; 2.3× / 5.6× for new shoppers when the product shares 1 / 2 attributes with the last view; 44% of known-shopper impressions are in the low band; worth roughly +0.45 overall |
 | [14 Nov 16:05](notes/2026-11-14_1605_v6-first-read.md) | **v6 first read**: behind v5 on known shoppers and ahead on new ones after six minutes (too early); its lists do not contain more bought-brand products than v5's, so the brand lever is not being tested yet; the brand effect holds with purchase count fixed (2–2.7× for shoppers with 1–19 purchases) |
