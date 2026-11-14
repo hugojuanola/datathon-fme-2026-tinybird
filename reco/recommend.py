@@ -55,12 +55,13 @@ class Ranker:
     """
     CONSTANTS = {"is_live": 1.0}   # features older models expect and newer feature sets dropped
 
-    def __init__(self, folder: Path) -> None:
+    def __init__(self, folder: Path, click_only: bool = False) -> None:
         import lightgbm as lgb
 
         self.name = folder.name
+        self.click_only = click_only      # rank by P(click) alone: an A/B arm, to see what the second model adds
         self.click = lgb.Booster(model_file=str(folder / "click.txt"))
-        self.conv = lgb.Booster(model_file=str(folder / "conv.txt"))
+        self.conv = self.click if click_only else lgb.Booster(model_file=str(folder / "conv.txt"))
         extra = [n for n in self.CONSTANTS if n in self.click.feature_name() + self.conv.feature_name()]
         self.extra = np.array([self.CONSTANTS[n] for n in extra], dtype=np.float32)
         where = {**F, **{n: len(FEATURES) + i for i, n in enumerate(extra)}}
@@ -73,8 +74,8 @@ class Ranker:
     def score(self, x: np.ndarray) -> np.ndarray:
         if len(self.extra):
             x = np.hstack([x, np.broadcast_to(self.extra, (len(x), len(self.extra)))])
-        return (self.click.predict(x[:, self.click_columns], num_threads=2)
-                * self.conv.predict(x[:, self.conv_columns], num_threads=2))
+        clicks = self.click.predict(x[:, self.click_columns], num_threads=2)
+        return clicks if self.click_only else clicks * self.conv.predict(x[:, self.conv_columns], num_threads=2)
 
 
 def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrieval: bool = False) -> np.ndarray:
@@ -112,18 +113,33 @@ def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrie
     return score
 
 
-def recommend(state: State, ranker: Ranker | None, req: dict, policy: str,
-              candidates: int | None = None) -> tuple[list[str], list[str]]:
+def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candidates: int | None = None,
+              trend: float = 0.0, trending: dict[int, float] | None = None) -> tuple[list[str], list[str]]:
     """(10 product ids, why each is there) for a request {user, rv, page, device, region}.
 
-    why: v = just viewed · c = abandoned cart · b = the shopper bought in that subcategory before ·
-         s = subcategory of the last view · k = its category · g = none of those
+    trend: how much of a live trend to apply. A subcategory selling L times its usual share right now
+           (state.trend; `trending` overrides it, for tests) has its products' scores multiplied by L ** trend.
+    why: v = just viewed · c = abandoned cart · t = trending subcategory · b = the shopper bought in that
+         subcategory before · s = subcategory of the last view · k = its category · g = none of those
     """
     cat = state.catalog
     shopper = state.shoppers.get(req["user"])
     recent = [cat.pos[p] for p in req["rv"] if p in cat.pos]
     score = score_rules(cat, shopper, recent, retrieval=policy != "rules")
     n = len(score)
+    lift = None
+    if trend:
+        try:
+            for sub, value in list((state.trend if trending is None else trending).items()):
+                if sub in cat.by_sub:
+                    if lift is None:
+                        lift = np.ones(n)
+                    lift[cat.by_sub[sub]] = value ** trend
+            if lift is not None:
+                score *= lift
+        except Exception as e:     # a trend is a bonus: never let it cost an answer
+            print(f"trend lift failed: {str(e)[:200]}", flush=True)
+            lift = None
     blocked = [i for i in list(shopper.bought) if i < n] if shopper else []
     blocked += [cat.pos[p] for p in list(state.unavailable) if p in cat.pos]
     score[blocked] = -1.0
@@ -133,7 +149,10 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str,
         top = np.argpartition(-score, k - 1)[:k]
         x = featurize(cat, shopper, PAGES.get(req["page"], 2), DEVICES.get(req["device"], 0),
                       REGIONS.get(req["region"], -1), recent, top, int(req["ts_ms"]) / 1000, slot=1.0)
-        order = np.argsort(-ranker.score(x), kind="stable")
+        p = ranker.score(x)
+        if lift is not None:
+            p = p * lift[top]
+        order = np.argsort(-p, kind="stable")
         if policy == "explore":     # reproducible: the same request always gets the same sample
             rng = np.random.default_rng(zlib.crc32(req.get("id", "").encode()))
             order = np.concatenate([rng.permutation(order[:EXPLORE_HEAD]),
@@ -148,7 +167,8 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str,
     bought_subs = shopper.sub_purch if shopper else {}
     why = []
     for i in top:
-        why.append("v" if i in recent else "c" if i in carted else "b" if cat.sub[i] in bought_subs
+        why.append("v" if i in recent else "c" if i in carted else "t" if lift is not None and lift[i] > 1
+                   else "b" if cat.sub[i] in bought_subs
                    else "g" if last is None else "s" if cat.sub[i] == cat.sub[last]
                    else "k" if cat.cat[i] == cat.cat[last] else "g")
     return [cat.pids[i] for i in top], why

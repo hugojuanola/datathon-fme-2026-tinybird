@@ -29,5 +29,17 @@ def foreground() -> None:
     _set("high")
 
 
+def stay_awake() -> None:
+    """Ask Windows not to put the machine to sleep while this process runs (what a video player does).
+    It does not survive closing the lid or a forced restart: see docs/final-round.md."""
+    try:
+        if sys.platform == "win32":
+            import ctypes
+
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001)   # ES_CONTINUOUS | ES_SYSTEM_REQUIRED
+    except Exception:
+        pass
+
+
 def background() -> None:
     _set("below_normal")
