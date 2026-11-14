@@ -776,8 +776,23 @@ neither model had seen them: 38,627 lists, 2,864 clicks, 904 purchases.
 | v9 × organic ^ 2 | +5.1 % | +5.0 % (± 2.1) | +5.7 % | +3.9 % |
 | organic alone | +6.9 % | +4.7 % (± 3.0) | +5.8 % | +3.1 % |
 
-From power 1 on, the estimate is flat within its error: power 1 stays, the same as in v32. The arm is one
-parameter (`pool` in `reco.recommend`: how many of the carousel models' best candidates the organic factor
+**How much depends on how fast attention falls down the list**, and that is not known exactly. With the
+old log's curve the reorder is worth +4.7 %. With the curve v9's own click model implies when the same
+product is moved down the list (1.00, 0.68, 0.48, 0.40, 0.37, 0.34, 0.32, 0.30, 0.29, 0.29 — flatter: the old
+carousel also put its better products first, so its raw clicks per slot overstate the fall) it is +2.5 % ±
+1.1; with a curve steeper than the log's, +11 %. Positive under all of them, and power 1 is the robust dose:
+"organic alone" goes from −0.9 % to +24 % with the curve, power 2 from +1.8 % to +15 %. The honest reading
+is a gain of 2 to 5 %.
+
+The same lists as a choice — which of the ten was chosen, given log(v9's prediction at its slot) and
+log(organic factor) — give the organic factor a coefficient of 0.34 ± 0.04 on clicks and 0.59 ± 0.07 on
+purchases, next to 0.81 and 0.82 for v9: 9 and 8 standard errors, by far the strongest information outside
+v9 found all day (the best of §21 was 4.5). The fitted power on top of v9 is 0.4 for clicks and 0.7 for
+purchases; power 1, as in v32, is within what the estimates above can tell apart. A flat-ish attention curve
+also says that which ten are shown matters about as much as their order: that is v32's bet, and v37 against
+v32 is the test.
+
+The arm is one parameter (`pool` in `reco.recommend`: how many of the carousel models' best candidates the organic factor
 may reorder; 10 = they pick the ten). On 150 of the day's requests it shows the same ten products as v9 in
 all 150 lists, a different first product in 33 %, and costs 2 ms more than v9 (the organic model scores 10
 rows instead of 300: 51 ms per list against 49, and 95 for v32).

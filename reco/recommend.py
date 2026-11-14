@@ -168,7 +168,8 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
     pool: how many of the carousel models' best candidates the organic factor is applied to (ORGANIC_TOP if
            not given). 10 = the carousel models pick the ten and the organic factor only orders them: no
            product enters the list on the organic model's word. That is exactly what was measured on held-out
-           lists (14 Nov, 38,627 lists, position-based estimate): +4.7 % purchases, 2.9 standard errors.
+           lists (14 Nov, 38,627 lists, position-based estimate): +2.5 % to +4.7 % purchases, depending on
+           how fast attention falls down the list (findings §22).
     fresh: a product added during the event has its score multiplied by this when the shopper is a known one
            (1 = nothing). Measured on 14 Nov on 30,000 lists the ranker had not seen: after a click, a known
            shopper buys such a product 37 % of the time, against 25 % for the original catalogue; the ranker,

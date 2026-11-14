@@ -46,7 +46,7 @@ from reco.state import State
 #   v32  v9 x organic + lift            + what shoppers go on to buy in the store (offline/organic.py)
 #   v37  v9 + lift picks the ten, v9 x organic orders them: the same ten products as v31, in another order. No
 #        product enters a list on the organic model's word, and it is exactly what the held-out lists
-#        measured (+4.7 % purchases, findings §22). v37 against v31 is the order alone; v32 against v37 is
+#        measured (+2.5 % to +4.7 % purchases, findings §22). v37 against v31 is the order alone; v32 against v37 is
 #        what the organic factor brings into the list from outside
 #   v36  v9 x organic + lift, and products added during the event x1.5 for known shoppers (findings §21)
 # v31 and v32 answer the same requests as before (same hash buckets), so their series go on. v37 took the

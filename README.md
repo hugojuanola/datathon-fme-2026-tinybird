@@ -91,7 +91,7 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
 | v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | being measured over the night (findings §20) |
 | v9 × organic | + what shoppers go on to buy in the store | being measured over the night |
 | v9 × organic, new products ×1.5 | + products added during the event lifted for known shoppers | being measured over the night (findings §21) |
-| v9 picks the ten, organic orders them | the same ten products as v9, ordered with what shoppers go on to buy | being measured over the night; +4.7 % purchases on held-out lists (findings §22) |
+| v9 picks the ten, organic orders them | the same ten products as v9, ordered with what shoppers go on to buy | being measured over the night; +2.5 % to +4.7 % purchases on held-out lists, depending on the attention curve (findings §22) |
 
 ## Learning from the stream
 
