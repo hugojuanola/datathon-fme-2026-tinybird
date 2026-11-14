@@ -42,24 +42,25 @@ repository is in a OneDrive folder and syncing an environment saturates the upli
 
 ## Current reading
 
-_Updated 14 Nov 2026, 16:57 CET._
+_Updated 14 Nov 2026, 17:12 CET._
 
-- **How much is missing**: last hour 2.027 against the reference's 2.063 — **0.036, 97% of the way**. Last 15
-  minutes 2.115 against 1.985 — **above by 0.13**, for the second reading in a row. 100% on time.
-- **Cold conversion** 2.69 against 1.89 (hour). **Best rival** team_26 at 1.80. Revenue per request 1.03 €
-  against the reference's 0.89 €.
-- **A/B verdict, attribute models against v5** (15:12–15:41 UTC): ahead on new shoppers (3.56% against 2.63%,
-  not conclusive), level on known shoppers (1.49% against 1.33%). The products the attribute models add for
-  known shoppers sell less than the ones v5 had picked. See
-  [the 16:55 note](notes/2026-11-14_1655_at-the-reference-and-ab-verdict.md).
-- **Live since 16:41 CET**: `skore_money_v8`, `skore_money_v8c`, `skore_money_v9` and an exploration arm; no v5
-  control any more. v9's first ten minutes: 3.39% (18 / 531) — too early.
-- **Reliability**: every request answered, p95 1.6 s.
+- **We are above the reference.** Last hour 2.199 against 2.102 (+0.10); last 15 minutes 2.529 against 2.263
+  (+0.27), the third 15-minute reading in a row above it. See
+  [the 17:10 note](notes/2026-11-14_1710_passed-the-reference.md).
+- **Cold conversion** 2.88 against 1.90 (hour). **Best rival** team_26 at 1.89. Revenue per request 1.10 €
+  against the reference's 0.91 €.
+- **Live**: `skore_money_v9`, `skore_money_v9d`, `skore_money_v9w` since 16:58 CET (v8 and v8c ran until then).
+  All arms together convert 2.56% since 16:41 CET (115 / 4,487); no variant is distinguishable yet.
+- **Reliability**: 0.7% of requests unanswered since 16:41 CET, with failed polls in the last minute. The
+  remaining cause is the assistant sessions themselves: each step of a long session uploads megabytes. For the
+  final the watch must not run from a long session on the serving laptop.
+- **Open**: which v9 variant is best (needs about 40 more minutes); how far above the reference the oracle is.
 
 ## Notes
 
 | When (CET) | Finding |
 |---|---|
+| [14 Nov 17:10](notes/2026-11-14_1710_passed-the-reference.md) | **Above the reference on the hourly board**: 2.199 against 2.102; last 15 minutes 2.529 against 2.263. Conversion per arm since 16:41 CET (2.56% all together). Reliability: the remaining source of lost requests is the assistant sessions' own uploads — what to do for the final |
 | [14 Nov 16:55](notes/2026-11-14_1655_at-the-reference-and-ab-verdict.md) | **At the reference**: 0.036 missing on the hourly board, above it over the last 15 minutes twice running. A/B verdict: the attribute models gain on new shoppers and are level with v5 on known ones; why (the products added at the margin sell less; lists leave the shopper's subcategories) |
 | [14 Nov 16:25](notes/2026-11-14_1625_v7-live-mechanism.md) | **v7 is live and pulls the attribute lever** (low-affinity impressions 38% → 10%, attribute-sharing with the last view doubled); conversion not readable after ten minutes; v6 replaced; brand history is not a stand-in for attributes but adds nothing to the model |
 | [14 Nov 16:12](notes/2026-11-14_1612_attributes-confirmed-on-carousel.md) | **Attributes confirmed on the live carousel**, adjusted for slot: 10× between low and high attribute affinity for known shoppers, inside and outside their subcategories; 2.3× / 5.6× for new shoppers when the product shares 1 / 2 attributes with the last view; 44% of known-shopper impressions are in the low band; worth roughly +0.45 overall |
