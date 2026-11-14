@@ -8,7 +8,9 @@ browser (Chrome or Edge), press `F` for full screen. No server, no network, no i
 | [`index.html`](index.html) | The 13 slides, their speaker notes and the small engine that runs them |
 | [`data.js`](data.js) | Leaderboard snapshot shown on the "where we stand" and "learning" slides. Written by code, not by hand |
 | [`update_data.py`](update_data.py) | Rewrites `data.js` from the public leaderboard and `realtime_analyisi_leaderboard/history.csv` (stdlib, read-only, no API key) |
-| `fonts/` | Adwaita Sans (Inter) and iA Writer Mono, subset to Latin; both under the SIL Open Font License |
+| [`design.md`](design.md) | Tinybird's visual identity as read on tinybird.co on 14 Nov (type, colours, shapes, logo), with the source of each value. The deck's CSS follows it, on a white background |
+| `assets/` | Tinybird and RawTree logos, as published on their sites |
+| `fonts/` | Roboto and Roboto Mono (Tinybird's typefaces), subset to Latin, plus four arrow glyphs from Inter; all under the SIL Open Font License |
 
 ## Before presenting
 
@@ -33,7 +35,6 @@ feature count on slide 6.
 | `O` | Index of slides, to jump to one during the questions |
 | `N` | Speaker notes of the current slide (for rehearsing: the audience would see them) |
 | `C` / `R` | Show the clock: elapsed / planned up to the end of this slide; it turns red when 15 s behind. `R` restarts it |
-| `T` | Light / dark. Use light if the projector washes out the dark theme |
 
 ## Time plan
 
