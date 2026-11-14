@@ -10,10 +10,11 @@ analytics database. Our running system is the submission.
 - Challenge page: <https://datathon.rawtree.dev> · Leaderboard: <https://datathon.rawtree.dev/leaderboard>
 - Official starter kit: <https://github.com/rawtreedb/datathon-fme-2026>
 
-**Where it stands** (practice round, Sat 14 Nov, 18:20 CET, last hour, the organisers' own metric): **2.18**
-expected purchases per 100 requests, first of the teams; the next team 1.83, the organisers' reference
-recommender 2.04, the best-sellers baseline 0.53. On cold requests (new shoppers, new products) 2.76
-against 1.73 for the reference.
+**Where it stands** (practice round, Sat 14 Nov, 21:00 CET, the organisers' own numbers): first of the
+teams on the hourly score, 61.7 against 40.6 for the next one. Over the evening about 2.2 expected
+purchases per 100 requests against 1.8 for the next team, 2.0 for the organisers' reference recommender and
+0.5 for the best-sellers baseline; on cold requests (new shoppers, new products) 2.8 against 1.7 for the
+reference. What is still behind the reference: requests from known shoppers (1.8–2.0 against 2.0–2.2).
 
 ## How it works
 
@@ -35,15 +36,16 @@ against 1.73 for the reference.
    the last view up to ×4.5. The best 1,000 go on (the same top 10 as ranking all 5,200 in 99.9 % of slots).
 2. **Rank.** Two gradient-boosted models, multiplied: the chance of a click and the chance that a click ends
    in a purchase. Their features are counts, shares and matches — never a product or shopper id — so they
-   work on a shopper or a product they have never seen. A request from a new shopper goes to a ranker that
-   learned mostly from today's stream; one from a known shopper to a ranker that also learned from the old
-   carousel's log.
+   work on a shopper or a product they have never seen. A third model can multiply their score: how
+   likely this shopper is to go and buy this product in the store anyway, learned from what shoppers bought
+   after 127,000 moments like this one (being tested live).
 3. **Store moves.** The organic stream shows a trend minutes before our own feedback could: the detector
-   reads views and purchases per subcategory every second and lifts what is trending.
+   reads views and purchases per subcategory every second and multiplies the scores of what is trending by
+   how much it is trending. Live, it saw a trend 41 seconds after it started.
 4. **Hard rules.** A product the shopper already bought is never shown again (it sells 0.01–0.03 % of the
    time), and one invalid id voids the whole answer, so stock is re-read around every 5-minute mark.
 
-All of it runs in about 45 ms per request, in one Python process: [`reco/`](reco/).
+All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/).
 
 ## What we found, and what each finding was worth
 
@@ -54,8 +56,10 @@ All of it runs in about 45 ms per request, in one Python process: [`reco/`](reco
 | The live simulator has satiation, the history does not | Already-bought products: 0.01–0.03 % per impression | §2 |
 | **Shoppers buy by the attributes named in the description** | 20 phrases, two per product; a shopper's past attributes pick their next purchase inside a subcategory with AUC 0.69. Live: 1.8 → 2.4 purchases per 100 requests, the largest step we measured | §13, §15 |
 | New shoppers are not blind | Their first views and carts of the session arrive in `shop.events` before the request; on cold requests we are at 2.76 against 1.73 for the reference | §3, §11 |
-| The stream knows what the log cannot | Weighting live feedback ×20 is better for cold requests (3.21 vs 2.84) and worse for the rest (1.87 vs 2.11): each kind of request gets its ranker | §15 |
-| **The store moves: one subcategory at a time sells ×8–12 for 45 minutes** | Four trends on 14 Nov, every product of the subcategory rising alike; our carousel showed it too (0.67 % bought vs 0.15 %) before any version knew | §16 |
+| **The store moves: one subcategory at a time sells ×8–12 for 45 minutes** | Five trends on 14 Nov, every product of the subcategory rising alike. Measured in our own carousel on the 9,000 impressions of one of them: ×8.3 on purchases, exactly what the detector estimated from the organic stream (×8.6) | §16 |
+| What a shopper buys next is rarely what they are looking at | 10 % of requests are followed within 30 minutes by a purchase in the store: 75 % of them outside the category of the last view, 53 % in a subcategory the shopper had bought in — where it is the best of what they do not own yet, not the best seller | §19 |
+| A model that never saw a carousel orders our carousel's purchases as well as ours | Trained only on those next purchases, as a factor on the ranker it moves the purchased product up among the 10 shown (reciprocal rank 0.38 → 0.41) | §20 |
+| More weight on today's feedback, routing by kind of request, more features: no | Three ideas that looked right offline or for an hour and did not hold on thousands of live requests; one ranker serves everybody | §17, §20 |
 | Price drops and new products are small next to that | A 19 % promotion sells about ×1.2; a new product takes its fair share from its first ten minutes | §16 |
 
 ## How we know: offline first, then live
@@ -64,11 +68,16 @@ All of it runs in about 45 ms per request, in one Python process: [`reco/`](reco
   interleaved with the carousel requests — through the same `featurize()` the server calls, so a row never
   sees its future and training cannot drift from serving. Validation holds out the future: the last week of
   the log and the last quarter of our live feedback ([`offline/`](offline/), findings §6, §9, §14).
+- **A fast judge in between.** What shoppers go on to buy after a request is free, unbiased by our own
+  lists, and plentiful: [`offline/next_purchase.py`](offline/next_purchase.py) replays the stream and asks
+  where each ranker had put that product. It orders the versions as the live metric did; an idea that does
+  not move it is not worth an arm (findings §19).
 - **Live.** Every version is an arm with its own `model_version`, split by a hash of the request id, and is
   judged on the organisers' own number: expected purchases under the hidden model, per version
-  ([`scripts/arms.py`](scripts/arms.py)). We measured how noisy that is — two arms running the same code
-  differ by 0.12 after half an hour, and realised purchases by a factor of two — and only act on effects well
-  beyond it (findings §15).
+  ([`scripts/arms.py`](scripts/arms.py)). We measured how noisy that is — three arms doing exactly the same
+  read 1.92, 2.40 and 2.59 in one quarter of an hour — and only act on hours of traffic or on effects well
+  beyond the noise (findings §15). When the offline judges and the live arms disagreed (v16 against v9 on
+  known shoppers), the live arms decided.
 
 | Version | What changed | Expected purchases per 100 requests |
 |---|---|---|
@@ -77,7 +86,8 @@ All of it runs in about 45 ms per request, in one Python process: [`reco/`](reco
 | v5 | first learned ranker on top of the rules | 1.81 |
 | v7–v10 | + description attributes, new products, carts by subcategory | 2.3–2.4 |
 | reference | the organisers' recommender | 2.06 |
-| v11 / v14 | + a ranker per kind of request, + live trends | being measured (findings §16) |
+| v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | being measured over the night (findings §20) |
+| v9 × organic | + what shoppers go on to buy in the store | being measured over the night |
 
 ## Learning from the stream
 
@@ -85,7 +95,7 @@ All of it runs in about 45 ms per request, in one Python process: [`reco/`](reco
 |---|---|
 | Within a second | A shopper's profile after each view, cart and purchase · stock · prices · new products (described by their attributes from the first second) · which subcategory is trending and by how much |
 | Within minutes | Popularity of every product, with the exposure a new product really had |
-| Within hours | The rankers, retrained on our own feedback (live rows weighted over the old log) · exploration arms during practice, to have unbiased feedback to train and judge with (§12) |
+| Within hours | The rankers, retrained on our own feedback (live rows weighted over the old log) · the organic model, on what shoppers bought after our requests · exploration arms during practice, to have unbiased feedback to train and judge with (§12) |
 
 For the final ("new shoppers, new products, new trends") nothing has to be switched on: the features carry
 no ids, a profile builds itself from the stream, and the detector does not know the schedule of any trend.
