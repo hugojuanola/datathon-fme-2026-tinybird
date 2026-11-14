@@ -4,7 +4,7 @@ Exploratory analysis of the challenge data, done on **Sat 14 Nov 2026 ≈ 13:30 
 round). Everything here is reproducible:
 
 ```bash
-.venv/Scripts/python.exe avanced_data_analysis/eda_pull.py   # RawTree → data/eda/*.parquet (git-ignored), ~1 min
+.venv/Scripts/python.exe avanced_data_analysis/eda_pull.py   # RawTree → $SKORE_DATA_DIR/eda/*.parquet (outside the repo), ~1 min
 .venv/Scripts/python.exe avanced_data_analysis/eda.py        # → figures/*.png + numbers.json, ~3 min on a laptop CPU
 ```
 

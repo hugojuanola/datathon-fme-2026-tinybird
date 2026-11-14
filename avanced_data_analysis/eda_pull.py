@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Pull the data the EDA needs from RawTree into data/eda/*.parquet (git-ignored, re-creatable).
+"""Pull the data the EDA needs from RawTree into $SKORE_DATA_DIR/eda/*.parquet (re-creatable).
+
+The cache lives outside the repository (SKORE_DATA_DIR in .env; default: ./data) because the repository
+sits in a OneDrive folder and bulky files there compete with the live server for the uplink.
 
 Aggregations run inside RawTree; only summaries and a 10% sample of the carousel log come down.
 
@@ -8,6 +11,7 @@ Aggregations run inside RawTree; only summaries and a 10% sample of the carousel
 """
 from __future__ import annotations
 
+import os
 import sys
 import time
 from pathlib import Path
@@ -16,9 +20,10 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
-from rt import query  # noqa: E402
+from rt import load_env, query  # noqa: E402
 
-OUT = ROOT / "data" / "eda"
+load_env()
+OUT = Path(os.environ.get("SKORE_DATA_DIR", ROOT / "data")) / "eda"
 EV = "shop.history_events"
 SE = "shop.history_sessions"
 NN = "ifNull(clicked::Nullable(String), '')"
@@ -122,8 +127,6 @@ QUERIES: dict[str, str | list[str]] = {
 
 
 def main() -> None:
-    import os
-
     force = "--force" in sys.argv
     OUT.mkdir(parents=True, exist_ok=True)
     for name, sql in QUERIES.items():
@@ -142,7 +145,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    from rt import load_env
-
-    load_env()
     main()

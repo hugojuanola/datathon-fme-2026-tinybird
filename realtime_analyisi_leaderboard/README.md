@@ -9,15 +9,16 @@ for whoever is training or tuning the model: read `latest.md` for the numbers an
 | [`latest.md`](latest.md) | The last tick: leaderboard top 5, who served our shoppers, conversion by model version and kind of shopper, the known-shopper lever. Regenerated every tick |
 | [`history.csv`](history.csv) | One row per tick, to see the trend |
 | [`notes/`](notes/) | One dated note per finding worth acting on, with the evidence and what to do |
-| [`tick.py`](tick.py) | Produces `latest.md` and a row of `history.csv`. Read-only: leaderboard API + `SELECT`s |
+| [`tick.py`](tick.py) | Produces `latest.md` and a row of `history.csv`. Read-only and light: leaderboard API + three `SELECT`s on the last minutes of the live tables; the 60-day purchase history comes from a local cache, not from a scan |
 | [`queries/`](queries/) | The SQL behind the notes, runnable with `python scripts/rt.py -f <file>` |
 
 Every analysis here is held to three questions: does it generalise to the final (new shoppers, products and
 trends)? how does it compare with the reference? is there a better-founded technique for it in the literature?
 
 ```bash
-python realtime_analyisi_leaderboard/tick.py              # last 30 minutes of our feedback
-python realtime_analyisi_leaderboard/tick.py --window 60
+.venv/Scripts/python.exe realtime_analyisi_leaderboard/tick.py                                  # last 30 minutes
+.venv/Scripts/python.exe realtime_analyisi_leaderboard/tick.py --window 60
+.venv/Scripts/python.exe realtime_analyisi_leaderboard/tick.py --since "2026-11-14 13:35:00"     # UTC, e.g. since a deploy
 ```
 
 ## How to read a tick
@@ -34,17 +35,20 @@ python realtime_analyisi_leaderboard/tick.py --window 60
 
 ## Current reading
 
-_Updated 14 Nov 2026, 14:30 CET._
+_Updated 14 Nov 2026, 14:45 CET._
 
-- **We lead on conversion**: 1.38 against 1.13 for the best rival (team_09); the reference is at 2.04 and the
-  baseline at 0.71, so we are half-way (50%) from baseline to reference. Cold conversion 1.86 (reference 1.88).
-- **Why we are far from the reference**: on cold requests we match it; all of the gap (0.65 of 0.66 points)
-  is on known shoppers, whose purchases follow their purchase history (63% of their next purchases are in a
-  subcategory they have bought in before) while v4 builds the list around the session. See
-  [the 14:30 note](notes/2026-11-14_1430_why-far-from-reference.md), which proposes one A/B arm.
-- **Incident 14:14–14:22**: 312 of 1,440 requests went unanswered because a heavy local job starved the
-  server. Recovered. See [the incident note](notes/2026-11-14_1414_incident-unanswered-requests.md).
-- **`v4a` vs `v4b`**: 1.18% vs 1.22% in the last 30 minutes — no difference.
+- **`skore_money_v5` (learned ranker) is live since 14:35 CET, A/B against `skore_money_v4` (the rules).**
+  First seven minutes, so a direction and not a result: known shoppers 2.39% with v5 (11 purchases in 461
+  requests) against 1.35% with v4 (6 in 443); new shoppers 2.97% (6 in 202) against 2.62% (5 in 191).
+- **The mechanism is doing what the analysis asked for**, and this part is already solid (4,600 impressions per
+  arm): v5 puts 62% of its known-shopper impressions in subcategories where the shopper has bought before;
+  v4 puts 34%. Those impressions sell at about 0.3% each, the others at under 0.1%.
+- **Leaderboard**: conversion 1.47 against 1.21 for the best rival (team_09); reference 2.03, baseline 0.70 —
+  58% of the way from baseline to reference. Cold conversion 1.92, above the reference's 1.82.
+- **Reliability**: back to normal after the 14:14–14:31 stall (p95 1.67 s); the leaderboard's hourly
+  `on_time` is 95% and will keep recovering. The switch to v5 cost 38 unanswered requests.
+- **When to read the A/B**: with about 1,800 known-shopper requests per arm every 30 minutes, a difference
+  like 1.4% vs 2.4% needs roughly one hour (until about 15:35 CET) to be outside the noise.
 
 ## Notes
 

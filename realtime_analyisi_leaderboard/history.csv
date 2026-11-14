@@ -1,3 +1,4 @@
-utc,mode,rank,conv,cold,on_time,eur_req,model,best_rival,rival_conv,ref_conv,ref_cold,base_conv,base_cold,pct_of_way_to_ref,window_min,served_by_team_pct,p95_ms,new_requests,new_conv_pct,known_requests,known_conv_pct,lever_impr_share_pct,lever_buy_pct,no_lever_buy_pct
+utc,mode,rank,conv,cold,on_time,eur_req,model,best_rival,rival_conv,ref_conv,ref_cold,base_conv,base_cold,pct_of_way_to_ref,window,served_by_team_pct,p95_ms,new_requests,new_conv_pct,known_requests,known_conv_pct,lever_impr_share_pct,lever_buy_pct,no_lever_buy_pct
 2026-11-14 13:13,practice,1,1.3002,1.8148,78.8,0.55,v4b,team_09,1.1379,2.0323,1.9019,0.7068,1.2191,44.769,30,99.963,1653,1639,2.013,3756,1.065,33.946,0.188,0.064
 2026-11-14 13:21,practice,1,1.3778,1.8555,89.6,0.597,v4a,team_09,1.1324,2.0378,1.8802,0.7061,1.1798,50.44,30,94.222,2193,1541,1.622,3544,1.016,34.083,0.182,0.064
+2026-11-14 13:42,practice,1,1.4702,1.924,95.1,0.626,skore_money_v4,team_09,1.2141,2.0288,1.8158,0.6959,1.1357,58.093,since 2026-11-14 13:35:00 UTC,97.154,1665,393,2.799,904,1.881,48.179,0.298,0.085

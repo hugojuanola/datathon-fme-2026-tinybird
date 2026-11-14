@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Exploratory data analysis: what drives purchases in the carousel (and therefore our score).
 
-Reads data/eda/*.parquet (run eda_pull.py first), writes the figures to figures/*.png and the headline
+Reads $SKORE_DATA_DIR/eda/*.parquet (run eda_pull.py first), writes the figures to figures/*.png and the headline
 numbers to numbers.json, both next to this script. The findings are written up in README.md.
 
     .venv/Scripts/python.exe avanced_data_analysis/eda.py
@@ -9,6 +9,8 @@ numbers to numbers.json, both next to this script. The findings are written up i
 from __future__ import annotations
 
 import json
+import os
+import sys
 import warnings
 from pathlib import Path
 
@@ -29,7 +31,11 @@ from sklearn.preprocessing import StandardScaler
 warnings.filterwarnings("ignore")
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-D, FIG = ROOT / "data" / "eda", HERE / "figures"
+sys.path.insert(0, str(ROOT / "scripts"))
+from rt import load_env  # noqa: E402
+
+load_env()
+D, FIG = Path(os.environ.get("SKORE_DATA_DIR", ROOT / "data")) / "eda", HERE / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
 RNG = np.random.default_rng(0)
 NUM: dict = {}
