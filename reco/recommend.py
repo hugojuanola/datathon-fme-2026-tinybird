@@ -155,7 +155,8 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
         top = np.argpartition(-score, k - 1)[:k]
         x = featurize(cat, shopper, PAGES.get(req["page"], 2), DEVICES.get(req["device"], 0),
                       REGIONS.get(req["region"], -1), recent, top, int(req["ts_ms"]) / 1000, slot=1.0,
-                      trend=trend_lift)
+                      trend=None if trend else trend_lift)     # a trend is counted once: by the lift, or by
+                                                               # a ranker that has it as a feature
         p = ranker.score(x)
         if lift is not None:
             p = p * lift[top]

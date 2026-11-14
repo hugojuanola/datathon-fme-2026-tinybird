@@ -15,7 +15,11 @@ connection being busy with something else (docs/findings.md §8). So the checkli
       after: **Never**". The server also asks Windows not to sleep while it runs, but closing the lid or a
       forced update restart is stronger than that: lid open, charger in.
 - [ ] Windows Update: *Pause updates* for a week (a restart at 10:30 would be the end of it).
-- [ ] If there is a cable: plug the laptop into the router. Wi-Fi was fine when nothing else used it.
+- [ ] **A network cable from the laptop to the router.** Measured with `scripts/netmon.py` on 14 Nov: over
+      Wi-Fi the ping to the router averages 11-27 ms with spikes of 100-360 ms even in good minutes (a cable
+      gives 1 ms), and the bursts of lost answers are stalls of every connection at once.
+- [ ] Leave the monitor running in a window of its own: `python scripts/netmon.py` (a few bytes per second).
+      If answers are lost, `python scripts/netmon.py --report 30` says whether it was the Wi-Fi.
 
 ## Sunday, 09:00 CET — one hour before
 
@@ -52,7 +56,16 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 
 - Exploration **off**: no `explore` arm in `ARMS` (reco/serve.py). It is a practice-round tool.
 - One arm, the best version by `scripts/arms.py` over a long same-minutes window in practice. No A/B in
-  the final: every request should get the best list we have.
+  the final: every request should get the best list we have. Reading the night and setting the arm:
+
+  ```bash
+  python scripts/arms.py 21:00 07:30          # UTC: yesterday 22:00 CET to today 08:30 CET, every arm side by side
+  ```
+
+  then leave a single line in `ARMS` (`reco/serve.py`) with the winner at 100 %, for example
+  `ARMS = (("skore_money_v14", "model", "v9w|v9", {"trend": 1.0}, 100),)`, commit it, and replace the
+  running server with `-Standby` as in step 2. The standby prints a self-test of the arm before it can take
+  over: every line must read `N/N valid lists`.
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products
   and trends. What carries over, by construction: features are counts, shares and matches (never ids);
   a shopper's profile is built from the live stream within minutes; a new product is described by its
