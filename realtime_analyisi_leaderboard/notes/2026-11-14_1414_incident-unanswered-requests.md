@@ -82,3 +82,22 @@ For the final, in order of importance:
 2. Nothing bulky inside the repository folder: environment, data, models and logs live outside it.
 3. Nothing else that talks to RawTree from this laptop during the final, apart from the server and, at most,
    one light watch tick away from the 5-minute marks.
+
+## Update, 15:32 CET — the uplink is not capped at 110 KB/s
+
+Upload measured every second for a minute (14:29:08–14:30:12 UTC, OneDrive closed, Wi-Fi 5 GHz at 80% signal
+and 866 Mbps link rate, so the Wi-Fi itself is not the limit):
+
+- a **floor of about 100–130 KB/s that never stops** — something on the laptop uploads continuously;
+- **bursts of 300–800 KB/s lasting 2–10 seconds**, several per minute (for example 297 → 702 KB/s during
+  14:29:45–14:29:54, 794 at 14:29:58, 413–551 at 14:30:05).
+
+So the line carries at least 0.8 MB/s up; the earlier reading of "a 110 KB/s uplink" was the floor, not the
+ceiling. What competes with the server is the continuous sender plus the bursts. The bursts line up with the
+moments a Claude session sends a request (each step uploads the whole conversation, megabytes for a long
+one); the continuous sender was not identified from here — Task Manager → Processes → sort by "Network"
+shows it. The server's own traffic is small (about 20 KB/s).
+
+For the final the conclusion is the same, with a clearer reason: the machine and the connection that serve
+should carry nothing else — no calls or screen sharing, no cloud sync, no long-running assistant sessions.
+The safest form of that is to serve from a dedicated machine.
