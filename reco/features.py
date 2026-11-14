@@ -24,7 +24,7 @@ REGIONS = {r: i for i, r in enumerate(["Andalucía", "Aragón", "Canarias", "Cas
 FEATURES = [
     # the product itself
     "pop", "view_share", "cart_rate", "buy_rate", "log_price", "pop_vs_sub", "pop_vs_cat",
-    "is_new_item", "item_age", "discount", "attr_prior", "attr_a", "attr_b",
+    "is_new_item", "item_age", "discount", "trend", "attr_prior", "attr_a", "attr_b",
     # how it matches this session
     "page", "n_recent", "same_cat", "same_sub", "same_brand", "in_recent", "is_last",
     "recent_sub_frac", "recent_cat_frac", "dprice_last", "dprice_recent", "recent_new", "recent_attr",
@@ -41,6 +41,130 @@ CATEGORICAL = ["page", "device", "region", "attr_a", "attr_b"]
 F = {name: i for i, name in enumerate(FEATURES)}
 PRIOR_VIEWS = 50.0   # a product's rates are shrunk towards the store average until it has this many views
 ATTR_PRIOR = 5.0     # a shopper's taste for an attribute is shrunk towards everybody's until they have this many purchases
+
+# Trends: a group of products that suddenly sells several times its usual share of the store's organic
+# purchases. Measured on 14 Nov (python -m offline.store_moves): one subcategory at a time, for 45 minutes,
+# purchases x8-12 and views x3-4, every product in it rising alike. The detector reads the organic stream:
+#   views say WHEN   - 20x more numerous than purchases, so a trend shows within about a minute and its end
+#                      within two;
+#   purchases say HOW MUCH - starting from what the views imply (purchases rise like views ** 1.8) and
+#                      moving to the measured ratio as purchases accumulate.
+# The same statistic watches subcategories, categories and brands; a product takes the largest lift among
+# its groups. Every count is shrunk towards "as usual", so a small group needs real evidence.
+LEVELS = ("subcategory", "category", "brand")
+LEVEL_SIZE = 100_000     # a group's key is level * LEVEL_SIZE + its id
+VIEW_WINDOW = 2          # minutes of views a trend is detected from (plus the minute in progress)
+VIEW_PRIOR = 20.0        # pseudo-views pulling the ratio towards 1
+VIEW_GATE = 2.0          # trending = viewed at least this many times its usual share…
+VIEW_MIN = 40            # …with at least this many views in the window
+VIEW_TO_BUY = 1.8        # purchases rise like views ** this (four trends: views x3.0-4.2, purchases x7.8-11.9)
+BUY_WINDOW = 5           # minutes of purchases the size of a trend is measured on
+BUY_PRIOR = 3.0          # pseudo-purchases, at the ratio the views imply (or at 1 when views say nothing)
+BUY_GATE = 2.5           # purchases alone also count as a trend: this many times the usual share…
+BUY_MIN = 8              # …with this many purchases, and still selling in the last VIEW_WINDOW minutes
+TREND_CAP = 12.0
+
+
+class Trends:
+    """Organic views and purchases per minute and group → which groups are trending right now, and how much."""
+
+    def __init__(self) -> None:
+        self.views: dict[int, dict[int, int]] = {}     # minute -> group key -> views
+        self.buys: dict[int, dict[int, int]] = {}      # minute -> group key -> purchases
+        self.newest = 0                                # the minute in progress
+
+    def add(self, minute: int, keys: tuple[int, ...], bought: bool) -> None:
+        table = self.buys if bought else self.views
+        counts = table.get(minute)
+        if counts is None:
+            counts = table[minute] = {}
+        for key in keys:
+            counts[key] = counts.get(key, 0) + 1
+        if minute > self.newest:
+            self.newest = minute
+
+    def _window(self, table: dict[int, dict[int, int]], minutes: int) -> dict[int, int]:
+        total: dict[int, int] = {}
+        for minute in range(self.newest - minutes, self.newest + 1):
+            for key, n in list(table.get(minute, {}).items()):
+                total[key] = total.get(key, 0) + n
+        return total
+
+    def lifts(self, usual_views: dict[int, float], usual_buys: dict[int, float]) -> dict[int, float]:
+        """{group key: how many times its usual share of the purchases it sells now}, trending groups only.
+
+        usual_*: each group's usual share of the store's views / purchases (see usual_shares).
+        """
+        seen, sold = self._window(self.views, VIEW_WINDOW), self._window(self.buys, BUY_WINDOW)
+        sold_now = self._window(self.buys, VIEW_WINDOW)
+        n_levels = len(LEVELS)
+        out: dict[int, float] = {}
+        # every event is counted once per level, so the store totals are the sums divided by the levels
+        n_seen, n_sold, n_sold_now = (sum(t.values()) / n_levels for t in (seen, sold, sold_now))
+        for key in set(seen) | set(sold):
+            share_v, share_b = usual_views.get(key), usual_buys.get(key)
+            if not share_v or not share_b:
+                continue
+            v, b, b_now = seen.get(key, 0), sold.get(key, 0), sold_now.get(key, 0)
+            view_lift = (v + VIEW_PRIOR) / (n_seen * share_v + VIEW_PRIOR)
+            if v >= VIEW_MIN and view_lift >= VIEW_GATE:
+                implied = view_lift ** VIEW_TO_BUY
+                lift = max((b + BUY_PRIOR * implied) / (n_sold * share_b + BUY_PRIOR), view_lift)
+            else:
+                lift = (b + BUY_PRIOR) / (n_sold * share_b + BUY_PRIOR)
+                still = b_now >= 3 and (b_now + 1.0) / (n_sold_now * share_b + 1.0) >= 2.0
+                if not (b >= BUY_MIN and lift >= BUY_GATE and still):
+                    continue
+            out[key] = float(min(lift, TREND_CAP))
+        # a trending subcategory drags its category and its brands up with it: when subcategories explain
+        # the move, they are the answer; the wider levels speak only when no subcategory does
+        return {k: v for k, v in out.items() if k < LEVEL_SIZE} or out
+
+    def forget(self, minutes: int = 30) -> None:
+        for table in (self.views, self.buys):
+            for minute in [m for m in list(table) if m < self.newest - minutes]:
+                table.pop(minute, None)
+
+
+def group_keys(cat: "Catalog") -> list[tuple[int, ...]]:
+    """For every product, the keys of the groups it belongs to (one per level of LEVELS)."""
+    return list(zip(cat.sub.tolist(), (LEVEL_SIZE + cat.cat).tolist(), (2 * LEVEL_SIZE + cat.brand).tolist()))
+
+
+def usual_shares(cat: "Catalog") -> tuple[dict[int, float], dict[int, float]]:
+    """Each group's usual share of the store's views and purchases, {group key: share}."""
+    out = []
+    for counts in (cat.views_n, cat.purchases_n):
+        shares: dict[int, float] = {}
+        total = max(float(counts.sum()), 1.0)
+        for level, ids in enumerate((cat.sub, cat.cat, cat.brand)):
+            for i, n in enumerate(np.bincount(ids, weights=counts)):
+                shares[level * LEVEL_SIZE + i] = n / total
+        out.append(shares)
+    return out[0], out[1]
+
+
+def trend_vector(cat: "Catalog", lifts: dict[int, float]) -> np.ndarray | None:
+    """Per product, the largest lift among its trending groups (1 = nothing special); None when nothing trends."""
+    if not lifts:
+        return None
+    vector = np.ones(len(cat.pids))
+    for key, lift in lifts.items():
+        level, i = divmod(key, LEVEL_SIZE)
+        members = (cat.sub, cat.cat, cat.brand)[level] == i
+        vector[members] = np.maximum(vector[members], lift)
+    return vector
+
+
+def trend_names(cat: "Catalog", lifts: dict[int, float]) -> dict[str, float]:
+    """The trending groups by name, for logs: {"Bike Helmets": 8.4, "brand Tinove": 3.1}."""
+    out = {}
+    for key, lift in lifts.items():
+        level, i = divmod(key, LEVEL_SIZE)
+        names = (cat.sub_names, cat.cat_names, cat.brand_names)[level]
+        name = names[i] if i < len(names) else str(i)
+        out[name if level == 0 else f"{LEVELS[level]} {name}"] = round(lift, 1)
+    return out
 
 # Every description names two attributes of the product ("organic ingredients", "a luxury feel", "designed
 # for kids"…). Shoppers buy by attribute: within a subcategory, the attributes of what a shopper bought
@@ -116,6 +240,7 @@ class Catalog:
         # product existed: the same for all old products, smaller for a product added during the event,
         # so that a new product's share is not diluted by the months it was not there.
         exposure = np.full(n, purchases.sum()) if exposure is None else exposure
+        self.views_n, self.purchases_n = np.asarray(views, dtype=float), np.asarray(purchases, dtype=float)
         view_exposure = exposure * (views.sum() / max(purchases.sum(), 1.0))
         self.share = (purchases + 1.0) / (exposure + n)
         self.pop = np.log(self.share)
@@ -202,11 +327,12 @@ NOBODY = Shopper()
 
 
 def featurize(cat: Catalog, shopper: Shopper | None, page: int, device: int, region: int, recent: list[int],
-              idx: np.ndarray, now: float, slot: np.ndarray | float = 1.0) -> np.ndarray:
+              idx: np.ndarray, now: float, slot: np.ndarray | float = 1.0,
+              trend: np.ndarray | None = None) -> np.ndarray:
     """Feature matrix (len(idx) × len(FEATURES)) for the candidate products `idx` of one request.
 
     `recent` holds the product indices of recent_views, oldest first (unknown products dropped);
-    `now` is the time of the request in unix seconds.
+    `now` is the time of the request in unix seconds; `trend` is trend_vector() at that moment.
     """
     x = cat.static[idx].copy()
     x[:, F["page"]] = page
@@ -220,6 +346,8 @@ def featurize(cat: Catalog, shopper: Shopper | None, page: int, device: int, reg
         x[fresh, F["item_age"]] = np.log1p(np.maximum(now - added[fresh], 0.0) / 3600.0)
 
     sub, catg = cat.sub[idx], cat.cat[idx]
+    # log of how many times its usual share the product's group (subcategory, category or brand) sells now
+    x[:, F["trend"]] = np.log(trend[idx]) if trend is not None and len(trend) == len(cat.pids) else 0.0
     attrs, n_attrs = cat.attr[idx], cat.attr_n[idx]
     described = n_attrs > 0
     if recent:

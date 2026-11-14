@@ -28,21 +28,13 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from reco.features import Catalog, Shopper
+from reco.features import Catalog, Shopper, Trends, group_keys, trend_names, trend_vector, usual_shares
 from reco.rawtree import DATA, TEAM, query, query_rows, query_tsv
 
 STOCK_PERIOD_MS = 300_000   # stock changes land every 5 minutes on the dot…
 STOCK_VISIBLE_MS = 800      # …and become queryable about this long after (measured 14 Nov 13:00 UTC)
 PAGE = 50_000               # live events per catch-up query
 CACHE_VERSION = 7           # bump when Shopper changes shape: an old cache must not be unpickled into it
-# Trends: a subcategory that suddenly sells several times its usual share of the store's organic purchases
-# (measured on 14 Nov: one at a time, for 45 minutes, purchases ×8-13). Validated on that day's stream:
-# every trend seen within 1-4 minutes, dropped 4-5 minutes after its end, one false alarm in 7.5 hours.
-TREND_WINDOW = 5            # minutes of organic purchases a trend is read from (plus the minute in progress)
-TREND_PRIOR = 3.0           # pseudo-purchases pulling the estimate towards "sells as usual"
-TREND_GATE = 2.5            # trending = sells at least this many times its usual share…
-TREND_MIN_BUYS = 8          # …with at least this many purchases in the window
-TREND_CAP = 10.0
 CACHE = DATA / "cache"
 JOURNAL = CACHE / "journal"
 
@@ -100,9 +92,11 @@ class State:
         self.hist_counts: dict[str, tuple[float, float, float]] = {}   # product -> (views, carts, purchases), 60 days
         self.live_counts: dict[str, list[float]] = {}                  # same, live stream so far
         self.buy_minutes: dict[int, int] = {}     # minute of the stream -> purchases (for new products' exposure)
-        self.sub_buys: dict[int, dict[int, int]] = {}   # minute -> subcategory -> organic purchases (last hour)
-        self.trend: dict[int, float] = {}         # subcategory -> how many times its usual share it sells now
-        self._sub_share = np.zeros(0)             # subcategory -> its usual share of the store's purchases
+        self.trends = Trends()                    # organic views and purchases per minute and group
+        self.trend: dict[int, float] = {}         # trending group -> how many times its usual share it sells now
+        self.trend_lift: np.ndarray | None = None  # the same per product (None: nothing trends)
+        self._usual: tuple[dict, dict] = ({}, {})  # each group's usual share of views / of purchases
+        self._groups_of: list[tuple[int, ...]] = []
         self.catalog: Catalog | None = None       # immutable snapshot, swapped atomically
         self.best: list[str] = []                 # all products, most popular first
         self.shoppers: dict[str, Shopper] = {}
@@ -224,6 +218,8 @@ class State:
         if ev == "v":
             sh.view(self._sub_of[i], self._attrs_of[i])
             counts[0] += 1
+            if i < len(self._groups_of):
+                self.trends.add(t // 60000, self._groups_of[i], False)
         elif ev == "a":
             sh.cart(i, t // 1000, self._attrs_of[i], self._sub_of[i])
             counts[1] += 1
@@ -232,39 +228,23 @@ class State:
             counts[2] += 1
             minute = t // 60000
             self.buy_minutes[minute] = self.buy_minutes.get(minute, 0) + 1
-            by_sub = self.sub_buys.get(minute)
-            if by_sub is None:
-                by_sub = self.sub_buys[minute] = {}
-            by_sub[self._sub_of[i]] = by_sub.get(self._sub_of[i], 0) + 1
+            if i < len(self._groups_of):
+                self.trends.add(minute, self._groups_of[i], True)
 
     def _update_trend(self) -> None:
-        """Which subcategories sell well above their usual share right now, and by how much.
-
-        lift = (purchases in the window + prior) / (purchases its usual share predicts + prior), kept only
-        when it clears the gate: a small subcategory needs real evidence, not two lucky purchases.
-        """
-        if not self.sub_buys or not len(self._sub_share):
+        """Which groups of products sell well above their usual share right now, and by how much (Trends)."""
+        cat = self.catalog
+        if cat is None or not self.trends.newest:
             return
-        newest = max(self.sub_buys)
-        if newest < (time.time() + self.clock_offset) // 60 - 3:    # the stream went quiet: we know nothing
-            self.trend = {}
-            return
-        window: dict[int, int] = {}
-        for minute in range(newest - TREND_WINDOW, newest + 1):
-            for sub, n in list(self.sub_buys.get(minute, {}).items()):
-                window[sub] = window.get(sub, 0) + n
-        total, share, trend = sum(window.values()), self._sub_share, {}
-        for sub, n in window.items():
-            if n >= TREND_MIN_BUYS and sub < len(share):
-                lift = (n + TREND_PRIOR) / (total * share[sub] + TREND_PRIOR)
-                if lift >= TREND_GATE:
-                    trend[sub] = float(min(lift, TREND_CAP))
+        if self.trends.newest < (time.time() + self.clock_offset) // 60 - 3:   # the stream went quiet: we know nothing
+            trend = {}
+        else:
+            trend = self.trends.lifts(*self._usual)
         if set(trend) != set(self.trend):
-            names = self.catalog.sub_names if self.catalog is not None else []
-            print(f"trend: {({names[s] if s < len(names) else s: round(v, 1) for s, v in trend.items()}) or 'none'}", flush=True)
-        self.trend = trend      # replaced, never mutated: a reader sees one consistent picture
-        for minute in [m for m in list(self.sub_buys) if m < newest - 60]:
-            self.sub_buys.pop(minute, None)
+            print(f"trend: {trend_names(cat, trend) or 'none'}", flush=True)
+        # replaced, never mutated: a reader sees one consistent picture
+        self.trend_lift, self.trend = trend_vector(cat, trend), trend
+        self.trends.forget()
 
     def _replay_journal(self) -> int:
         """Re-apply the live events saved by previous runs. Segments may overlap in time (a standby process
@@ -397,8 +377,9 @@ class State:
         self._attrs_of = cat.attr_ids
         self._sub_of, self._log_price_of, self._brand_of = cat.sub.tolist(), cat.log_price.tolist(), cat.brand.tolist()
         self.best = [pids[i] for i in np.lexsort((np.arange(len(pids)), -cat.share))]
-        sub_buys = np.bincount(cat.sub, weights=counts[2], minlength=len(cat.sub_names))
-        self._sub_share = sub_buys / max(sub_buys.sum(), 1.0)
+        self._usual, self._groups_of = usual_shares(cat), group_keys(cat)
+        if self.trend_lift is not None and len(self.trend_lift) != len(pids):
+            self.trend_lift = trend_vector(cat, self.trend)
         self.catalog = cat
         self._snapshot_at = time.time()
 

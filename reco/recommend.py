@@ -114,11 +114,15 @@ def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrie
 
 
 def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candidates: int | None = None,
-              trend: float = 0.0, trending: dict[int, float] | None = None) -> tuple[list[str], list[str]]:
+              trend: float = 0.0, price: float = 0.0,
+              trend_lift: np.ndarray | None = None) -> tuple[list[str], list[str]]:
     """(10 product ids, why each is there) for a request {user, rv, page, device, region}.
 
-    trend: how much of a live trend to apply. A subcategory selling L times its usual share right now
-           (state.trend; `trending` overrides it, for tests) has its products' scores multiplied by L ** trend.
+    The store moves, and the organic stream shows by how much before our own feedback can:
+    trend: how much of a live trend to apply. Products of a group selling L times its usual share right
+           now (state.trend_lift; `trend_lift` overrides it, for tests) have their scores multiplied by L ** trend.
+    price: price elasticity. A product at r times its catalogue price has its score multiplied by r ** -price
+           (measured on 14 Nov: a 19 % drop sells x1.3-1.45, an elasticity of about 1.6).
     why: v = just viewed · c = abandoned cart · t = trending subcategory · b = the shopper bought in that
          subcategory before · s = subcategory of the last view · k = its category · g = none of those
     """
@@ -127,19 +131,21 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
     recent = [cat.pos[p] for p in req["rv"] if p in cat.pos]
     score = score_rules(cat, shopper, recent, retrieval=policy != "rules")
     n = len(score)
-    lift = None
-    if trend:
-        try:
-            for sub, value in list((state.trend if trending is None else trending).items()):
-                if sub in cat.by_sub:
-                    if lift is None:
-                        lift = np.ones(n)
-                    lift[cat.by_sub[sub]] = value ** trend
-            if lift is not None:
-                score *= lift
-        except Exception as e:     # a trend is a bonus: never let it cost an answer
-            print(f"trend lift failed: {str(e)[:200]}", flush=True)
-            lift = None
+    lift, hot = None, None      # lift: every store move together · hot: the trending products
+    trend_lift = state.trend_lift if trend_lift is None else trend_lift
+    if trend_lift is not None and len(trend_lift) != n:     # computed on another snapshot of the catalogue
+        trend_lift = None
+    try:
+        if price and cat.discount.any():
+            lift = np.clip(np.exp(-price * cat.discount), 0.5, 2.5)
+        if trend and trend_lift is not None:
+            hot = trend_lift > 1
+            lift = trend_lift ** trend if lift is None else lift * trend_lift ** trend
+        if lift is not None:
+            score *= lift
+    except Exception as e:     # a store move is a bonus: never let it cost an answer
+        print(f"store-move lift failed: {str(e)[:200]}", flush=True)
+        lift, hot = None, None
     blocked = [i for i in list(shopper.bought) if i < n] if shopper else []
     blocked += [cat.pos[p] for p in list(state.unavailable) if p in cat.pos]
     score[blocked] = -1.0
@@ -148,7 +154,8 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
         k = min(candidates or CANDIDATES, n - len(set(blocked)))
         top = np.argpartition(-score, k - 1)[:k]
         x = featurize(cat, shopper, PAGES.get(req["page"], 2), DEVICES.get(req["device"], 0),
-                      REGIONS.get(req["region"], -1), recent, top, int(req["ts_ms"]) / 1000, slot=1.0)
+                      REGIONS.get(req["region"], -1), recent, top, int(req["ts_ms"]) / 1000, slot=1.0,
+                      trend=trend_lift)
         p = ranker.score(x)
         if lift is not None:
             p = p * lift[top]
@@ -167,7 +174,7 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
     bought_subs = shopper.sub_purch if shopper else {}
     why = []
     for i in top:
-        why.append("v" if i in recent else "c" if i in carted else "t" if lift is not None and lift[i] > 1
+        why.append("v" if i in recent else "c" if i in carted else "t" if hot is not None and hot[i]
                    else "b" if cat.sub[i] in bought_subs
                    else "g" if last is None else "s" if cat.sub[i] == cat.sub[last]
                    else "k" if cat.cat[i] == cat.cat[last] else "g")

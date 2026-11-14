@@ -48,6 +48,10 @@ def load(live_weight: float = LIVE_WEIGHT) -> tuple[pd.DataFrame, pd.Series]:
     df = pd.concat([pd.read_parquet(DATA / "train_log.parquet"), pd.read_parquet(DATA / "train_live.parquet")],
                    ignore_index=True)
     df = df[~df.bought_before].reset_index(drop=True)
+    for name in FEATURES:       # a feature newer than a table: absent there means "nothing special" (no trend)
+        if name not in df:
+            df[name] = 0.0
+    df["trend"] = df["trend"].fillna(0.0)
     live = df.source == "live"
     live_cut = df.ts_ms[live].quantile(1 - LIVE_VALID)
     valid = np.where(live, df.ts_ms >= live_cut, df.ts_ms >= CUT_LOG)
