@@ -2,7 +2,7 @@
 
     python -m offline.pull_data              # catalog + sessions + events
     python -m offline.pull_data sessions     # only one of: catalog, sessions, events
-    python -m offline.pull_data live         # the live stream so far: events + our feedback (re-run to refresh)
+    python -m offline.pull_data live         # our live feedback so far, incrementally (re-run to refresh)
 
 RawTree caps a query at 30 s / 100 MiB, so the two big tables are pulled in time slices, in
 parallel, with arrays flattened to comma-separated strings inside SQL (TSV transport).
@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 
@@ -107,6 +107,24 @@ def pull_sliced(name: str, template: str, hours: int, workers: int = 6,
     print(f"{name}: {len(df):,} rows in {time.time() - t0:.0f}s", flush=True)
 
 
+def pull_live_feedback() -> None:
+    """Our feedback joined with its request: one parquet per hour, one light query at a time. Hours already
+    on disk are kept; only the last two are read again (feedback for a request lands a few seconds later)."""
+    folder = DATA / "live"
+    folder.mkdir(parents=True, exist_ok=True)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    hour, rows = LIVE_START, 0
+    while hour <= now:
+        path = folder / f"feedback-{hour:%Y%m%d%H}.parquet"
+        if not path.exists() or hour >= now - timedelta(hours=2):
+            df = _pull(LIVE_FEEDBACK.replace("{team}", TEAM), f"{hour:%Y-%m-%d %H}:00:00",
+                       f"{hour + timedelta(hours=1):%Y-%m-%d %H}:00:00")
+            df.to_parquet(path, index=False)
+            rows += len(df)
+        hour += timedelta(hours=1)
+    print(f"live feedback: {rows:,} rows refreshed", flush=True)
+
+
 def main() -> None:
     background()   # never compete with the live loop for the CPU
     DATA.mkdir(parents=True, exist_ok=True)
@@ -120,11 +138,11 @@ def main() -> None:
     if "events" in what:
         pull_sliced("events", EVENTS, hours=12)
     if "live" in what:
-        now = datetime.utcnow() + timedelta(minutes=1)
         query_tsv(UPDATES).to_parquet(DATA / "catalog_updates.parquet", index=False)
-        pull_sliced("live_events", LIVE_EVENTS, hours=1, start=LIVE_START, end=now)
-        pull_sliced("live_feedback", LIVE_FEEDBACK.replace("{team}", TEAM), hours=1, start=LIVE_START, end=now)
-
+        pull_live_feedback()
+        if not any((DATA / "cache" / "journal").glob("events-*.tsv")):   # no server journal on this machine
+            pull_sliced("live_events", LIVE_EVENTS, hours=1, workers=2, start=LIVE_START,
+                        end=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=1))
 
 if __name__ == "__main__":
     main()

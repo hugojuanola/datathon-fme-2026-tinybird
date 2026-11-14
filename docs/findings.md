@@ -186,3 +186,46 @@ returns the same top 10 as ranking everything in 98 % of requests (99.7 % overla
 **Train/serve parity.** `featurize()` is the only feature code. A server state built from RawTree was
 compared with the state the training set is built from, shopper by shopper: 378 of 400 identical, the
 other 22 had new live events since the export.
+
+## 10. Live A/B: the learned ranker against the rules (14 Nov, 13:34–13:57 UTC)
+
+Same traffic, split by request id, realised purchases:
+
+| | Requests | Purchases | Conversion |
+|---|---|---|---|
+| `skore_money_v4` (rules) | 2,024 | 29 | 1.43 % |
+| `skore_money_v5` (ranker) | 2,275 | 56 | **2.46 %** |
+
+2.4 standard errors apart; for known shoppers 2.10 % vs 0.97 % (2.6 standard errors), for new shoppers
+3.50 % vs 2.68 % (not conclusive on its own). The organisers' reference was at 2.03–2.06 % in the same hour.
+Mechanism (measured by the watch session, `realtime_analyisi_leaderboard/notes/`): v5 puts 62 % of a known
+shopper's slots in subcategories they have bought from before (v4: 34 %) and still sells more outside them.
+The log-based hit rate of §6 had v5 *below* v4 on product pages (64 % vs 74 %): the log cannot credit a
+cross-category recommendation, the live simulator does. v4 was retired at 13:57 UTC.
+
+## 11. Does it hold for shoppers without history? (the final round has "new shoppers")
+
+Live feedback the deployed model had never seen (8,687 requests after its training export), slot hidden,
+slot-debiased. "Bought product ranked first / in the top 3" among the 10 shown:
+
+| | Rules | Model |
+|---|---|---|
+| Known shoppers, real history (51 purchases) | 20 % / 44 % | 24 % / 66 % |
+| Known shoppers, history erased | 13 % / 28 % | 11 % / 32 % |
+| New shoppers as they are: only today's live events (53 purchases) | 15 % / 47 % | **36 % / 60 %** |
+| New shoppers, live events erased too | 13 % / 38 % | 24 % / 45 % |
+
+- For a real new shopper the model is clearly better than the rules, and it still is with nothing known
+  about the shopper at all: the product and session features carry over.
+- What a new shopper does *during the stream* is worth a lot (36 % vs 24 % ranked first). The state is
+  updated from `shop.events` every second, so a shopper who appears in the final has a usable history
+  within minutes.
+- For known shoppers the history is everything: erase it and the model is no better than popularity.
+
+## 12. Exploration (practice round only)
+
+Since 13:57 UTC, 20 % of the requests (`skore_money_v5_explore`) get 10 products drawn at random from the
+model's best 20, in random order. It costs conversion on those requests and buys two things the main arm
+cannot give: outcomes for products the model would not have put first (so its mistakes become visible), and
+slots that are independent of relevance (so position bias can be separated from quality). The practice
+round is not scored: that is when to pay for it. Off before the final.

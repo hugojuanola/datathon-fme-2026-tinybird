@@ -1,8 +1,9 @@
 """Build the training table: one row per (request, product shown), with features as known AT THAT MOMENT.
 
     python -m offline.pull_data            # once
-    python -m offline.pull_data live       # refresh the live part
-    python -m offline.build_dataset        # → data/train.parquet
+    python -m offline.build_dataset log    # once (5 min): → train_log.parquet
+    python -m offline.pull_data live       # refresh our live feedback
+    python -m offline.build_dataset live   # every retrain (seconds): → train_live.parquet
 
 It replays the store in time order — 12 M organic events interleaved with the carousel requests — keeping
 one `Shopper` per user up to date, and calls the same `featurize()` the live loop uses. A request's
@@ -14,6 +15,8 @@ Two sources of rows:
 """
 from __future__ import annotations
 
+import pickle
+import sys
 import time
 
 import numpy as np
@@ -44,7 +47,7 @@ def load_catalogs() -> tuple[Catalog, Catalog]:
     args = (pids, products.category.tolist(), products.subcategory.tolist(), products.brand.tolist())
     cat_hist = Catalog(*args, products.price_eur.to_numpy(float), *h)
 
-    live = pd.read_parquet(DATA / "live_events.parquet", columns=["ts", "ev", "product_id"])
+    live = live_events()
     l = counts(live)
     buys = np.sort(live.ts[live.ev == "p"].to_numpy())
     exposure = np.full(len(pids), h[2].sum() + len(buys), dtype=float)
@@ -58,6 +61,27 @@ def load_catalogs() -> tuple[Catalog, Catalog]:
     cat_live = Catalog(*args, price, *(h + l), exposure=exposure,
                        names=(cat_hist.cat_names, cat_hist.sub_names, cat_hist.brand_names))
     return cat_hist, cat_live
+
+
+def live_events() -> pd.DataFrame:
+    """The live stream so far (ts in seconds, ev, user_id, product_id), in time order: from the server's own
+    journal when this machine runs it (no RawTree query at all), else from the export."""
+    segments = sorted((DATA / "cache" / "journal").glob("events-*.tsv"), key=lambda p: int(p.stem.split("-")[1]))
+    if not segments:
+        return pd.read_parquet(DATA / "live_events.parquet", columns=["ts", "ev", "user_id", "product_id"])
+    parts = [pd.read_csv(p, sep=chr(9), names=["t", "ev", "user_id", "product_id"], quoting=3,
+                         on_bad_lines="skip", dtype=str) for p in segments]
+    ev = pd.concat(parts, ignore_index=True).dropna()
+    ev = ev[ev.t.str.isdigit()].drop_duplicates()        # segments of overlapping runs repeat events
+    ev["ts"] = ev.t.astype("int64") // 1000
+    ev = ev.sort_values("ts", kind="stable")
+    return ev[["ts", "ev", "user_id", "product_id"]].reset_index(drop=True)
+
+
+def live_feedback() -> pd.DataFrame:
+    parts = [pd.read_parquet(p) for p in sorted((DATA / "live").glob("feedback-*.parquet"))]
+    df = pd.concat([p for p in parts if len(p)], ignore_index=True)
+    return df.drop_duplicates("request_id").sort_values("ts_ms").reset_index(drop=True)
 
 
 def replay(cat: Catalog, shoppers: dict[str, Shopper], events: pd.DataFrame, requests: pd.DataFrame,
@@ -119,13 +143,11 @@ def assemble(out: list, weight: np.ndarray, source: str, extra: dict | None = No
     return df
 
 
-def main() -> None:
-    background()   # never compete with the live loop for the CPU
+def build_log(cat: Catalog) -> dict[str, Shopper]:
+    """The old carousel's log → train_log.parquet. Returns every shopper's state at the end of the history."""
     t0 = time.time()
-    cat_hist, cat_live = load_catalogs()
     shoppers: dict[str, Shopper] = {}
     rng = np.random.default_rng(0)
-
     sessions = pd.read_parquet(DATA / "sessions.parquet",
                                columns=["ts_ms", "user_id", "device", "region", "page", "rv", "shown", "clicked", "purchased"])
     clicked = (sessions.clicked != "").to_numpy()
@@ -133,24 +155,40 @@ def main() -> None:
     weight = np.where(clicked, 1.0, 1.0 / KEEP_UNCLICKED)
     events = pd.read_parquet(DATA / "events.parquet", columns=["ts", "ev", "user_id", "product_id"])
     out: list = []
-    replay(cat_hist, shoppers, events, sessions, keep, 0.0, out)
+    replay(cat, shoppers, events, sessions, keep, 0.0, out)
     log = assemble(out, weight, "log")
-    print(f"log: {len(log):,} rows from {keep.sum():,} requests in {time.time() - t0:.0f}s", flush=True)
-    del events, sessions, out
+    log.to_parquet(DATA / "train_log.parquet", index=False)
+    print(f"train_log.parquet: {len(log):,} rows from {keep.sum():,} requests in {time.time() - t0:.0f}s", flush=True)
+    return shoppers
 
-    feedback = pd.read_parquet(DATA / "live_feedback.parquet").sort_values("ts_ms").reset_index(drop=True)
-    live_events = pd.read_parquet(DATA / "live_events.parquet", columns=["ts", "ev", "user_id", "product_id"])
-    out = []
-    replay(cat_live, shoppers, live_events, feedback, np.ones(len(feedback), bool), 1.0, out)
+
+def build_live(cat: Catalog, shoppers: dict[str, Shopper]) -> None:
+    """Our live feedback → train_live.parquet, continuing from the shoppers' state at the end of the history."""
+    t0 = time.time()
+    feedback = live_feedback()
+    out: list = []
+    replay(cat, shoppers, live_events(), feedback, np.ones(len(feedback), bool), 1.0, out)
     live = assemble(out, np.ones(len(feedback)), "live",
                     {"served_by": feedback.served_by.to_numpy(), "is_new": feedback.is_new.to_numpy()})
-    print(f"live: {len(live):,} rows from {len(feedback):,} requests", flush=True)
+    live.to_parquet(DATA / "train_live.parquet", index=False)
+    print(f"train_live.parquet: {len(live):,} rows from {len(feedback):,} requests in {time.time() - t0:.0f}s", flush=True)
 
-    table = pd.concat([log, live], ignore_index=True)
-    table.to_parquet(DATA / "train.parquet", index=False)
-    print(f"data/train.parquet: {len(table):,} rows × {len(FEATURES)} features in {time.time() - t0:.0f}s", flush=True)
-    print(table.groupby("source")[["click", "buy", "bought_before"]].mean().round(5).to_string())
 
+def main() -> None:
+    background()   # never compete with the live loop for the CPU
+    what = sys.argv[1:] or ["log", "live"]
+    cat_hist, cat_live = load_catalogs()
+    shoppers = None
+    if "log" in what:
+        shoppers = build_log(cat_hist)
+    if "live" in what:
+        cache = DATA / "cache" / "history.pkl"
+        if shoppers is None and cache.exists():      # skip the 5-minute replay of the history
+            with open(cache, "rb") as f:
+                shoppers = pickle.load(f)["shoppers"]
+        elif shoppers is None:
+            raise SystemExit("run `python -m offline.build_cache` (or `build_dataset log`) first")
+        build_live(cat_live, shoppers)
 
 if __name__ == "__main__":
     main()

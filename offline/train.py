@@ -1,6 +1,6 @@
 """Train the ranker and validate it on data it has not seen, in time order.
 
-    python -m offline.build_dataset
+    python -m offline.build_dataset [log|live]
     python -m offline.train [live_weight]   # → models/click.txt, models/conv.txt + a validation report
 
 Two small gradient-boosted models, multiplied at serving time:
@@ -36,7 +36,8 @@ PARAMS = dict(objective="binary", learning_rate=0.05, num_leaves=31, max_depth=6
 
 
 def load(live_weight: float) -> tuple[pd.DataFrame, pd.Series]:
-    df = pd.read_parquet(DATA / "train.parquet")
+    df = pd.concat([pd.read_parquet(DATA / "train_log.parquet"), pd.read_parquet(DATA / "train_live.parquet")],
+                   ignore_index=True)
     df = df[~df.bought_before].reset_index(drop=True)
     live = df.source == "live"
     live_cut = df.ts_ms[live].quantile(1 - LIVE_VALID)

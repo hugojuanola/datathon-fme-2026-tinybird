@@ -8,6 +8,10 @@ outside any model:
 
     rules   score = popularity × measured lifts, for every product in the catalogue. Transparent, no
             training: the control arm, the fallback, and the first stage of the model policy.
+    explore the model's best 20 products, 10 of them at random, in random order. A small share of the
+            traffic: it shows the model what happens when it is NOT obeyed, which is the only unbiased
+            way to check it (and the next model) — a model that only ever sees the outcome of its own
+            choices cannot find its own mistakes. On during practice, off during the final.
     model   two stages, the standard shape of an industrial recommender:
               1. retrieve  the 500 best products by the rules (0.1 ms)
               2. rank      them by P(click) × P(purchase | click), two gradient-boosted models over the
@@ -18,6 +22,7 @@ outside any model:
 """
 from __future__ import annotations
 
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -34,6 +39,7 @@ LIFT_VIEWED = 3.0        # in this session's recent views            (live A/B: 
 LIFT_BOUGHT_SUB = 5.0    # retrieval only: the shopper bought in that subcategory before (live: 5.6× with
 LIFT_BOUGHT_SUB_3 = 10.0 # 1-2 purchases, 14× with 3+). The model decides how much it is really worth.
 CANDIDATES = 500         # products handed from the rules to the model
+EXPLORE_POOL = 20        # the exploration arm samples its 10 products from the model's best 20
 
 
 class Ranker:
@@ -82,19 +88,22 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str,
     cat = state.catalog
     shopper = state.shoppers.get(req["user"])
     recent = [cat.pos[p] for p in req["rv"] if p in cat.pos]
-    score = score_rules(cat, shopper, recent, retrieval=policy == "model")
+    score = score_rules(cat, shopper, recent, retrieval=policy != "rules")
     n = len(score)
     blocked = [i for i in list(shopper.bought) if i < n] if shopper else []
     blocked += [cat.pos[p] for p in list(state.unavailable) if p in cat.pos]
     score[blocked] = -1.0
 
-    if policy == "model":
+    if policy != "rules":
         k = min(candidates or CANDIDATES, n - len(set(blocked)))
         top = np.argpartition(-score, k - 1)[:k]
         x = featurize(cat, shopper, PAGES.get(req["page"], 2), DEVICES.get(req["device"], 0),
                       REGIONS.get(req["region"], -1), recent, top, slot=1.0, is_live=1.0)
-        score = ranker.score(x)
-        top = top[np.argsort(-score, kind="stable")[:10]]
+        order = np.argsort(-ranker.score(x), kind="stable")
+        if policy == "explore":     # reproducible: the same request always gets the same sample
+            rng = np.random.default_rng(zlib.crc32(req.get("id", "").encode()))
+            order = rng.permutation(order[:EXPLORE_POOL])
+        top = top[order[:10]]
     else:
         top = np.argpartition(-score, 10)[:10]
         top = top[np.argsort(-score[top], kind="stable")]

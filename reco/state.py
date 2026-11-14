@@ -98,6 +98,7 @@ class State:
         self._sub_of: list[int] = []
         self._log_price_of: list[float] = []
         self._journal = None
+        self.keep_journal = True                  # False for dry runs: they must not leave journal segments
         self._snapshot_at = 0.0
 
     # ---------------------------------------------------------------- bootstrap
@@ -121,8 +122,9 @@ class State:
         history_s = time.time() - t0
 
         replayed = self._replay_journal()
-        JOURNAL.mkdir(parents=True, exist_ok=True)
-        self._journal = open(JOURNAL / f"events-{self.events_cursor}.tsv", "a", encoding="utf-8")
+        if self.keep_journal:
+            JOURNAL.mkdir(parents=True, exist_ok=True)
+            self._journal = open(JOURNAL / f"events-{self.events_cursor}.tsv", "a", encoding="utf-8")
         fetched = self._catch_up()
         for r in query(f"""SELECT r.user_id::String AS u, f.purchased::String AS p
                            FROM {TEAM}.feedback AS f
