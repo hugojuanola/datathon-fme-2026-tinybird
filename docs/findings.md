@@ -412,6 +412,27 @@ underestimated them: lifts of 4–8.) The same statistic also watches categories
 final could have another shape — and those levels only speak when no subcategory explains the move, because
 a trending subcategory drags its category and its brands up with it.
 
+**Measured live: a trending product sells ×8.3 in our carousel.** The first trend with the detector in
+production was Game Consoles, 19:30–20:15 UTC. The server announced it **41 seconds** after it started and
+let it go 90 seconds after it ended; its lift went from 3.6 to about 10 in ten minutes (median 8.6). The
+arms that lifted the subcategory showed 9,074 of its impressions. Against what v9 — which knows nothing
+about trends — predicted for those same impressions, at the slot they were in:
+
+| | Observed | v9 expected | Ratio (95 %) |
+|---|---|---|---|
+| Clicks | 129 | 32.6 | ×3.96 (3.3–4.7) |
+| Purchases | 52 | 6.2 | **×8.33 (6.3–11.0)** |
+| Same products, not trending (3,876 impressions v9 had not seen) | 6 purchases | 6.8 | ×0.88 |
+
+The ratio is the same for shoppers who were looking at something else (×8.4) and in every slot band from
+1 to 6. So what the organic stream says is what the carousel does, one to one, and the detector's own
+estimate is the right multiplier: the lift is applied in full (exponent 1). The arms of that evening used
+exponent 0.75 (about ×5) and, as an A/B over one trend, read +0.03 ± 0.20 against no lift — a single
+45-minute trend cannot resolve it; the 9,000 impressions can. One thing that looks like cannibalisation and
+is not: lists that fill up with trend products sell nothing else, but those are the weak requests (home
+pages, no signals). Across versions the click rate of a list follows its quality (best sellers 2.4 %, rules
+4.8 %, v5 5.9 %, v9 7.4 %) while purchases per click stay at 30–33 %: clicks are not a fixed budget.
+
 **Price changes.** Promotions of about 19 % on some 600 products, for two hours, then back (10:30–12:30,
 13:30–15:30, 16:30–). The discounted products take ×1.2 to ×1.5 of their previous share of purchases in one
 batch and no more than before in another (the batches overlap with trends, which blurs it): an elasticity
@@ -502,3 +523,131 @@ path to RawTree, not our process. What we checked:
 
 The monitor keeps logging one line per second, so the next burst will show whether the router stopped
 answering (Wi-Fi) or only RawTree did (the line or the internet).
+
+**The worst loss of the day had nothing to do with the network.** At 18:53:15 UTC the console window the
+server was running in was closed by mistake. Nobody answered for four minutes (723 requests; on-time 73 %
+in that quarter of an hour, third on the board for that window) until it was started again. The connection
+monitor, in a sibling window, wrote its last line the same second. Since 19:11 UTC the server has **no
+window**: `scripts/swap_server.ps1` starts `pythonw -m reco.supervise` through Windows itself, so it is not
+a child of any terminal or assistant session; the supervisor runs the server hidden, restarts it two
+seconds after any exit, and the server ignores Ctrl+C. Since then: 99.8 % answered, no restart in the log.
+
+## 19. A faster judge: what the shopper goes on to buy (`python -m offline.next_purchase`)
+
+A live A/B needs hours to separate two rankers (§15), and our own feedback only says how the 10 products
+we showed did. The organic stream answers a sharper question for free: **10 % of our requests are followed,
+within half an hour, by a purchase of the same shopper somewhere in the store** (5,635 requests in five and
+a half hours). A ranker that understands the shopper should have had that product in its list. No ranker
+chose what was bought, so the comparison is fair, and it rests on thousands of purchases. The stream is
+replayed in time order and, at each of those requests, every ranker in `models/` orders the same 1,000
+candidates.
+
+Share of the next purchases (products not bought before) that were in the ranker's first 10 — 2,384
+purchases after requests of 13:14–18:44 UTC, one standard error about 0.7 points:
+
+| | rules | v5 | v8 | v9 | v9w (live ×20) | v10 | v16 | v16w (live ×20) |
+|---|---|---|---|---|---|---|---|---|
+| All shoppers | 7.5 % | 10.1 % | 12.8 % | 12.5 % | 11.5 % | 12.4 % | 12.7 % | 12.2 % |
+| Known shoppers (1,819) | 6.8 % | 9.9 % | 12.9 % | 12.1 % | 11.6 % | 12.1 % | 12.5 % | 12.2 % |
+| New shoppers (565) | 9.6 % | 10.8 % | 12.7 % | 13.5 % | 11.2 % | 13.5 % | 13.3 % | 12.0 % |
+
+- It orders the versions as the live metric did (rules 1.45 → v5 1.81 → the attribute family 2.3–2.4), so
+  it is a usable first filter: an idea that does not move it is not worth an arm.
+- Weighting live feedback ×20 does not help anybody on this measure either, new shoppers least of all.
+  With §17 that makes three measurements against routing by kind of request: one ranker for everyone.
+- It is not the organisers' metric: a shopper who goes and buys something was looking for it, and a
+  carousel also has to tempt the one who was not.
+
+**Where those purchases are** (v16; "retrieved" = among the 1,000 candidates the rules hand to the ranker):
+
+| The product bought next… | Share of the purchases | In our 10 | Retrieved |
+|---|---|---|---|
+| was in an abandoned cart | 12 % | 43 % | 99 % |
+| is in a subcategory the shopper had bought in | 53 % | 17 % | 96 % |
+| is in the category of the last view | 25 % | 19 % | 98 % |
+| is in a subcategory the shopper had never bought in | 47 % | 8 % | 72 % |
+| had been viewed in the session (`recent_views`) | 0.6 % | 67 % | 100 % |
+| is a product added during the event | 7 % | 32 % | 92 % |
+
+Three quarters of what a shopper buys next is outside the category they are looking at, and almost never
+something they have just viewed: the session says where they are, their history says what they buy.
+
+**What is left of a subcategory.** Two thirds of a known shopper's next purchases fall in a subcategory
+they already bought in, where they own 5 products on average (and never buy one twice). Where the product
+stands by popularity:
+
+| Popularity rank… | 1st | 2–3 | 4–10 | 11–30 | 31+ |
+|---|---|---|---|---|---|
+| among all the products of the subcategory | 7.5 % | 12.4 % | 25.9 % | 34.5 % | 19.7 % |
+| among those the shopper has not bought yet | 12.0 % | 14.1 % | 27.9 % | 30.6 % | 15.4 % |
+
+For shoppers who own 11 or more products of the subcategory, the purchase is in its overall top 10 in 25 %
+of the cases — and in the top 10 of what is left for them in 50 %. Our rankers knew only the first row
+(popularity against the whole subcategory) and found 39 % of the purchases at ranks 1–3 but 7 % of those at
+ranks 11–30. Hence two features, `rank_left` and `pop_vs_left` (`reco/features.py`): how many better
+sellers of the subcategory the shopper has not bought yet, and the product's popularity against the best of
+those.
+
+**Checked on the way, and ruled out:**
+
+- *The shopper's price tier inside a subcategory.* It is a stable trait (a purchase and the mean of the
+  earlier ones correlate 0.49; the two halves of a shopper's history 0.87; against 0.26 for the absolute
+  price we use), yet it does not pick the product: popularity alone orders the products of a subcategory with
+  AUC 0.839, popularity plus distance to the shopper's tier 0.841.
+- *Miscalibration between kinds of product.* On three hours v9 had not seen, observed over predicted
+  purchases are 0.89 for abandoned carts, 0.91 for bought subcategories, 1.04 for the category of the last
+  view; nothing to correct by hand.
+- *Where the value of a list is.* The top fifth of our impressions by score holds 89 % of the purchases,
+  the bottom three fifths 1 %: the first slots decide.
+
+
+## 20. A third model: what the store itself teaches (`offline/organic.py`), and the arms of the night
+
+The two carousel models learn from what a carousel showed. The purchases of §19 are a different teacher:
+the product the shopper was really after, whoever showed it. `offline/organic.py` trains a model for "this
+shopper is about to buy this product" on three kinds of moment, each followed within 30 minutes by a
+purchase of the same shopper: requests of the live stream (7,441), requests of the old carousel (14,930),
+and 104,951 moments inside the purchase sessions of the 60-day history written as the request they would
+have been (the shopper has just viewed a product, or has just arrived). 153,580 purchases; for each moment,
+the product bought against 30 products the rules retrieved and the shopper did not buy.
+
+On its own it is a poor ranker of 1,000 candidates (8 % of next purchases in its top 10; v9 13 %). As a
+factor on top of v9 — score = P(click) × P(purchase | click) × organic — it adds on both offline judges, on
+hours neither model had seen:
+
+| | v9 | v9 × organic ^ 0.5 | v9 × organic ^ 1 | organic alone |
+|---|---|---|---|---|
+| Our carousel's held-out purchases (904): reciprocal rank among the 10 shown | 0.384 | 0.398 | **0.406** | 0.406 |
+| … ranked first | 17.8 % | 19.8 % | **20.4 %** | 21.3 % |
+| Our carousel's held-out clicks (2,865): reciprocal rank | 0.323 | 0.336 | **0.340** | 0.351 |
+| Next purchases in the store (2,100): in the top 10 | 13.2 % | 14.0 % | 13.7 % | 8.2 % |
+| … weighted by the attention of the slot | 5.8 % | 6.2 % | **6.5 %** | 3.7 % |
+
+A model that never saw a carousel orders our carousel's purchases as well as v9 does: shoppers buy from a
+carousel what they were going to buy anyway. Without the history's sessions (25,000 purchases instead of
+153,000) the same model added nothing on the carousel's purchases: here more data did matter. It changes
+3 of the 10 products of a list on average. It costs 115 ms on 1,000 candidates, so it is asked only about
+the best 300 of the carousel models (identical lists on 250 requests; 34 ms).
+
+**What did not survive the evening:**
+
+- `v16` (all of Saturday's feedback, more features) against `v9` on warm requests, live: 1.76 against 1.99
+  on 8,150 requests each, 3.2 standard errors. Both offline judges had them level or v16 slightly ahead.
+  Offline numbers screen ideas; the live arms decide.
+- Weighting live feedback ×20 for cold requests (v9w, v16w): no gain on any of three measurements.
+- `rank_left` / `pop_vs_left` (§19) in the carousel models: 0.1–0.5 % of their gain and no change on either
+  judge (`v17`). The organic model does use them (2.5 % of its gain), so they stay as features.
+
+**Live since 20:32 UTC**, one ranker for every request:
+
+| Arm | Traffic | What |
+|---|---|---|
+| `skore_money_v31` | 30 % | v9 + trend lift (full) — the version to beat |
+| `skore_money_v32` | 30 % | v9 × organic + trend lift |
+| `skore_money_v33` | 20 % | v9b (v9's features retrained on all of Saturday) + trend lift |
+| `skore_money_v34` | 10 % | v9, no lift |
+| `skore_money_v35` | 10 % | v9, lift ^ 0.5 |
+
+Outside a trend v31, v34 and v35 are the same ranker: pooled (50 %) against v32 and v33 they answer
+"does the organic factor help live?" and "does retraining v9 on more data help or hurt?". While a trend
+runs, v31 / v34 / v35 give the dose of the lift.

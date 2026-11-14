@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Is it our connection? One line per second: ping to the home router and TCP connect time to RawTree.
 
-    python scripts/netmon.py                 # appends to $SKORE_LOGS_DIR/net-YYYYMMDD.log (UTC), runs until stopped
+    pythonw scripts/netmon.py                # appends to $SKORE_LOGS_DIR/net-YYYYMMDD.log (UTC), runs until stopped;
+                                             # pythonw = no window to close (python works too, in a terminal)
     python scripts/netmon.py --report 60     # the last 60 minutes of that log, minute by minute, worst first
 
 When the live loop loses answers, this tells where the time went: a slow or lost ping to the router is the
@@ -20,6 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 HOST = "api.rawtree.com"
+QUIET = getattr(subprocess, "CREATE_NO_WINDOW", 0)     # run with pythonw: no console of ours, none for ping either
 
 
 def logs_dir() -> Path:
@@ -37,7 +39,7 @@ def gateway() -> str:
     if sys.platform == "win32":
         out = subprocess.run(["powershell", "-NoProfile", "-Command",
                               "(Get-NetRoute -DestinationPrefix '0.0.0.0/0' | Sort-Object RouteMetric | Select-Object -First 1).NextHop"],
-                             capture_output=True, text=True, timeout=30).stdout.strip()
+                             capture_output=True, text=True, timeout=30, creationflags=QUIET).stdout.strip()
     else:
         out = subprocess.run("ip route | awk '/default/ {print $3; exit}'", shell=True, capture_output=True, text=True).stdout.strip()
     return out.splitlines()[0] if out else "192.168.1.1"
@@ -47,7 +49,7 @@ def ping_ms(host: str) -> float:
     """Round trip to `host` in ms; -1 if no answer within a second."""
     args = ["ping", "-n", "1", "-w", "1000", host] if sys.platform == "win32" else ["ping", "-c", "1", "-W", "1", host]
     try:
-        out = subprocess.run(args, capture_output=True, text=True, timeout=3).stdout
+        out = subprocess.run(args, capture_output=True, text=True, timeout=3, creationflags=QUIET).stdout
     except Exception:
         return -1.0
     match = re.search(r"[=<]\s*([\d.]+)\s*ms", out)

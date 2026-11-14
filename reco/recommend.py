@@ -43,13 +43,17 @@ LIFT_BOUGHT_SUB_3 = 10.0 # 1-2 purchases, 14× with 3+). The model decides how m
 CANDIDATES = 1000        # products handed from the rules to the model
 LIFT_SHARED_ATTR = (1.0, 2.0, 4.5)   # retrieval only: 0 / 1 / 2 description attributes shared with the last
                                      # viewed product (live, slot-adjusted: 0.75 / 1.7 / 4.3 of the average)
+ORGANIC_TOP = 300        # candidates (the best by the carousel models) the organic model is asked about
 EXPLORE_HEAD = 4         # exploration: the model's best 4 are shown in slots 1-4, in random order
 EXPLORE_POOL = 14        # …and slots 5-10 are 6 products drawn at random from its ranks 5-14
 
 
 class Ranker:
-    """One trained ranker: the two LightGBM models of models/<name>/.
+    """One trained ranker: the two LightGBM models of models/<name>/, and a third one if it is there.
 
+    click.txt × conv.txt = P(click) × P(purchase | click), learned from what carousels showed (offline/train.py).
+    organic.txt (optional) = "this shopper is about to buy this product in the store", learned from what
+    shoppers bought after a request whoever showed it (offline/organic.py); see propensity().
     Each model file lists the features it was trained on, so rankers trained on different feature sets
     can run side by side in an A/B: every one picks its own columns out of the same feature matrix.
     """
@@ -70,12 +74,18 @@ class Ranker:
             raise ValueError(f"{folder}: trained with features this code does not compute: {sorted(set(missing))}")
         self.click_columns = [where[n] for n in self.click.feature_name()]
         self.conv_columns = [where[n] for n in self.conv.feature_name()]
+        self.organic = lgb.Booster(model_file=str(folder / "organic.txt")) if (folder / "organic.txt").exists() else None
+        self.organic_columns = [F[n] for n in self.organic.feature_name()] if self.organic else []
 
     def score(self, x: np.ndarray) -> np.ndarray:
         if len(self.extra):
             x = np.hstack([x, np.broadcast_to(self.extra, (len(x), len(self.extra)))])
         clicks = self.click.predict(x[:, self.click_columns], num_threads=2)
         return clicks if self.click_only else clicks * self.conv.predict(x[:, self.conv_columns], num_threads=2)
+
+    def propensity(self, x: np.ndarray) -> np.ndarray | None:
+        """How likely the shopper is to buy each product in the store soon; None if this ranker has no such model."""
+        return self.organic.predict(x[:, self.organic_columns], num_threads=2) if self.organic else None
 
 
 def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrieval: bool = False) -> np.ndarray:
@@ -114,7 +124,7 @@ def score_rules(cat: Catalog, shopper: Shopper | None, recent: list[int], retrie
 
 
 def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candidates: int | None = None,
-              trend: float | str = 0.0, price: float = 0.0,
+              trend: float | str = 0.0, price: float = 0.0, organic: float = 0.0,
               trend_lift: np.ndarray | None = None) -> tuple[list[str], list[str]]:
     """(10 product ids, why each is there) for a request {user, rv, page, device, region}.
 
@@ -124,6 +134,8 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
            multiplied by L ** trend. "model" = no multiplier: the ranker gets the trend as a feature.
     price: price elasticity. A product at r times its catalogue price has its score multiplied by r ** -price
            (measured on 14 Nov: a 19 % drop sells x1.3-1.45, an elasticity of about 1.6).
+    organic: how much to listen to what shoppers go on to buy in the store: the ranker's score is multiplied by
+           its organic propensity ** organic (0 = carousel models alone; needs organic.txt in the ranker).
     why: v = just viewed · c = abandoned cart · t = trending subcategory · b = the shopper bought in that
          subcategory before · s = subcategory of the last view · k = its category · g = none of those
     """
@@ -162,6 +174,13 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
         p = ranker.score(x)
         if lift is not None:
             p = p * lift[top]
+        if organic and ranker.organic is not None:
+            # the organic model is the slow one (1,500 trees), and beyond the best few hundred candidates it
+            # cannot change the first 10: on 250 requests, applying it to the best 200 gave the same lists
+            best = np.argpartition(-p, ORGANIC_TOP - 1)[:ORGANIC_TOP] if len(p) > ORGANIC_TOP else np.arange(len(p))
+            blended = np.zeros(len(p))
+            blended[best] = p[best] * ranker.propensity(x[best]) ** organic
+            p = blended
         order = np.argsort(-p, kind="stable")
         if policy == "explore":     # reproducible: the same request always gets the same sample
             rng = np.random.default_rng(zlib.crc32(req.get("id", "").encode()))

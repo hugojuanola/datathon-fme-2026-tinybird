@@ -101,3 +101,22 @@ shows it. The server's own traffic is small (about 20 KB/s).
 For the final the conclusion is the same, with a clearer reason: the machine and the connection that serve
 should carry nothing else — no calls or screen sharing, no cloud sync, no long-running assistant sessions.
 The safest form of that is to serve from a dedicated machine.
+
+## Update, 20:15 CET — a four-minute outage: the server's console window was closed
+
+723 requests went unanswered between 18:53 and 18:57 UTC (119, 180, 180, 180 and 64 per minute).
+
+**Cause**, established by the session that owns the server: at 18:53:15 UTC the Windows Terminal window
+titled "Skore Money recommender - leave this window open" was closed by hand. `serve.log` ends with a
+`KeyboardInterrupt` in the main loop at that second, and the supervising loop lived in the same window, so
+nothing restarted the server. Nobody noticed for three and a half minutes; then `scripts\swap_server.ps1`
+loaded a server in 30 seconds and it answered at 18:57:15 UTC with the same arms.
+
+The hand-over between versions was not involved: the last real swap, at 18:34:26 UTC, lost 2 requests.
+
+**What it cost on the board**: `on_time` over the last 15 minutes fell to 73.2 %, and that window read
+1.766 expected purchases per 100 requests against the reference's 1.960.
+
+**For the final**: the server must not live in a window that can be closed (a windowless supervisor, since
+done in `reco/supervise.py`, live from 20:11 CET), and a whole minute without answers should raise an alarm
+at once rather than wait for somebody to look.

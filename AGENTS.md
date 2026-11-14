@@ -38,7 +38,7 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`scripts/leaderboard.py`](scripts/leaderboard.py) | Print the public leaderboard |
 | [`scripts/arms.py`](scripts/arms.py) | **How we judge an A/B**: expected purchases per 100 requests per `model_version` (the organisers' own metric), cold and warm, over any window |
 | [`scripts/netmon.py`](scripts/netmon.py) | Router ping and RawTree connect time once per second: tells Wi-Fi from the rest when answers are lost |
-| [`scripts/swap_server.ps1`](scripts/swap_server.ps1), [`scripts/run_server.ps1`](scripts/run_server.ps1), [`docs/final-round.md`](docs/final-round.md) | Start or replace the live server without a gap, as a process of its own (it does not die with a terminal or an assistant session), and the runbook for the final |
+| [`scripts/swap_server.ps1`](scripts/swap_server.ps1), [`reco/supervise.py`](reco/supervise.py), [`docs/final-round.md`](docs/final-round.md) | Start or replace the live server without a gap. It runs with **no window** under a supervisor that restarts it (it does not die with a terminal or an assistant session, and there is nothing to close by mistake); the runbook for the final |
 | [`best_model.md`](best_model.md) | The best proven version, the line that puts it back, what is being measured against it, and the log of improvements |
 | [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (event-sourced live state), `features.py` (the one definition of every model feature, shared by training and serving), `recommend.py` (policies: rules, and rules-retrieve + model-rank), `rawtree.py` (client), `priority.py` |
 | [`offline/`](offline/) | Offline work: `pull_data.py` (export history / live stream), `build_dataset.py` (training table by replaying the store in time order), `train.py` (LightGBM click + conversion models, validated on the future), `evaluate.py` (policies on the held-out last week), `build_cache.py` (start-up cache for the server), `store_moves.py` (trends, price changes and new products in the organic stream, aggregated in RawTree, and the live trend detector replayed on them) |
@@ -166,44 +166,52 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 18:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+As of Sat 14 Nov 2026 21:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
 answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 1. **Retrieve** — the rules (`score_rules`): popularity x measured lifts, 1,000 candidates.
 2. **Rank** — two LightGBM models, `P(click) x P(purchase | click)`, over the features of
    `reco/features.py` (counts, shares and matches: never an id). Requests are routed by kind: a ranker
    written `"v9w|v9"` sends the cold ones (new shopper, or a product added during the event among the recent
-   views) to `models/v9w` (our live feedback weighted x20) and the rest to `models/v9` (x5).
+   views) to the first ranker and the rest to the second. Not in use: one ranker serves everybody (three
+   measurements against weighting live feedback x20 for cold requests). Optionally a third model multiplies
+   the score: the organic propensity, "this shopper is about to buy this product in the store".
 3. **Store moves** — the trend detector (`reco.features.Trends`, fed from `shop.events` every second)
-   multiplies the scores of a trending subcategory by its lift to the power the arm sets.
+   multiplies the scores of a trending subcategory by its lift (measured live: a trend sells x8.3 in our
+   carousel, the detector says x8.6).
 4. **Hard rules** — never a product the shopper already bought, never one out of stock.
 
-Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`): the overnight experiment, live since 18:45 CET.
-Four ranker set-ups (`v9` · `v9w|v9` · `v16` · `v16w|v16`), each with the trend lift off (6 % of the traffic:
-`skore_money_v21`, `v23`, `v25`, `v27`) and on at lift ^ 0.75 (19 %: `v22`, `v24`, `v26`, `v28`). No exploration.
+Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), live since 21:32 CET, one ranker for every
+request: `skore_money_v31` (30 %) v9 + full trend lift, the version to beat · `v32` (30 %) v9 x the organic
+model (`models/v9o`, `offline/organic.py`) + lift · `v33` (20 %) v9b, v9's features retrained on all of
+Saturday, + lift · `v34` (10 %) v9 without lift · `v35` (10 %) v9 with lift ^ 0.5. No exploration.
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
-versions scored, §16 trends / prices / new products, §17 the overnight experiment, §18 reliability). A second session writes a live read of the board and
+versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
+organic model and the arms of the night). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
 Where we stand (18:19 CET, last hour): first of the teams with 2.18 expected purchases per 100 requests;
 next team 1.83, organisers' reference 2.04. Cold requests 2.76 vs 1.73 for the reference. The weak number
 is `on_time`, 96.4 % (others 99.8 %): answers are lost in bursts of the home connection.
 
-Open for the final (findings §17 has the design; the humans decide, before Sunday 09:30 CET):
-1. **Read the night**: `python scripts/arms.py 17:45 07:30` (UTC). Which ranker set-up, pooling lift off and
-   on; and, if a trend ran, whether the lift helped (even against odd versions over those minutes). Four
-   trends ran on Saturday (09:30, 11:30, 13:30, 15:30 UTC) before any version reacted to them; none had come
-   back by 18:45 CET.
+Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
+1. **Read the night**: `python scripts/arms.py 20:45 07:30` (UTC), or the table in `best_model.md`. Outside
+   a trend v31, v34 and v35 are the same ranker: pool them (50 %) against v32 (does the organic factor help
+   live?) and v33 (does retraining on more data help?). While a trend runs, v31 / v34 / v35 give the dose
+   of the lift; a trend sells x8.3 in our carousel (measured on 9,000 impressions), so full lift is the
+   expectation.
 2. **A single arm** for the final with the winner (`scripts/swap_server.ps1` after editing `ARMS`):
-   [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is already a sound mix.
-   The best proven version and how to put it back: [`best_model.md`](best_model.md).
+   [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is a sound mix: every
+   arm is v9 or one step from it, and 90 % of the traffic has the lift.
 3. **The connection.** A network cable to the router, nothing else using the line, no assistant session
    open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi from the rest.
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
 (outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:
-OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). Since 18:58 CET the live
-server is a process of its own started by `scripts/swap_server.ps1` (no window; `python` with `reco.serve` in
-Task Manager): it survives closing the assistant app. Never start one as a child of an assistant session. Commit at every deploy,
+OneDrive was uploading it). Only one `reco.serve` may answer at a time (rule 4). The live server is
+started only by `scripts/swap_server.ps1`: no window (`pythonw -m reco.supervise` and its child `python -m
+reco.serve` in Task Manager), it survives closing the assistant app and restarts itself. At 18:53 UTC on
+14 Nov a version that still had a console window was closed by mistake: four minutes without answers.
+Never start a server as a child of an assistant session or in a window. Commit at every deploy,
 with the `model_version` in the message, so the repository always matches what is serving. Update this
 section when that changes.

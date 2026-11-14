@@ -35,9 +35,10 @@ connection being busy with something else (docs/findings.md §8). So the checkli
    real requests: all lines must read `N/N valid lists`), and only then stops the old one and gives the GO;
    if anything is wrong the old one keeps answering. With no server running it simply starts one. The
    server it starts has **no window**: it is the two `python` processes with `reco.serve` in their command
-   line (Task Manager → Details), it hangs from Windows itself and not from a terminal, an editor or an
-   assistant session, and it starts again by itself if it ever exits. Since Saturday 18:58 CET the live
-   server already runs this way. After a restart of the laptop, run the command again.
+   line (Task Manager → Details) plus a `pythonw` supervisor that starts it again if it ever exits. It
+   hangs from Windows itself and not from a terminal, an editor or an assistant session, and there is no
+   window to close (on Saturday at 18:53 UTC a console window with the server in it was closed by mistake:
+   four minutes without answers). After a restart of the laptop, run the command again.
 3. Check it (each command is one small query):
 
    ```bash
@@ -64,11 +65,11 @@ connection being busy with something else (docs/findings.md §8). So the checkli
   the final: every request should get the best list we have. Reading the night and setting the arm:
 
   ```bash
-  python scripts/arms.py 17:45 07:30          # UTC: Saturday 18:45 CET to Sunday 08:30 CET, every arm side by side
+  python scripts/arms.py 20:45 07:30          # UTC: Saturday 21:45 CET to Sunday 08:30 CET, every arm side by side
   ```
 
   then leave a single line in `ARMS` (`reco/serve.py`) with the winner at 100 %, for example
-  `ARMS = (("skore_money_v26", "model", "v16", {"trend": 0.75}, 100),)`, commit it, and replace the
+  `ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 100),)` (or the line of v32 / v33 if it won), commit it, and replace the
   running server as in step 2 (`scripts\swap_server.ps1`). The best proven version and the line that puts it
   back are in [`best_model.md`](../best_model.md).
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products
