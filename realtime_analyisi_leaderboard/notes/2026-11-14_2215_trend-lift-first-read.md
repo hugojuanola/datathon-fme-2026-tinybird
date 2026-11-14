@@ -82,3 +82,33 @@ leads the night overall (+0.39 over the reference on 6,551 requests).
 - **Reference**: in the trend window it read 2.14 overall; we read 2.61 across all arms.
 - **Technique**: a boost that reorders a slate has a displacement cost whenever the top slot dominates;
   the usual remedies are to cap the boosted items per slate or to protect the first slot.
+
+## Update, 23:45 CET — Face Cream (21:30 UTC): a trend in views, not in purchases (first 12 minutes)
+
+All arms now carry the lift at full strength (`v31` v9, `v32` v9 x organic, `v33` v9b, `v36` = `v32` with
+new products x1.5). The second trend of the evening is not like the first.
+
+| Organic stream, per 5 minutes | Before | During | Ratio |
+|---|---|---|---|
+| Face Cream views | 35-70 | 274-292 | x5.5 |
+| Face Cream carts | 2-4 | 20 | x7 |
+| Face Cream purchases | 2-3 | 6-7 | x2.5 (0.8 % of all purchases) |
+| Game Consoles purchases (19:30 UTC) | 10 | 100 | x10 (11 % of all purchases) |
+
+The detector reports a lift of 11.1 for Face Cream: it is carried by views and carts on a very small base.
+
+On our carousel, 21:30-21:42 UTC: 1,820 Face Cream impressions, **2 clicks, 0 purchases**. Other products
+at the same slots get about 11 clicks and 2 to 3 purchases on that many impressions.
+
+| Arm | Face Cream products per list | Lists with one | Lists with one in slot 1 | Impressions / clicks / purchases |
+|---|---|---|---|---|
+| `v31` (v9) | 0.25 | 17 % | 1.1 % | 130 / 0 / 0 |
+| `v33` (v9b) | 0.27 | 17 % | 1.5 % | 108 / 1 / 0 |
+| `v32` (v9 x organic) | 1.74 | 57 % | 13.6 % | 964 / 1 / 0 |
+| `v36` (organic, new x1.5) | 1.82 | 57 % | 16.0 % | 618 / 0 / 0 |
+
+v9 multiplied by the lift still leaves these products out of most lists, because it rates them far below
+the tenth candidate for most shoppers; the clicks agree with it. The organic factor sees the same spike of
+views as the detector and fills more than half of the lists. Sent to the model session at 21:45 UTC with
+the suggestion that the lift follow the purchase ratio, with a floor on the number of purchases. The whole
+window per arm, with the organisers' metric, follows when the trend ends.
