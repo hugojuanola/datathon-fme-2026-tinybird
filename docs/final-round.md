@@ -48,7 +48,7 @@ connection being busy with something else (docs/findings.md §8). So the checkli
    ```
 
    Healthy log line (one per minute, `$SKORE_LOGS_DIR/serve.log`):
-   `answered=… failed_polls=0 failed_inserts=0 … poll_ms avg≈200 … rank_ms/request avg≈60` (≈110 with v32 or v36).
+   `answered=… failed_polls=0 failed_inserts=0 … poll_ms avg≈200 … rank_ms/request avg≈60` (≈80 with v32 or v36).
 
 ## 10:00–12:00
 
@@ -84,8 +84,10 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 
   If two of the arms with the organic model pass the rule, prefer v37: it shows the same ten products as
   v31 and only changes their order, which is what was measured offline (findings §22), and it costs no
-  time. v32 and v36 ask the third model about 300 candidates: about 110 ms per request instead of 60
-  (`rank_ms/request` in the log), and p95 of the answers about 1.9 s. The best proven version and the line that puts it
+  time. v32 and v36 ask the third model about 100 candidates: about 80 ms per request instead of 60
+  (`rank_ms/request` in the log). With 300 candidates, on half the traffic, p95 of the answers had gone from
+  1.8 to 2.1 s on Saturday night: latency is the second thing to look at before choosing one of them
+  (`queries/health.sql`: p95 under 2,000 ms). The best proven version and the line that puts it
   back are in [`best_model.md`](../best_model.md).
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products
   and trends. What carries over, by construction: features are counts, shares and matches (never ids);

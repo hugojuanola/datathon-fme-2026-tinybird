@@ -43,7 +43,7 @@ LIFT_BOUGHT_SUB_3 = 10.0 # 1-2 purchases, 14× with 3+). The model decides how m
 CANDIDATES = 1000        # products handed from the rules to the model
 LIFT_SHARED_ATTR = (1.0, 2.0, 4.5)   # retrieval only: 0 / 1 / 2 description attributes shared with the last
                                      # viewed product (live, slot-adjusted: 0.75 / 1.7 / 4.3 of the average)
-ORGANIC_TOP = 300        # candidates (the best by the carousel models) the organic model is asked about
+ORGANIC_TOP = 100        # candidates (the best by the carousel models) the organic model is asked about
 NEIGHBOURS = 10          # a trending product takes the organic factor of this many products ranked just above
                          # and just below it
 NEW_PRODUCT_WAIT = 1200  # seconds a product added during the event waits before it can be in a list. In the
@@ -221,8 +221,10 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
         if fresh != 1.0 and not new_shopper(req):
             p = np.where(cat.is_new[top], p * fresh, p)
         if organic and ranker.organic is not None:
-            # the organic model is the slow one (1,500 trees), and beyond the best few hundred candidates it
-            # cannot change the first 10: on 250 requests, applying it to the best 200 gave the same lists
+            # the organic model is the slow one (1,500 trees), and beyond the best hundred candidates it hardly
+            # changes the first 10: on 120 requests the best 100 gave the same list as the best 300 in 115 and
+            # the same first three products in 119, in 68 ms per request instead of 108. With 300, and half
+            # the traffic on it, p95 of the answers had gone from 1.8 to 2.1 s (14 Nov, 22:30 UTC)
             n_best = pool or ORGANIC_TOP
             best = np.argpartition(-p, n_best - 1)[:n_best] if len(p) > n_best else np.arange(len(p))
             want = ranker.propensity(x[best]) ** organic

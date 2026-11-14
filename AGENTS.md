@@ -182,7 +182,7 @@ answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), one ranker for every request:
 `skore_money_v31` (30 %) v9 + full trend lift, the version to beat · `v32` (30 %) v9 x the organic model
-(`models/v9o`, `offline/organic.py`) over the best 300 candidates, + lift — both live since 21:32 CET — ·
+(`models/v9o`, `offline/organic.py`) over the best 100 candidates (300 until 23:41 CET: the same lists, slower), + lift — both live since 21:32 CET — ·
 `v37` (20 %, since 23:23 CET) v9 + lift picks the ten and v9 x organic only orders them: the same ten products
 as v31, and the one use of the organic model measured offline (+2.5 % to +4.7 % purchases, findings §22) · `v36` (20 %,
 since 22:32 CET) v32 with the score of a product added during the event x1.5 for known shoppers. No exploration.

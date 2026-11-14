@@ -812,6 +812,13 @@ v37 took the place of v33 (v9b, v9's features retrained on all of Saturday): ove
 with v9 (2.18 against 2.17 on 1,800 requests), as both offline judges had said. More of the same day's
 feedback neither helped nor hurt.
 
+**The cost in time.** With the organic model on the best 300 candidates of half the traffic, ranking took
+100 ms per request instead of 63 and p95 of the answers went from 1.8 to 2.1 s over the evening (p99 2.9 s;
+the two assistant sessions working on the same laptop added to it). On 120 requests the best 100 candidates
+give the same list as the best 300 in 115 and the same first three products in 119, in 68 ms instead of
+108: v32 and v36 ask about 100 since 22:41 UTC. v37 asks about ten and costs nothing — against v32 it
+shares the first product in 98 % of lists and the first three in 89 %; what differs is the lower slots.
+
 **A product just added waits 20 minutes** (`NEW_PRODUCT_WAIT`, every arm, live since 22:34 UTC). Found by
 the second session reading clicks by slot: in the store a new product sells from its first minute, in the
 carousel it is not clicked for its first twenty. Four batches (14:00, 18:00 and 22:00 UTC served from their
