@@ -112,3 +112,30 @@ the tenth candidate for most shoppers; the clicks agree with it. The organic fac
 views as the detector and fills more than half of the lists. Sent to the model session at 21:45 UTC with
 the suggestion that the lift follow the purchase ratio, with a floor on the number of purchases. The whole
 window per arm, with the organisers' metric, follows when the trend ends.
+
+## Correction, 23:00 CET — Face Cream was a real trend; the flaw was in the organic factor, and it is fixed
+
+Two things in the section above were wrong or incomplete, both set right by the model session.
+
+- **It is a trend in purchases too.** My x2.5 compared the trend with the half hour before it, when Face
+  Cream was already selling 3.5 times its usual share. Against the day (96 purchases in the 12 hours
+  before, 0.67 per five minutes) it is x11 to x12, as the detector said; views x5.5, carts x17. It is a very
+  small subcategory: x11 of very little.
+- **The cause was the organic model, not the detector.** It learned which product a shopper buys next among
+  the candidates the rules retrieve on an ordinary day. Face Cream products were candidates only because the
+  lift put them there, so its answer for them meant nothing, and it sent them to the top. Reproduced offline
+  on 120 requests with a made-up x10: v9 with the lift 0.24 trending products per list, v9 x organic with the
+  lift 3.05 (slot 1 in 24 % of lists), v9 x organic without a trend 0.02.
+
+What stands from the section above is what the carousel showed: 1,820 impressions, 2 clicks, no purchase,
+with `v32` and `v36` filling more than half of their lists. That is what made it worth acting on before the
+trend ended.
+
+**The fix**, live since 21:51:01 UTC (`reco.recommend.level_trending`, commit 938b995): while a trend runs,
+a trending product takes the organic factor of the products v9 scores about as high, so the organic model
+has no say on it and it keeps the place v9 x lift gives it. Live after the fix: `v31` 0.21 trending products
+per list, `v32` 0.24, `v33` 0.20, `v36` 0.08, none in slot 1. Before: `v32` 2.24 per list (slot 1 in 19 %).
+
+For the reads from here on: `v32` and `v36` count from 21:52 UTC; their 21:30-21:51 window is the flaw, not
+the organic factor. In every trend, the first thing to look at is the number of trending products per list
+by arm: the arms should be within a factor of two of each other.
