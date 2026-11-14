@@ -186,7 +186,9 @@ Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), one ranker for ever
 `v37` (20 %, since 23:23 CET) v9 + lift picks the ten and v9 x organic only orders them: the same ten products
 as v31, and the one use of the organic model measured offline (+2.5 % to +4.7 % purchases, findings §22) · `v36` (20 %,
 since 22:32 CET) v32 with the score of a product added during the event x1.5 for known shoppers. No exploration.
-Since 22:51 CET, in v32 and v36 a trending product takes the organic factor of its neighbours in v9's order.
+Since 22:51 CET, in the arms with the organic model a trending product takes the organic factor of its
+neighbours in v9's order; since 23:34 CET, in every arm, a product added during the event stays out of the
+lists for its first 20 minutes (it is not clicked before: findings §22).
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
 versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
 organic model and the arms of the night, §21 ten signals checked against what v9 already predicts, the lift

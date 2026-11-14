@@ -46,6 +46,10 @@ LIFT_SHARED_ATTR = (1.0, 2.0, 4.5)   # retrieval only: 0 / 1 / 2 description att
 ORGANIC_TOP = 300        # candidates (the best by the carousel models) the organic model is asked about
 NEIGHBOURS = 10          # a trending product takes the organic factor of this many products ranked just above
                          # and just below it
+NEW_PRODUCT_WAIT = 1200  # seconds a product added during the event waits before it can be in a list. In the
+                         # store it sells from its first minute; in the carousel it is not clicked for its
+                         # first 20: over four batches on 14 Nov, 1 click in 1,954 impressions where the
+                         # ranker expected 12; from 20 minutes on, as many as predicted or more
 EXPLORE_HEAD = 4         # exploration: the model's best 4 are shown in slots 1-4, in random order
 EXPLORE_POOL = 14        # …and slots 5-10 are 6 products drawn at random from its ranks 5-14
 
@@ -202,6 +206,7 @@ def recommend(state: State, ranker: Ranker | None, req: dict, policy: str, candi
         lift, hot = None, None
     blocked = [i for i in list(shopper.bought) if i < n] if shopper else []
     blocked += [cat.pos[p] for p in list(state.unavailable) if p in cat.pos]
+    blocked += np.flatnonzero(cat.added > int(req["ts_ms"]) / 1000 - NEW_PRODUCT_WAIT).tolist()     # too new to be clicked
     score[blocked] = -1.0
 
     if policy != "rules":

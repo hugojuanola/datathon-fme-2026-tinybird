@@ -781,8 +781,10 @@ old log's curve the reorder is worth +4.7 %. With the curve v9's own click model
 product is moved down the list (1.00, 0.68, 0.48, 0.40, 0.37, 0.34, 0.32, 0.30, 0.29, 0.29 — flatter: the old
 carousel also put its better products first, so its raw clicks per slot overstate the fall) it is +2.5 % ±
 1.1; with a curve steeper than the log's, +11 %. Positive under all of them, and power 1 is the robust dose:
-"organic alone" goes from −0.9 % to +24 % with the curve, power 2 from +1.8 % to +15 %. The honest reading
-is a gain of 2 to 5 %.
+"organic alone" goes from −0.9 % to +24 % with the curve, power 2 from +1.8 % to +15 %. The second session
+measured today's curve on the same lists, v9's score held equal: 1.00, 0.60, 0.48, 0.45, 0.42, 0.36, 0.33,
+0.33, 0.28, 0.27 from clicks — v9's curve, not the old log's (slots 2–10 get 1.4 times the attention the
+old log gives them). So the honest reading is the lower one, about +2.5 %.
 
 The same lists as a choice — which of the ten was chosen, given log(v9's prediction at its slot) and
 log(organic factor) — give the organic factor a coefficient of 0.34 ± 0.04 on clicks and 0.59 ± 0.07 on
@@ -809,6 +811,15 @@ rows instead of 300: 51 ms per list against 49, and 95 for v32).
 v37 took the place of v33 (v9b, v9's features retrained on all of Saturday): over its first hour it was level
 with v9 (2.18 against 2.17 on 1,800 requests), as both offline judges had said. More of the same day's
 feedback neither helped nor hurt.
+
+**A product just added waits 20 minutes** (`NEW_PRODUCT_WAIT`, every arm, live since 22:34 UTC). Found by
+the second session reading clicks by slot: in the store a new product sells from its first minute, in the
+carousel it is not clicked for its first twenty. Four batches (14:00, 18:00 and 22:00 UTC served from their
+first minute): 1 click in 1,954 impressions where the ranker expected 12; from 20 to 40 minutes 9 clicks for
+7 expected, later 1.2 to 1.6 times the other products at the same slots. The lists carried one in 11 % of
+cases (23 % with the lift for new products), around slot 5. Worth little — a couple of purchases per batch
+— and free: until it is 20 minutes old a product is treated like one out of stock. Tested on the day's
+requests around the 18:00 batch: none of its products in 200 lists before 18:20, in 59 of 200 after 18:25.
 
 Left for a retrain, not for tonight: an abandoned cart carted once is worth a fifth less than v9 thinks
 (§21). Scoring it ×0.8 would move the reciprocal rank of the purchase from 0.384 to 0.390, but the live
