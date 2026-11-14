@@ -14,50 +14,50 @@
 
   Numbers of the "where we stand" and "learning" slides come from data.js (python3 presentation/update_data.py).
   Every other number is quoted from docs/findings.md; the section is named in the speaker notes of each slide.
-  The look is Tinybird's, on white: design.md records every token and where it was read on their site.
+  The look is RawTree's slide template (the one the organisers' deck uses): design.md records every token and its source.
 -->
 <style>
-/* Tinybird's look on white: every token, size and shape below is documented, with its source, in design.md */
-@font-face{font-family:"Roboto";src:url(fonts/roboto-variable.woff2) format("woff2");font-weight:100 900;font-display:block}
-@font-face{font-family:"Roboto Mono";src:url(fonts/roboto-mono-variable.woff2) format("woff2");font-weight:100 700;font-display:block}
-@font-face{font-family:"Arrows";src:url(fonts/arrows.woff2) format("woff2");unicode-range:U+2190-2193}   /* Roboto has no arrows */
+/* RawTree's slide template: every token, size and shape below is documented, with its source, in design.md */
+@font-face{font-family:"Geist";src:url(fonts/geist-variable.woff2) format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Geist Mono";src:url(fonts/geist-mono-variable.woff2) format("woff2");font-weight:100 900;font-display:block}
 
 :root{
-  --paper:#ffffff; --surface:#f6f7f9; --line:#e8e9ed; --line-2:#d9d9d9;
-  --ink:#25283d; --ink-2:#636679; --ink-3:#8d8d8d;
-  --green:#27f795;            /* the brand accent: fills only (1.4:1 on white) */
-  --green-ink:#008060;        /* the same accent for text and thin lines */
-  --blue:#0019ff;             /* RawTree's colour: the organisers' reference in charts */
-  --code:#151515; --black:#0a0a0a;
-  --us:var(--green); --us-ink:var(--green-ink); --ref:var(--blue); --neutral:#d9d9d9; --neutral-ink:#999999;
-  --bad:#f85149;
-  --ease:cubic-bezier(.2,.75,.15,1);
-  --sans:"Roboto","Arrows",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"Roboto Mono","Arrows",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --paper:#ffffff; --ink:#25283d; --muted:#5e6177; --sub:#777169; --line:#dfe1e8; --soft:#eef0f5;
+  --accent:#0019ff;           /* RawTree's brand blue */
+  --rule:#155eee; --tint:#eceeff; --ok:#1fa63d;
+  --code:#16171d; --code-ink:#e8e9ee; --code-gray:#8a9799; --code-blue:#7c9bfa; --code-green:#02b078;
+  /* charts: one accent, the rest in greys (the template has no second hue) */
+  --us:var(--accent); --us-ink:var(--accent); --ref:#70748a; --neutral:#d5d8e2; --neutral-ink:#a7abba;
+  --ink-2:var(--muted); --bad:#d92d20;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --sans:"Geist",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--paper);overflow:hidden}
-body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;cursor:default;user-select:none}
+body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;cursor:default;user-select:none}
 
-/* ---------- stage: a fixed 1920 × 1080 canvas scaled to the window ---------- */
+/* ---------- stage: a fixed 1920 × 1080 sheet scaled to the window ---------- */
 #stage{position:fixed;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;overflow:hidden;background:var(--paper)}
-.slide{position:absolute;inset:0;padding:88px 128px 112px;display:flex;flex-direction:column;opacity:0;visibility:hidden;
+#stage::before{content:"";position:absolute;inset:0;background:url(assets/rawtree-arcs.png) center/cover no-repeat;opacity:.035}   /* the logo's arcs, huge and almost invisible */
+#stage::after{content:"";position:absolute;inset:0 auto 0 0;width:11.5px;background:var(--accent)}                              /* the blue edge */
+.slide{position:absolute;inset:0;padding:65px 104px 130px;display:flex;flex-direction:column;opacity:0;visibility:hidden;
   transition:opacity .45s ease,visibility 0s .45s}
 .slide.active{opacity:1;visibility:visible;transition:opacity .45s ease}
 .notes{display:none}
 
-/* ---------- type: Roboto 400 headlines, never bold; Roboto Mono for labels and numbers ---------- */
-.kick{font:400 23px/1 var(--mono);text-transform:uppercase;color:var(--ink-2);margin-bottom:40px}
-.kick b{color:var(--green-ink);font-weight:400}
-h1{font-size:84px;line-height:1.1;font-weight:400;letter-spacing:-.02em;max-width:1540px;text-wrap:balance}
-h1 em,.hl{font-style:normal;color:var(--ink);padding:0 .12em;margin:0 -.03em;-webkit-box-decoration-break:clone;box-decoration-break:clone;
-  background:linear-gradient(transparent 9%,var(--green) 9%,var(--green) 93%,transparent 93%)}   /* a green marker, not green text */
-p{font-size:33px;line-height:1.4;color:var(--ink-2)}
+/* ---------- furniture and type: Geist 400 titles, Geist Mono for labels and numbers ---------- */
+.furn{display:flex;align-items:center;justify-content:space-between;gap:58px;margin-bottom:32px;min-height:32px}
+.kick{font:400 24px/1.3 var(--mono);color:var(--accent)}
+.ticket{font:400 24px/1.3 var(--mono);color:var(--muted)}
+h1{font-size:75px;line-height:1.12;font-weight:400;letter-spacing:-.005em;max-width:1500px;text-wrap:balance;margin-left:-4px}
+h1 em,.hl{font-style:normal;color:var(--accent)}
+p{font-size:32px;line-height:1.42;color:var(--muted)}
 p b,li b{color:var(--ink);font-weight:500}
-.lead{font-size:38px;line-height:1.36;max-width:1440px;margin-top:34px}
-.small{font-size:25px;line-height:1.4;color:var(--ink-2)}
-.mono{font-family:var(--mono)}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:88px;margin-top:56px;flex:1;min-height:0}
+.lead{font-size:40px;line-height:1.35;letter-spacing:-.01em;color:var(--sub);max-width:1480px;margin-top:34px;text-wrap:pretty}
+.small{font-size:24px;line-height:1.4;color:var(--muted)}
+.mono{font-family:var(--mono);font-size:.86em;padding:0 .22em;border-radius:.2em;background:var(--tint);color:var(--accent)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:88px;margin-top:52px;flex:1;min-height:0}
 
 /* ---------- reveal: everything fades up, staggered; [data-step] waits for a key press ---------- */
 .r,[data-step]{opacity:0;transform:translateY(26px);filter:blur(8px)}
@@ -65,26 +65,26 @@ p b,li b{color:var(--ink);font-weight:500}
   transition:opacity .7s var(--ease) var(--delay,0s),transform .9s var(--ease) var(--delay,0s),filter .7s var(--ease) var(--delay,0s)}
 .slide.active [data-step]:not(.on){opacity:0;transform:translateY(26px);filter:blur(8px);transition:none}
 
-/* ---------- pieces: flat, hard-edged, hairlines instead of boxes ---------- */
-.card{background:var(--surface);border:1px solid var(--line-2);border-radius:4px;padding:32px 36px}
-.chip{display:inline-flex;align-items:center;gap:14px;font:400 23px/1 var(--mono);color:var(--black);
-  border:1px solid var(--neutral-ink);border-radius:24px;padding:13px 24px;background:var(--line-2)}
-.chip i{width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 0 1.5px var(--green-ink)}
-.big{font:400 168px/.92 var(--mono);letter-spacing:-.105em;color:var(--ink)}
-.big small{font-size:.36em;letter-spacing:-.02em;color:var(--ink-2);margin-left:.22em}
-.big.a{color:var(--green-ink)}
-.cap{font-size:27px;line-height:1.36;color:var(--ink-2);margin-top:20px;max-width:440px}
+/* ---------- pieces ---------- */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:30px 34px}
+.chip{display:inline-flex;align-items:center;gap:12px;font:400 22px/1 var(--mono);color:var(--accent);
+  border:1px solid currentColor;border-radius:99px;padding:12px 22px;background:var(--tint)}
+.chip i{width:9px;height:9px;border-radius:50%;background:currentColor}
+.big{font:300 160px/1 var(--mono);letter-spacing:-.02em;color:var(--accent)}       /* every big number: Geist Mono Light, brand blue */
+.big .sep{margin:0 -.16em}
+.big small{font-size:.34em;letter-spacing:0;color:var(--muted);margin-left:.12em}
+.cap{font-size:26px;line-height:1.38;color:var(--muted);margin-top:14px;max-width:440px}
 
 /* horizontal bars */
 .bars{display:flex;flex-direction:column;gap:26px}
 .bar{display:grid;grid-template-columns:var(--label,520px) 1fr;align-items:center;gap:28px}
-.bar .lab{font-size:29px;line-height:1.2;color:var(--ink-2)}
-.bar .track{position:relative;height:40px}
-.bar .fill{position:absolute;left:0;top:0;bottom:0;width:var(--w);background:var(--neutral);border-radius:0 4px 4px 0;
+.bar .lab{font-size:28px;line-height:1.2;color:var(--muted)}
+.bar .track{position:relative;height:38px}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;width:var(--w);background:var(--neutral);border-radius:0 5px 5px 0;
   transform:scaleX(0);transform-origin:left}
-.bar .val{position:absolute;left:calc(var(--w) + 18px);top:50%;transform:translateY(-50%);font:500 28px/1 var(--mono);
+.bar .val{position:absolute;left:calc(var(--w) + 18px);top:50%;transform:translateY(-50%);font:500 26px/1 var(--mono);
   color:var(--ink);white-space:nowrap;opacity:0}
-.bar.us .fill{background:var(--us);box-shadow:inset 0 0 0 2px var(--us-ink)} .bar.ref .fill{background:var(--ref)}
+.bar.us .fill{background:var(--us)} .bar.ref .fill{background:var(--ref)}
 .bar.us .lab{color:var(--ink);font-weight:500}
 .slide.active .bar .fill{transform:scaleX(1);transition:transform 1.1s var(--ease) calc(var(--delay,0s) + .15s)}
 .slide.active .bar .val{opacity:1;transition:opacity .5s ease calc(var(--delay,0s) + .9s)}
@@ -92,88 +92,97 @@ p b,li b{color:var(--ink);font-weight:500}
 .slide.active [data-step]:not(.on) .val{opacity:0;transition:none}
 
 /* vertical columns */
-.columns{display:flex;align-items:flex-end;gap:44px;height:340px;border-bottom:1px solid var(--neutral-ink);padding:0 12px}
+.columns{display:flex;align-items:flex-end;gap:44px;height:330px;border-bottom:1px solid var(--neutral-ink);padding:0 12px}
 .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
-.col .fill{width:86px;height:var(--h);background:var(--neutral);border-radius:4px 4px 0 0;transform:scaleY(0);transform-origin:bottom}
-.col .val{font:500 28px/1 var(--mono);margin-bottom:14px;opacity:0}
-.col .name{position:absolute;top:calc(100% + 18px);font:400 22px/1.3 var(--mono);color:var(--ink-2);text-align:center;white-space:nowrap}
-.col.us .fill{background:var(--us);box-shadow:inset 0 0 0 2px var(--us-ink)} .col.us .name{color:var(--ink)}
+.col .fill{width:86px;height:var(--h);background:var(--neutral);border-radius:5px 5px 0 0;transform:scaleY(0);transform-origin:bottom}
+.col .val{font:500 26px/1 var(--mono);margin-bottom:14px;opacity:0}
+.col .name{position:absolute;top:calc(100% + 16px);font:400 20px/1.35 var(--mono);color:var(--muted);text-align:center;white-space:nowrap}
+.col.us .fill{background:var(--us)} .col.us .name{color:var(--ink)}
 .slide.active .col .fill{transform:scaleY(1);transition:transform 1.1s var(--ease) calc(var(--delay,0s) + .15s)}
 .slide.active .col .val{opacity:1;transition:opacity .5s ease calc(var(--delay,0s) + .9s)}
 
 /* list with a hairline between items */
 .list{list-style:none;display:flex;flex-direction:column}
 .list li{display:grid;grid-template-columns:var(--key,300px) 1fr;gap:32px;padding:var(--pad,24px) 0;border-top:1px solid var(--line);
-  font-size:var(--fs,30px);line-height:1.34;color:var(--ink-2)}
+  font-size:var(--fs,29px);line-height:1.36;color:var(--muted)}
 .list li:last-child{border-bottom:1px solid var(--line)}
-.list .k{font:500 22px/1.5 var(--mono);text-transform:uppercase;color:var(--green-ink);padding-top:4px}
+.list .k{font:400 22px/1.6 var(--mono);color:var(--accent);padding-top:2px}
+
+/* ---------- logos ---------- */
+.rt{display:inline-flex;align-items:center;gap:11px;font-family:var(--sans);font-size:32px;font-weight:600;line-height:1;letter-spacing:-.025em;color:var(--ink)}
+.rt img{width:40px;display:block}
+.lockup{display:flex;align-items:center;gap:30px}
+.lockup .tb{height:46px;display:block}
+.lockup .x{font:300 40px/1 var(--sans);color:var(--muted)}
+.lockup .rt{font-size:37px} .lockup .rt img{width:46px}
 
 /* ---------- cover ---------- */
-#s-cover{padding-top:76px;padding-bottom:124px}
+#s-cover .furn{margin-bottom:0}
 #flow{position:absolute;inset:0;width:1920px;height:1080px}
-.brand{position:relative;display:flex;align-items:center;gap:30px;font:400 23px/1 var(--mono);color:var(--ink-2)}
-.brand img{height:50px;display:block}
-.brand span{border-left:1px solid var(--line-2);padding:14px 0 14px 30px}
 #s-cover .wrap{position:relative;margin-top:auto}
-.title{font-size:216px;line-height:1;font-weight:400;letter-spacing:-.045em}
-.title span{padding:0 .09em;margin-left:-.03em;background:linear-gradient(transparent 12%,var(--green) 12%,var(--green) 96%,transparent 96%)}
-.tag{font-size:48px;line-height:1.2;color:var(--ink-2);letter-spacing:-.01em;margin-top:44px}
-.meta{display:flex;gap:40px;margin-top:52px;font:400 23px/1 var(--mono);color:var(--ink-2)}
+.title{font-size:220px;line-height:.95;font-weight:400;letter-spacing:-.05em;margin-left:-12px}
+.title span{color:var(--accent)}
+.tag{font-size:46px;line-height:1.2;color:var(--sub);letter-spacing:-.015em;margin-top:40px}
+.meta{display:flex;gap:40px;margin-top:44px;font:400 24px/1 var(--mono);color:var(--muted)}
 .meta b{color:var(--ink);font-weight:400}
 
 /* ---------- the challenge: three numbers and the loop ---------- */
-.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:56px;margin-top:50px}
-.pipe{display:flex;align-items:center;margin-top:54px}
-.node{flex:none;border:1px solid var(--line-2);background:var(--paper);border-radius:4px;padding:22px 28px;font:400 24px/1.25 var(--mono);color:var(--ink);text-align:center}
-.node.us{border-radius:0;border-color:var(--green);background:var(--green);color:var(--black)}   /* square, like their buttons */
-.link{flex:1;height:1px;background:var(--line-2);position:relative;min-width:60px}
-.link i{position:absolute;top:-6px;left:0;width:12px;height:12px;border-radius:50%;background:var(--green-ink);opacity:0}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);margin-top:50px}
+.stats3 > div{padding:0 44px 4px 34px;border-left:3px solid var(--rule)}
+.stats3 > div:first-child{padding-left:0;border-left:0}
+.pipe{display:flex;align-items:center;margin-top:60px}
+.node{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:20px 26px;font:400 23px/1.25 var(--mono);color:var(--ink);text-align:center}
+.node.us{border-color:var(--accent);background:var(--accent);color:#fff}
+.link{flex:1;height:2px;background:var(--line);position:relative;min-width:60px}
+.link i{position:absolute;top:-5px;left:0;width:12px;height:12px;border-radius:50%;background:var(--accent);opacity:0}
 .slide.active .link i{animation:flow 1s linear infinite;animation-delay:calc(var(--n) * -.333s)}
 @keyframes flow{0%{left:0;opacity:0}12%{opacity:1}88%{opacity:1}100%{left:calc(100% - 12px);opacity:0}}
 .back{margin:14px 0 0;height:54px;position:relative}
 .back svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.back path{fill:none;stroke:var(--neutral-ink);stroke-width:1.5;stroke-dasharray:6 10}
+.back path{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:6 10}
 .slide.active .back path{animation:dash 1.2s linear infinite}
 @keyframes dash{to{stroke-dashoffset:-16}}
 .back span{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);background:var(--paper);padding:0 20px;
-  font:400 22px/1 var(--mono);text-transform:uppercase;color:var(--ink-2)}
+  font:400 22px/1 var(--mono);color:var(--muted)}
 
 /* ---------- where we stand ---------- */
-.hero{display:grid;grid-template-columns:620px 1fr;gap:80px;margin-top:52px;align-items:center}
-.hero .big{font-size:250px}
-.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:auto;border-top:1px solid var(--line);padding-top:32px}
-.trio b{display:block;font:400 60px/1 var(--mono);letter-spacing:-.09em}
-.trio span{display:block;font-size:25px;color:var(--ink-2);margin-top:14px;line-height:1.35}
+.hero{display:grid;grid-template-columns:600px 1fr;gap:90px;margin-top:44px;align-items:center}
+.hero .big{font-size:240px}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);margin-top:auto}
+.trio > div{padding:2px 40px 2px 34px;border-left:3px solid var(--rule)}
+.trio > div:first-child{padding-left:0;border-left:0}
+.trio b{display:block;font:400 64px/1 var(--sans);letter-spacing:-.045em;color:var(--accent)}
+.trio span{display:block;font-size:24px;color:var(--muted);margin-top:12px;line-height:1.38}
 
 /* ---------- satiation ---------- */
-.versus{display:grid;grid-template-columns:1fr auto 1fr;gap:70px;align-items:start;margin-top:52px}
-.versus .big{font-size:230px}
-.versus .cap{margin-top:46px}
-.versus .mid{align-self:center;font:400 23px/1 var(--mono);color:var(--ink-2);text-transform:uppercase}
-.tagline{font:400 22px/1 var(--mono);text-transform:uppercase;color:var(--ink-2);margin-bottom:26px}
+.versus{display:grid;grid-template-columns:1fr auto 1fr;gap:70px;align-items:start;margin-top:48px}
+.versus .big{font-size:220px}
+.versus .big:not(.a){color:var(--neutral-ink)}
+.versus .mid{align-self:center;font:400 24px/1 var(--mono);color:var(--muted)}
+.tagline{font:400 22px/1 var(--mono);color:var(--muted);margin-bottom:22px}
 
 /* ---------- two stages ---------- */
-.funnel{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:56px;margin-top:62px}
-.pool .big{font-size:118px}
-.pool p{font-size:26px;color:var(--ink-2);margin-top:16px;white-space:nowrap}
-.stage{border:1px solid var(--line-2);border-radius:4px;background:var(--surface);padding:30px 32px;position:relative}
-.stage h3{font:500 22px/1 var(--mono);text-transform:uppercase;color:var(--green-ink);margin-bottom:16px}
-.stage p{font-size:28px;line-height:1.3;color:var(--ink)}
-.stage .t{font:400 20px/1.5 var(--mono);color:var(--ink-2);margin-top:16px}
+.funnel{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:56px;margin-top:60px}
+.pool .big{font-size:112px}
+.pool p{font-size:25px;color:var(--muted);margin-top:14px;white-space:nowrap}
+.stage{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:28px 30px;position:relative}
+.stage h3{font:400 22px/1 var(--mono);color:var(--accent);margin-bottom:16px}
+.stage p{font-size:28px;line-height:1.3;color:var(--ink);font-weight:500}
+.stage .t{font:400 20px/1.5 var(--mono);color:var(--muted);margin-top:14px}
 .stage::after,.stage::before{content:"→";position:absolute;right:-42px;top:50%;transform:translateY(-50%);font-size:30px;color:var(--neutral-ink)}
 .stage::before{right:auto;left:-42px}
-.chips{display:flex;gap:18px;margin-top:58px;flex-wrap:wrap}
+.chips{display:flex;gap:16px;margin-top:56px;flex-wrap:wrap}
 
 /* ---------- attributes ---------- */
-.desc{font:400 30px/1.6 var(--mono);color:var(--ink)}
-.desc mark{background:var(--green);color:var(--black);padding:3px 10px}
+.desc{font:400 29px/1.65 var(--mono);color:var(--ink)}
+.desc mark{background:var(--tint);color:var(--accent);padding:3px 10px;border-radius:6px}
 .auc .bar{--label:470px}
 .auc .track{height:34px}
-.axis{display:grid;grid-template-columns:470px 1fr;gap:28px;font:400 20px/1 var(--mono);color:var(--ink-2);margin-top:16px}
+.axis{display:grid;grid-template-columns:470px 1fr;gap:28px;font:400 20px/1 var(--mono);color:var(--muted);margin-top:16px}
 
 /* ---------- line chart ---------- */
 #trend{width:100%;height:100%;overflow:visible}
-#trend text{font-family:var(--mono);fill:var(--ink-2);font-size:20px}
+#trend text{font-family:var(--mono);fill:var(--muted);font-size:20px}
 #trend .end{fill:var(--ink);font-size:23px;font-weight:500}
 #trend .grid{stroke:var(--line);stroke-width:1}
 #trend .mark{stroke:var(--neutral-ink);stroke-width:1.5;stroke-dasharray:3 7}
@@ -182,70 +191,71 @@ p b,li b{color:var(--ink);font-weight:500}
 .slide.active #trend .line{stroke-dashoffset:0;transition:stroke-dashoffset 1.8s var(--ease) .5s}
 .slide.active #trend .dot,.slide.active #trend .end{opacity:1;transition:opacity .5s ease 2.1s}
 #trend .end{opacity:0}
-.legend{display:flex;gap:34px;font:400 21px/1 var(--mono);color:var(--ink-2);margin-bottom:22px}
-.legend i{display:inline-block;width:26px;height:5px;vertical-align:middle;margin-right:12px}
+.legend{display:flex;gap:34px;font:400 20px/1 var(--mono);color:var(--muted);margin-bottom:22px}
+.legend i{display:inline-block;width:26px;height:5px;border-radius:3px;vertical-align:middle;margin-right:12px}
 
 /* ---------- reliability timeline ---------- */
-.clock{position:relative;height:150px;margin-top:60px}
-.clock .rail{position:absolute;left:0;right:0;top:56px;height:14px;background:var(--line)}
-.clock .done{position:absolute;left:0;top:56px;height:14px;background:var(--green);box-shadow:inset 0 0 0 2px var(--green-ink);width:0}
-.clock .tail{position:absolute;left:0;top:56px;height:14px;background:var(--green);opacity:.4;width:0}
+.clock{position:relative;height:150px;margin-top:56px}
+.clock .rail{position:absolute;left:0;right:0;top:56px;height:12px;border-radius:6px;background:var(--soft)}
+.clock .done{position:absolute;left:0;top:56px;height:12px;border-radius:6px;background:var(--accent);width:0}
+.clock .tail{position:absolute;left:0;top:56px;height:12px;border-radius:6px;background:var(--accent);opacity:.25;width:0}
 .slide.active .clock .done{width:33.3%;transition:width 1.1s var(--ease) .5s}
 .slide.active .clock .tail{width:50%;transition:width 1.4s var(--ease) .7s}
 .tick{position:absolute;top:0;transform:translateX(-50%);text-align:center;white-space:nowrap}
-.tick::after{content:"";position:absolute;left:50%;top:44px;width:1.5px;height:38px;background:var(--ink)}
-.tick b{font:500 25px/1 var(--mono);color:var(--ink)}
-.tick span{position:absolute;top:96px;left:50%;transform:translateX(-50%);font-size:24px;color:var(--ink-2)}
+.tick::after{content:"";position:absolute;left:50%;top:42px;width:2px;height:40px;background:var(--ink)}
+.tick b{font:500 24px/1 var(--mono);color:var(--ink)}
+.tick span{position:absolute;top:96px;left:50%;transform:translateX(-50%);font-size:24px;color:var(--muted)}
 .tick.first{transform:none;text-align:left}.tick.first::after{left:0}.tick.first span{left:0;transform:none}
 .tick.last{transform:translateX(-100%);text-align:right}.tick.last::after{left:auto;right:0}.tick.last span{left:auto;right:0;transform:none}
-.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px}
-.grid6 .card{padding:28px 30px}
-.grid6 .card:first-child{background:var(--paper);border-color:var(--ink)}
-.grid6 h3{font-size:31px;font-weight:400;letter-spacing:-.013em;line-height:1.2;color:var(--ink)}
-.grid6 p{font-size:24px;line-height:1.4;color:var(--ink-2);margin-top:10px}
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+.grid6 .card{padding:26px 30px}
+.grid6 .card:first-child{border-color:var(--accent);background:var(--tint)}
+.grid6 h3{font-size:30px;font-weight:500;line-height:1.25;color:var(--ink)}
+.grid6 p{font-size:23px;line-height:1.4;color:var(--muted);margin-top:8px}
 
-/* ---------- code: dark on the white slide, as in Tinybird's light docs ---------- */
-.term{background:var(--code);border-radius:8px;overflow:hidden}
-.term .dots{display:flex;align-items:center;gap:10px;padding:20px 26px 0;font:400 19px/1 var(--mono);color:var(--ink-3)}
-.term .dots i{width:13px;height:13px;border-radius:50%;background:#ec6d62}
-.term .dots i:nth-child(2){background:#f5c451}.term .dots i:nth-child(3){background:#61c454;margin-right:14px}
-pre{font:400 22px/1.62 var(--mono);color:#d6d6d6;padding:22px 32px 30px;white-space:pre;overflow:hidden}
-pre .k{color:#fff;font-weight:500} pre .c{color:var(--green)} pre .m{color:var(--ink-3)}
-.cmd{font:400 25px/1.3 var(--mono);color:#fff;background:var(--code);border-radius:4px;padding:17px 24px;display:inline-block;margin-top:14px}
-.cmd::before{content:"$ ";color:var(--green)}
-.demo{list-style:none;counter-reset:d;display:flex;flex-direction:column;gap:36px;margin-top:60px}
-.demo li{counter-increment:d;display:grid;grid-template-columns:100px 1fr;font-size:35px;line-height:1.25;color:var(--ink)}
-.demo li::before{content:"[" counter(d,decimal-leading-zero) "]";font:400 23px/1.95 var(--mono);color:var(--green-ink)}
-.demo small{display:block;font-size:26px;color:var(--ink-2);margin-top:6px}
+/* ---------- code: the template's dark terminal ---------- */
+.term{background:var(--code);border-radius:15px;overflow:hidden;box-shadow:0 27px 61px -19px rgb(16 18 40 / 40%)}
+.term .dots{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:22px 27px 6px;font:400 17px/1 var(--mono);color:var(--code-gray)}
+.term .dots i{width:15px;height:15px;border-radius:50%;background:#3b3c46}
+.term .dots i:nth-child(1){position:absolute;left:27px}.term .dots i:nth-child(2){position:absolute;left:52px}.term .dots i:nth-child(3){position:absolute;left:77px}
+pre{font:400 22px/1.65 var(--mono);color:var(--code-ink);padding:16px 36px 34px;white-space:pre;overflow:hidden}
+pre .k{color:var(--code-blue)} pre .c{color:var(--code-green)} pre .m{color:var(--code-gray)}
+.cmd{font:400 24px/1.3 var(--mono);color:var(--code-ink);background:var(--code);border-radius:10px;padding:16px 24px;display:inline-block;margin-top:14px}
+.cmd::before{content:"$ ";color:var(--code-gray)}
+.demo{list-style:none;counter-reset:d;display:flex;flex-direction:column;gap:34px;margin-top:56px}
+.demo li{counter-increment:d;display:grid;grid-template-columns:110px 1fr;font-size:34px;font-weight:500;line-height:1.25;color:var(--ink)}
+.demo li::before{content:counter(d,decimal-leading-zero);font:300 52px/.9 var(--mono);color:var(--accent)}
+.demo small{display:block;font-size:25px;font-weight:400;color:var(--muted);margin-top:6px}
 
-/* ---------- closing ---------- */
-.ideas{display:grid;grid-template-columns:repeat(3,1fr);gap:56px;margin-top:80px}
-.ideas .n{font:400 23px/1 var(--mono);color:var(--green-ink)}
-.ideas h3{font-size:52px;line-height:1.12;font-weight:400;letter-spacing:-.02em;margin:22px 0 22px;min-height:3.36em}
-.ideas p{font-size:29px}
+/* ---------- closing: 01 / 02 / 03 and blue rules, as in the template ---------- */
+.ideas{display:grid;grid-template-columns:repeat(3,1fr);margin-top:36px}
+.ideas > div{padding:6px 44px 10px 34px;border-left:3px solid var(--rule)}
+.ideas > div:first-child{padding-left:0;border-left:0}
+.ideas .n{font:300 80px/1 var(--mono);color:var(--accent);margin-bottom:40px}
+.ideas h3{font-size:40px;line-height:1.15;font-weight:400;letter-spacing:-.02em;margin-bottom:16px;min-height:3.45em}
+.ideas p{font-size:27px}
 .bye{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto}
-.bye .thanks{font-size:120px;font-weight:400;letter-spacing:-.04em;line-height:1}
-.bye .thanks span{padding:0 .1em;margin-left:-.04em;background:linear-gradient(transparent 12%,var(--green) 12%,var(--green) 96%,transparent 96%)}
-.bye .meta{flex-direction:column;gap:16px;align-items:flex-end;margin:0 0 6px}
-.bye .meta img{height:44px;margin-bottom:14px}
+.bye .thanks{font-size:128px;font-weight:400;letter-spacing:-.035em;line-height:1.02;margin-left:-6px}
+.bye .thanks span{color:var(--accent)}
+.bye .meta{flex-direction:column;gap:14px;align-items:flex-end;margin:0 0 12px}
 
-/* ---------- chrome: logo, progress, counter, clock, notes, index ---------- */
-#logo{position:absolute;left:128px;bottom:40px;height:30px}
+/* ---------- chrome: logo, counter, clock, notes, index ---------- */
+#logo{position:absolute;left:104px;bottom:54px}
 body.on-cover #logo,body.on-last #logo{display:none}
-#bar{position:absolute;left:0;bottom:0;height:6px;background:var(--green);width:0;transition:width .5s var(--ease)}
-#count,#timer{position:absolute;bottom:46px;font:400 20px/1 var(--mono);color:var(--ink-2)}
-#count{right:128px} #timer{right:290px;display:none} #timer.late{color:var(--bad)}
+#count,#timer{position:absolute;bottom:62px;font:400 18px/1 var(--mono);letter-spacing:.04em;color:var(--muted);font-variant-numeric:tabular-nums}
+#count{right:104px} #count b{color:var(--ink);font-weight:700}
+#timer{right:240px;display:none} #timer.late{color:var(--bad)}
 body.clock-on #timer{display:block}
-#notes{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;background:rgba(21,21,21,.96);color:#fff;
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;background:rgba(22,23,29,.97);color:var(--code-ink);
   padding:22px 32px;font:400 19px/1.5 var(--sans);display:none;z-index:5}
-#notes b{font:400 14px/1 var(--mono);text-transform:uppercase;color:var(--green);display:block;margin-bottom:10px}
+#notes b{font:400 14px/1 var(--mono);color:var(--code-blue);display:block;margin-bottom:10px}
 body.notes-on #notes{display:block}
 #index{position:fixed;inset:0;background:var(--paper);z-index:6;display:none;padding:5vh 9vw;overflow:auto}
 body.index-on #index{display:block}
-#index h2{font:400 1.6vh/1 var(--mono);text-transform:uppercase;color:var(--ink-2);margin-bottom:2.4vh}
+#index h2{font:400 1.7vh/1 var(--mono);color:var(--accent);margin-bottom:2.4vh}
 #index a{display:grid;grid-template-columns:4.5em 1fr;padding:1.2vh 0;border-top:1px solid var(--line);font-size:2.8vh;color:var(--ink);cursor:pointer;letter-spacing:-.02em}
-#index a:hover,#index a.here{color:var(--green-ink)}
-#index a span{font:400 .62em/2 var(--mono);color:var(--ink-2)}
+#index a:hover,#index a.here{color:var(--accent)}
+#index a span{font:300 .62em/2 var(--mono);color:var(--accent)}
 
 /* ---------- no animation: ?static, reduced motion, print ---------- */
 html.static *{transition:none!important;animation:none!important}
@@ -260,8 +270,9 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
   html,body{height:auto;overflow:visible}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #stage{position:static;transform:none!important;height:auto;overflow:visible}
-  .slide{position:relative;height:1080px;opacity:1!important;visibility:visible!important;page-break-after:always;break-after:page}
-  #bar,#count,#timer,#notes,#index,#logo{display:none!important}
+  #stage::before,#stage::after{display:none}
+  .slide{position:relative;height:1080px;opacity:1!important;visibility:visible!important;page-break-after:always;break-after:page;border-left:11.5px solid var(--accent)}
+  #count,#timer,#notes,#index,#logo{display:none!important}
 }
 </style>
 </head>
@@ -271,18 +282,18 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 <!-- 1 · cover -->
 <section class="slide" id="s-cover" data-title="Skore Money" data-t="10">
   <canvas id="flow" width="1920" height="1080"></canvas>
-  <div class="brand r"><img src="assets/tinybird-logo-ink.svg" alt="Tinybird"><span>Reto RawTree · Datathon FME 2026</span></div>
+  <header class="furn r"><div class="lockup"><img class="tb" src="assets/tinybird-logo-ink.svg" alt="Tinybird"><span class="x">×</span><span class="rt"><img src="assets/rawtree-symbol-ink.svg" alt="">RawTree</span></div><span class="ticket">Datathon FME 2026</span></header>
   <div class="wrap">
     <div class="title r">Skore <span>Money</span></div>
     <p class="tag r">Diez productos. Tres segundos. Para cada comprador.</p>
-    <div class="meta r"><span><b>Hugo Juanola</b> · <b>Javier Aranda</b></span><span>[team_06]</span></div>
+    <div class="meta r"><span><b>Hugo Juanola</b> · <b>Javier Aranda</b></span><span>team_06</span><span>Reto de recomendación en tiempo real</span></div>
   </div>
-  <aside class="notes">Cada trazo que se enciende en verde es un comprador respondido: tres por segundo, el ritmo real de la tienda. Presentarnos y arrancar: «Os vamos a contar cómo decidimos, en menos de un segundo, qué diez productos enseñar a cada persona que entra en la tienda».</aside>
+  <aside class="notes">Cada píxel que se enciende en azul es un comprador respondido: tres por segundo, el ritmo real de la tienda. Presentarnos y arrancar: «Os vamos a contar cómo decidimos, en menos de un segundo, qué diez productos enseñar a cada persona que entra en la tienda».</aside>
 </section>
 
 <!-- 2 · the challenge -->
 <section class="slide" data-title="El reto" data-t="30">
-  <div class="kick"><b>[01]</b> El reto</div>
+  <header class="furn"><span class="kick">El reto</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">Cada comprador nos da <em>tres segundos</em>.</h1>
   <div class="stats3">
     <div class="r"><div class="big"><span data-count="3">3</span><small>/s</small></div><p class="cap">compradores entrando en la tienda, día y noche</p></div>
@@ -312,7 +323,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 3 · where we stand (numbers from data.js) -->
 <section class="slide" data-title="Dónde estamos" data-t="25">
-  <div class="kick"><b>[02]</b> <span id="round">Ronda de práctica</span></div>
+  <header class="furn"><span class="kick"><span id="round">Ronda de práctica</span></span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">Vendemos <em><span id="ratio">2,7</span> veces</em> lo que venden los superventas.</h1>
   <div class="hero">
     <div class="r">
@@ -331,7 +342,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 4 · method: measure first -->
 <section class="slide" data-title="Medir antes de modelar" data-t="35">
-  <div class="kick"><b>[03]</b> Método</div>
+  <header class="furn"><span class="kick">Método</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">Antes de modelar, medimos <em>qué hace comprar</em>.</h1>
   <p class="small r" style="margin-top:26px">Cuántas veces más se compra un producto mostrado, frente a uno cualquiera · 60 días de histórico y feedback en vivo</p>
   <div class="bars" style="margin-top:44px;--label:640px">
@@ -348,13 +359,13 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 5 · the trap: satiation -->
 <section class="slide" data-title="La trampa del histórico" data-t="25">
-  <div class="kick"><b>[04]</b> La trampa</div>
+  <header class="furn"><span class="kick">La trampa</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">El histórico y la tienda en vivo <em>se contradicen</em>.</h1>
   <p class="small r" style="margin-top:26px">Probabilidad de compra de un producto que el comprador ya había comprado antes</p>
   <div class="versus">
-    <div class="r"><div class="tagline">En el histórico</div><div class="big">1,23<small>%</small></div><p class="cap" style="max-width:520px">la mejor señal de todas: 32 veces un producto cualquiera</p></div>
+    <div class="r"><div class="tagline">En el histórico</div><div class="big">1<span class="sep">,</span>23<small>%</small></div><p class="cap" style="max-width:520px">la mejor señal de todas: 32 veces un producto cualquiera</p></div>
     <div class="mid r">frente a</div>
-    <div class="r"><div class="tagline">En vivo</div><div class="big a">0,01<small>%</small></div><p class="cap" style="max-width:520px">la peor: 1 compra en 10.497 impresiones</p></div>
+    <div class="r"><div class="tagline">En vivo</div><div class="big a">0<span class="sep">,</span>01<small>%</small></div><p class="cap" style="max-width:520px">la peor: 1 compra en 10.497 impresiones</p></div>
   </div>
   <p class="lead" data-step="1" style="margin-top:auto">Regla fija: <b>nunca enseñamos lo que ya compró</b>. Sus compras se quedan como pista de sus gustos.</p>
   <aside class="notes">El simulador en vivo tiene saciedad: quien ya compró algo no lo quiere otra vez. El histórico dice justo lo contrario. Un modelo entrenado tal cual con el histórico recomendaría exactamente lo que ya no quieren. Lo vimos en nuestro propio feedback en la primera hora. [siguiente] Por eso hay dos reglas fuera de cualquier modelo: nunca sin stock, nunca lo ya comprado. Y como las ventas del carrusel no aparecen en los eventos de la tienda, las seguimos desde nuestro feedback. (findings §2)</aside>
@@ -362,7 +373,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 6 · the system: two stages -->
 <section class="slide" data-title="El sistema: dos etapas" data-t="35">
-  <div class="kick"><b>[05]</b> El sistema</div>
+  <header class="furn"><span class="kick">El sistema</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">Dos etapas: unas reglas <em>filtran</em>, un modelo <em>ordena</em>.</h1>
   <div class="funnel">
     <div class="pool r"><div class="big"><span data-count="5200">5.200</span></div><p>productos</p></div>
@@ -380,7 +391,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 7 · validated offline -->
 <section class="slide" data-title="Validado antes de salir" data-t="40">
-  <div class="kick"><b>[06]</b> Validación offline</div>
+  <header class="furn"><span class="kick">Validación offline</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">Cada versión se examina <em>con el futuro</em> antes de salir.</h1>
   <div class="cols" style="margin-top:44px">
     <div>
@@ -412,7 +423,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 8 · the finding: attributes -->
 <section class="slide" data-title="El hallazgo: los atributos" data-t="40">
-  <div class="kick"><b>[07]</b> El hallazgo</div>
+  <header class="furn"><span class="kick">El hallazgo</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">La gente compra por <em>atributos</em>, no por marcas.</h1>
   <div class="cols" style="grid-template-columns:.82fr 1fr">
     <div>
@@ -441,7 +452,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 9 · learning from the stream -->
 <section class="slide" data-title="Aprender del directo" data-t="40">
-  <div class="kick"><b>[08]</b> Aprender del directo</div>
+  <header class="furn"><span class="kick">Aprender del directo</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">El sistema aprende <em>mientras sirve</em>.</h1>
   <div class="cols" style="grid-template-columns:1.08fr 1fr;gap:72px;margin-top:44px">
     <div class="r" style="display:flex;flex-direction:column;min-height:0">
@@ -462,7 +473,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 10 · reliability -->
 <section class="slide" data-title="Un bucle que no muere" data-t="30">
-  <div class="kick"><b>[09]</b> Fiabilidad</div>
+  <header class="furn"><span class="kick">Fiabilidad</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">Respondemos en un segundo. <em>Siempre.</em></h1>
   <div class="clock r">
     <div class="rail"></div><div class="tail"></div><div class="done"></div>
@@ -485,7 +496,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 11 · RawTree -->
 <section class="slide" data-title="RawTree hace el trabajo pesado" data-t="25">
-  <div class="kick"><b>[10]</b> RawTree</div>
+  <header class="furn"><span class="kick">RawTree</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">RawTree hace <em>el trabajo pesado</em>.</h1>
   <div class="cols" style="grid-template-columns:.9fr 1fr;gap:64px">
     <ul class="list" style="--key:200px">
@@ -513,7 +524,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 12 · demo -->
 <section class="slide" data-title="Demo" data-t="90">
-  <div class="kick"><b>[11]</b> Demo</div>
+  <header class="furn"><span class="kick">Demo</span><span class="ticket">Skore Money · team_06</span></header>
   <h1 class="r">Ahora mismo está <em>respondiendo</em>.</h1>
   <ol class="demo">
     <li class="r"><div>El servidor, vivo<small>respuestas por minuto, milisegundos por visita, reenvíos</small><span class="cmd">tail -f serve.log</span></div></li>
@@ -525,7 +536,7 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
 
 <!-- 13 · closing -->
 <section class="slide" data-title="Tres ideas" data-t="15">
-  <div class="kick"><b>[12]</b> Para llevarse</div>
+  <header class="furn"><span class="kick">Para llevarse</span><span class="ticket">Skore Money · team_06</span></header>
   <div class="ideas">
     <div class="r"><div class="n">01</div><h3>Medir antes de modelar.</h3><p>Cada pieza del sistema tiene un número detrás, y está en el repositorio.</p></div>
     <div class="r"><div class="n">02</div><h3>Donde el histórico es ciego, manda el directo.</h3><p>Saciedad, otras categorías, novedades: solo se ven en vivo.</p></div>
@@ -533,13 +544,13 @@ html.static .link i{opacity:1;left:calc(var(--n) * 30% + 8%)}
   </div>
   <div class="bye r">
     <div class="thanks"><span>Gracias.</span></div>
-    <div class="meta"><img src="assets/tinybird-logo-ink.svg" alt="Tinybird"><span><b>Skore Money</b> · [team_06]</span><span><b>Hugo Juanola</b> · <b>Javier Aranda</b></span></div>
+    <div class="meta"><div class="lockup"><img class="tb" src="assets/tinybird-logo-ink.svg" alt="Tinybird"><span class="x">×</span><span class="rt"><img src="assets/rawtree-symbol-ink.svg" alt="">RawTree</span></div><span><b>Skore Money</b> · team_06</span><span><b>Hugo Juanola</b> · <b>Javier Aranda</b></span></div>
   </div>
   <aside class="notes">Cerrar con las tres ideas en una frase cada una y abrir preguntas. Para preguntas: pulsar O para ir a cualquier diapositiva. Respuestas preparadas: ¿por qué LightGBM y no embeddings? Porque cada variable se puede explicar y el modelo no puede esconderse tras un id. ¿Qué haríais con más tiempo? Leer el último A/B, reentrenar con todo, y un servidor con mejor conexión que un portátil en casa.</aside>
 </section>
 
-<img id="logo" src="assets/tinybird-logo-ink.svg" alt="Tinybird">
-<div id="bar"></div><div id="timer">00:00</div><div id="count"></div>
+<div id="logo" class="rt"><img src="assets/rawtree-symbol-ink.svg" alt="">RawTree</div>
+<div id="timer">00:00</div><div id="count"></div>
 </div>
 <div id="notes"></div>
 <div id="index"><h2>Índice · pulsa una diapositiva</h2></div>
@@ -613,21 +624,19 @@ if (STATIC) document.documentElement.classList.add("static");
   svg.innerHTML = out;
 })();
 
-// ---- cover: Tinybird's dash matrix. Three dashes light up every second: one per shopper answered
+// ---- cover: a pixel grid, after RawTree's pixel tree. Three pixels light up every second: one per shopper answered
 (function flow() {
-  const c = $("#flow"), g = c.getContext("2d"), PITCH = 46, X0 = 560, Y0 = 150, COLS = 30, ROWS = 9, LIFE = 3.2;
+  const c = $("#flow"), g = c.getContext("2d"), PITCH = 30, SIZE = 18, X0 = 610, Y0 = 170, COLS = 42, ROWS = 11, LIFE = 3.4;
   const lit = new Map();           // cell index -> seconds since it lit up
   let last = 0, due = 0;
   function draw() {
     g.clearRect(0, 0, 1920, 1080);
     for (let r = 0; r < ROWS; r++) for (let k = 0; k < COLS; k++) {
-      const x = X0 + k * PITCH, y = Y0 + r * PITCH, age = lit.get(r * COLS + k);
-      const on = age === undefined ? 0 : Math.max(0, 1 - age / LIFE);
-      const fade = Math.min(1, (k + 1) / 12);                       // the matrix dissolves towards the title side
-      g.globalAlpha = on ? 1 : fade;
-      g.fillStyle = on ? "#27f795" : "#d9d9d9";
-      const w = 2 + 7 * on, h = 30;
-      g.save(); g.translate(x, y); g.rotate(-0.5 * on); g.fillRect(-w / 2, -h / 2, w, h); g.restore();
+      const age = lit.get(r * COLS + k), on = age === undefined ? 0 : Math.max(0, 1 - age / LIFE);
+      g.globalAlpha = Math.min(1, (k + 1) / 16) * (1 - on) * Math.min(1, (ROWS - r) / 5);   // the grid dissolves towards the title
+      g.fillStyle = "#e3e6f0";
+      g.fillRect(X0 + k * PITCH, Y0 + r * PITCH, SIZE, SIZE);
+      if (on) { g.globalAlpha = on; g.fillStyle = "#0019ff"; g.fillRect(X0 + k * PITCH, Y0 + r * PITCH, SIZE, SIZE); }
     }
     g.globalAlpha = 1;
   }
@@ -656,12 +665,13 @@ function fit() {
 }
 function countUp(el) {
   const to = +el.dataset.count, dec = +el.dataset.dec || 0;
-  if (STATIC) { el.textContent = es(to, dec); return; }
+  const put = v => { el.innerHTML = es(v, dec).replace(/([,.])/, '<span class="sep">$1</span>'); };
+  if (STATIC) { put(to); return; }
   const t0 = performance.now(), dur = 1100;
   (function tick(now) {
     const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4);
-    el.textContent = es(to * e, dec);
-    if (p < 1 && el.closest(".slide.active")) requestAnimationFrame(tick); else el.textContent = es(to, dec);
+    put(to * e);
+    if (p < 1 && el.closest(".slide.active")) requestAnimationFrame(tick); else put(to);
   })(t0);
 }
 function show(i, st, animate = true) {
@@ -677,8 +687,7 @@ function show(i, st, animate = true) {
     if (animate) $$("[data-count]", s).forEach(countUp);
   }
   $$("[data-step]", s).forEach(el => { el.style.setProperty("--delay", "0s"); el.classList.toggle("on", +el.dataset.step <= step); });
-  $("#bar").style.width = 100 * (cur + (steps(s) ? step / (steps(s) + 1) : 0) + 1) / slides.length + "%";
-  $("#count").textContent = String(cur + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0");
+  $("#count").innerHTML = "<b>" + String(cur + 1).padStart(2, "0") + "</b> / " + String(slides.length).padStart(2, "0");
   $("#notes").innerHTML = `<b>${cur + 1} · ${s.dataset.title} · ${Math.round(plan[cur] * scale)} s · <span id="nclock"></span></b>` + ($(".notes", s)?.textContent || "");
   $$("#index a").forEach((a, j) => a.classList.toggle("here", j === cur));
   history.replaceState(null, "", "#" + (cur + 1));

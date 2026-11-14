@@ -8,9 +8,9 @@ browser (Chrome or Edge), press `F` for full screen. No server, no network, no i
 | [`index.html`](index.html) | The 13 slides, their speaker notes and the small engine that runs them |
 | [`data.js`](data.js) | Leaderboard snapshot shown on the "where we stand" and "learning" slides. Written by code, not by hand |
 | [`update_data.py`](update_data.py) | Rewrites `data.js` from the public leaderboard and `realtime_analyisi_leaderboard/history.csv` (stdlib, read-only, no API key) |
-| [`design.md`](design.md) | Tinybird's visual identity as read on tinybird.co on 14 Nov (type, colours, shapes, logo), with the source of each value. The deck's CSS follows it, on a white background |
-| `assets/` | Tinybird and RawTree logos, as published on their sites |
-| `fonts/` | Roboto and Roboto Mono (Tinybird's typefaces), subset to Latin, plus four arrow glyphs from Inter; all under the SIL Open Font License |
+| [`design.md`](design.md) | RawTree's visual identity (type, colours, shapes, logo), read from the organisers' deck and rawtree.com on 14 Nov, with the source of each value. The deck's CSS follows it |
+| `assets/` | RawTree's symbol and arcs and Tinybird's logo, as published by them |
+| `fonts/` | Geist and Geist Mono (RawTree's typefaces), subset to Latin, under the SIL Open Font License |
 
 ## Before presenting
 
