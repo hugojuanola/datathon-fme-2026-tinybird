@@ -1060,6 +1060,21 @@ averaged over a day. We did not find what the reference knows about a known shop
 co-purchases between shoppers add nothing to v9 for them (§21, §23), and weighting our live feedback more
 makes warm requests worse (§15). With more time it is the first thing to look at.
 
+**Repetition: measured on the morning of the final, and left alone (07:20 UTC).** With two teams level
+with us on the short boards and the best version of each of the four nearest about 0.1 above v31 on warm
+requests (1.94 pooled against 1.85 over 95 minutes, +1.4 se; the reference 2.07), we looked at what v9
+cannot see: what we have already shown each shopper. Of the day's 797,690 impressions with feedback, 53 %
+were of a product we had shown that shopper before, 20 % shown three times or more, 9 % five times or more.
+Against what their slot gives on average, purchases read 1.17 and 1.27 for a product shown once or twice
+before, 1.02 at 3 to 4 times, 0.82 at 5 to 9, 0.48 at 10 to 19 and 0.23 from 20 on (an abandoned cart: 1.85
+never shown, 0.56 at 10 to 19). A product shown many times without a purchase is worth less, and still more
+than what sits below it in the same list: reordering the ten by it loses on the day's 80,100 lists with
+feedback (position-based, as in §22). Products shown five times or more to the bottom −2.4 % ± 0.5, ten
+times or more −0.4 % ± 0.2, a just-viewed product to the top −1.9 % ± 0.6. v9's order inside the list
+stands. What a product from outside the ten would do in their place the log cannot say: that takes a live
+arm, and there were ninety minutes left. No arm of the night and no ranker we have reads above v9 on warm
+requests, so nothing was deployed and v31 serves the final.
+
 ## 24. Reliability, third look: twelve seconds without Wi-Fi (15 Nov, 03:16 UTC)
 
 The one burst of lost answers of the night: 34 requests in a row (ts 03:16:41.8 to 03:16:52.7; a feedback
