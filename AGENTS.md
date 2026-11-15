@@ -237,12 +237,23 @@ For the final (Javier or Hugo, before 09:30 CET):
    0.1 of the 100 points and has happened once in 14.6 hours (findings §24). Had the cable worked: a
    running server keeps the connections it has, so it would have taken a swap (`scripts\link.ps1` shows
    which link the server uses).
-3. **The connection.** Nothing else using the line (OneDrive paused, Steam and browsers closed), no
-   assistant session open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi
+3. **The connection.** Nothing else using the line (OneDrive paused, Steam and browsers closed).
+   `scripts/netmon.py` is logging to tell Wi-Fi
    from the rest. On Sunday at 03:16 UTC nothing crossed the Wi-Fi for 12 s and 34 requests went
    unanswered, the only burst of the night; the server resumed by itself and only about three of them were
    within reach of a different loop, so the loop is unchanged (findings §24). Never restart the server
    because of a network drop.
+
+4. **One assistant session stays open during the final, to watch** (Javier's decision, 15 Nov 08:55 CET;
+   through the night two sessions worked without a pause and the answers on time stayed at 100 %). It
+   runs nothing heavy: a local watcher on `serve.log` that wakes it on failed polls or inserts, a restart
+   or a log that stops growing, and one light check every ten minutes (processes, last status line, the
+   connection monitor, `queries/health.sql`). No analysis, no push, no change of model or `ARMS`.
+   **Authorised by Javier (15 Nov 09:00 CET), without asking him first: relaunch the server with
+   `scripts\swap_server.ps1`, same version, in two cases only**: (a) no server process is left and the
+   supervisor has not brought one back within a minute; (b) answers come back `fallback / invalid`
+   (the catalogue changed in a way the stream did not announce). A drop of the connection is neither:
+   the server resumes by itself. Anything else is reported to Javier and waits for him.
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
 (outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:

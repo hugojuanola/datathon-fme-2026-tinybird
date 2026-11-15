@@ -76,6 +76,9 @@ connection being busy with something else (docs/findings.md §8). So the checkli
     once when it starts and follows `shop.catalog_updates` from then on (new products, prices, stock: all
     of practice came through there); a catalogue replaced without an update would not reach it. Replace
     the server (step 2): the new one reads the catalogue again. It has never happened.
+- On 15 Nov one assistant session stays open to watch (Javier's decision): a local watcher on the log and
+  a light check every ten minutes, nothing else. Javier authorised it to replace the server (step 2, same
+  version) without asking in the first and the third case above, and in no other.
 - **A drop of the connection is not one of them.** It shows as `no poll came back for 2 s` and timeouts in
   the log, and some seconds of answers missing. Do not restart the server: it goes on by itself two seconds
   after the link is back (measured, findings §24), and a restart takes longer than the drop.
