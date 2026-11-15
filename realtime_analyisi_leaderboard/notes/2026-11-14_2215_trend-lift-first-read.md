@@ -374,3 +374,35 @@ first 1.10 points less often over the two trends (-1.3 se), and `v40`, which run
 trending products as `v39`, is level with v9's arms both times. Nothing to fix. The dose is closed too
 (1.01, 1.04 and 0.93 of the slots' prediction in three trends): the lift's exponent stays at 1. The four
 arms run on to 08:30 CET so that the whole night is read; as it stands the rule gives `v31`.
+
+## Update, 15 Nov 07:25 CET — Watches (06:30-07:15 CET): too small to matter, and at the detector's gate
+
+**In one line**: the store sold 37 Watches in 45 minutes, 0.46 % of its purchases; our lists held 98
+impressions of them and got no click; the three teams at the top were level before it (2.15 to 2.16) and
+inside it (2.18 to 2.20).
+
+**The store** (`trend_board.py`): Watches is one of the smallest subcategories, 0.07 % of the views and
+0.02 % of the purchases over the twelve hours before (24 purchases). Inside the trend it reached 0.42 % of
+the views (x5.8) and 0.46 % of the purchases (x25): 50 to 100 views and 0 to 7 purchases per 5 minutes,
+with two five-minute stretches without a purchase. A large multiple of almost nothing.
+
+**The detector** needs 40 views in its window of two minutes to call a trend, and Watches gave 15 to 20 a
+minute: the server's log shows it on and off 19 times between 06:34 and 07:14, with a lift of 4.4 to 7.5
+each time it came on. The model session replayed the stream: on 57 % of the time, where the other trends
+of the two days were on 94 to 100 %. Holding a trend for 60 seconds after its last detection would make it
+87 %; it is not going in three hours before the final, and stays in the findings as a known limit.
+
+**Our carousel** (`v31`, alone from the fourth minute; 7,570 requests): a Watches product in 1.0 % of the
+lists and first in 0.1 %; 98 impressions, no click, no purchase. With a lift of 5 to 7 on products that
+almost nobody buys, they reach the ten only for the few shoppers who were already looking at watches.
+
+**The board** (team level): in the 45 minutes before, team_14 2.159, us 2.155, team_03 2.154; inside,
+team_03 2.198, team_14 2.182, us 2.180. The reference rose from 1.758 to 1.848, more than any of the
+three: the minutes were better for everyone and the trend had no part in it. `v31` read 2.184 on 7,578
+requests, +0.34 over the reference.
+
+**What it says for the final**: a trend moves the board in proportion to its share of the store's
+purchases. Game Consoles, Vitamins, Leashes and Sneakers (6 to 11 % of the purchases) opened a gap of 0.06
+to 0.33 over the next team; Face Cream (0.9 %) and Watches (0.5 %) did not, whatever the detector does with
+them. If the final's trend is a small subcategory, the lift will be worth nothing, and `v31` will be level
+with the three teams next to it, as it is outside a trend.
