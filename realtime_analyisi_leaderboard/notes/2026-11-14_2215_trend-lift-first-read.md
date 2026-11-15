@@ -406,3 +406,40 @@ purchases. Game Consoles, Vitamins, Leashes and Sneakers (6 to 11 % of the purch
 to 0.33 over the next team; Face Cream (0.9 %) and Watches (0.5 %) did not, whatever the detector does with
 them. If the final's trend is a small subcategory, the lift will be worth nothing, and `v31` will be level
 with the three teams next to it, as it is outside a trend.
+
+## Update, 15 Nov 09:20 CET — Face Cream (08:30-09:15 CET): a small trend, the last one before the final
+
+**The store** (`trend_board.py`): Face Cream is usually 0.15 % of the store's purchases (202 of 131,470 in
+the 12 hours before) and 0.40 % of the views. Inside the window it was 1.21 % of the purchases (98 bought,
+x7.9) and 1.65 % of the views (x4.2), from the first five minutes to the last, and back to nothing in the
+minute it ended. A small one again: a fifth of Sneakers (6 %), a tenth of Leashes (11 %).
+
+**The detector**: on at 08:30:32, 32 seconds in (lift 3.4 at detection), off at 09:16:38, with no line in
+between. With 246 to 324 views per five minutes (about 100 to 130 in the detector's two-minute window) it
+sat well above the gate of 40 views that Watches kept crossing: one switch on, one off.
+
+**Our carousel** (`trend_read.py`; `v31` alone, 8,068 requests): a Face Cream product in 16.1 % of the
+lists (0.24 per list) and first in 2.2 %; 12 clicks and 4 purchases on them. In the 85 lists that held
+one and had a click, they took 14.1 % of the clicks where their slots predict 14.3 % (0.99 of the
+prediction); purchases 19.0 % against 16.1 % on 21 lists (+0.4 se). On the slots' prediction, as in
+Leashes (1.04) and Sneakers (1.01): the dose of the lift is right for a small trend too.
+
+**The board** (team level, the 45 minutes before against the window): us 2.198 → 2.255 (+0.06), team_03
+2.188 → 2.209, team_37 2.158 → 2.171, team_26 2.149 → 2.166, team_14 2.181 → 2.159, team_33 2.153 → 2.156;
+the reference 1.937 → 1.897. Our gap to the next team went from +0.010 to +0.046 (cold +0.055 to +0.088).
+Two teams differ by about 0.10 over 45 minutes by chance, so this is not a difference; and about 0.02 of
+it is not the carousel at all: at 09:02 the platform dropped half a minute of requests for everybody
+(below), which cost us 0.4 % of the window's requests and team_03 1.4 %. `v31` read 2.261 on the requests
+it answered, +0.36 over the reference.
+
+**The platform's half minute (09:02 CET)**: 32 of our requests went unanswered (`missing`, request times
+09:01:58 to 09:02:27), the first since 04:16. This time it was not ours: the network monitor shows no
+failed or slow second, the server logged one failed poll and two failed inserts and went on by itself,
+and no team on the board has more than 98.8 % on time for 09:00-09:15 — our number, shared with five
+others. team_03 had 96.3 %, team_14 97.2 %, team_37 97.8 %. Nothing to fix; if it happens in the final it
+happens to everybody, and what counts is resuming at once, which the server did.
+
+**What it says for the final**: the same as Watches. A trend moves the board in proportion to its share
+of the store's purchases: at 1.2 % the lift does its job inside the list and is worth a few hundredths
+at most. The lift pays when the final's trend is a large subcategory; otherwise `v31` is level with the
+teams next to it, and the final is decided by answering every request.
