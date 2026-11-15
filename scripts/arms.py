@@ -4,6 +4,7 @@
     python scripts/arms.py                       # our versions, last 60 minutes
     python scripts/arms.py 15:10 15:40           # a window in UTC, today (5-minute steps, at least 15 minutes)
     python scripts/arms.py 21:30 07:30           # a start later than the end means yesterday evening → today
+    python scripts/arms.py 22:25 23:30           # a window that has not begun yet (run after midnight) is yesterday's
     python scripts/arms.py 15:10 15:40 --all     # every team's versions with enough traffic
 
 The leaderboard API (`/api/state?by=model&from=..&to=..`) reports, per `model_version`, the EXPECTED
@@ -90,7 +91,9 @@ def main() -> None:
         a, b = (day.replace(hour=int(x[:2]), minute=int(x[3:5])) for x in args)
         if a >= b:
             a -= timedelta(days=1)
-        start, end = int(a.timestamp()), int(b.timestamp())
+        if a.timestamp() > now:      # not begun yet: yesterday's (the API would answer with the last minutes)
+            a, b = a - timedelta(days=1), b - timedelta(days=1)
+        start, end = int(a.timestamp()), min(int(b.timestamp()), end)
     me, everyone = team_id(), "--all" in sys.argv
     rows: dict[tuple[str, str], Sum] = {}
     ref, base = Sum(), Sum()
@@ -118,6 +121,8 @@ def main() -> None:
             for v in t.get("versions") or []:
                 if t["team_id"] == me or everyone:
                     rows.setdefault((t["team_id"], str(v.get("model_version"))), Sum()).add(v)
+    if abs(lo - start) > 300 or abs(hi - end) > 300:     # too short a window, or one the API does not keep
+        print(f"warning: asked for {hhmm(start)}–{hhmm(end)}, the API answered for {hhmm(lo)}–{hhmm(hi)}", file=sys.stderr)
     print(f"{hhmm(lo)}–{hhmm(hi)} UTC · expected purchases per 100 requests")
     print(f"{'team':<9} {'model_version':<28} {'requests':>8} {'conv':>6} {'cold':>6} {'warm':>6} {'cold req':>8} {'€/req':>6}  active (UTC)")
     print(ref.line("", "reference"))
