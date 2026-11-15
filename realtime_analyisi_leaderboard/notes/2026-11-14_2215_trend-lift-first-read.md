@@ -360,3 +360,17 @@ Leashes), but in the 45 minutes before each of the two trends it answered about 
 between one version and the next (02:52-02:57 and 03:12-03:30 UTC unanswered this time). Its 1.70 and 1.77
 "before" are those gaps, and its rise of 0.5 inside a trend is not a trend effect. When it answers it is
 about at our level outside a trend and 0.1 to 0.2 under our arms inside one.
+
+### The model session's answer (05:35 CET): the organic arms cannot move a trending product
+
+`models/v9` and `models/v9o` hold the same click and conversion models, so both sides score the same
+candidates the same way before the organic factor. A replay of 300 of today's requests through the live
+code, with a made-up Sneakers trend of x12, gives the same ten products in 300 of 300 lists and every
+trending product in the same slot in 300 of 300, with and without the new-product lift. So the point of
+difference in slot 1 is which requests fell in each arm: `v39` drew fewer trend-heavy requests (trending
+products per list, which no ordering can change: 1.39 against 1.43 to 1.50 in Sneakers, 2.14 against 2.22
+in Leashes). Comparing lists that hold the same number of trending products, the organic arms have one
+first 1.10 points less often over the two trends (-1.3 se), and `v40`, which runs the same code for
+trending products as `v39`, is level with v9's arms both times. Nothing to fix. The dose is closed too
+(1.01, 1.04 and 0.93 of the slots' prediction in three trends): the lift's exponent stays at 1. The four
+arms run on to 08:30 CET so that the whole night is read; as it stands the rule gives `v31`.
