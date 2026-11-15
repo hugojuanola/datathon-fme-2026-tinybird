@@ -201,8 +201,8 @@ trends so far (Game Consoles, Vitamins, and before them the afternoon's): each i
 ## Update, 15 Nov 03:20 CET — Leashes (02:30-03:15 CET): a large trend, the four arms alike, and the gap did not open
 
 **In one line**: the store sold ten times its usual share of Leashes, our four arms showed the trend alike,
-and inside it we read 2.34 against 1.96 for the reference; but the next teams rose with us (2.31 and 2.29),
-so the gap was +0.04 where the two large trends before gave +0.10 to +0.33.
+and inside it we read 2.34 against 1.95 for the reference; but the next teams rose with us (2.29 and 2.28),
+so the gap was +0.06 where the two large trends before gave +0.10 to +0.33.
 
 **The store** (`shop.events` per 5 minutes, against the subcategory's share from 14 Nov 09:00 to 15 Nov
 01:00 UTC): Leashes went from 1.93 % of the views to 7.9 % (x4.1) and from 1.11 % of the purchases to
@@ -211,39 +211,42 @@ server found it 36 seconds in. Its log line says `{'Leashes': 2.8}`: that is the
 detection, from the views. The line is printed only when the set of trending groups changes; the lift then
 follows the purchases of the last five minutes, capped at 12. It is not the size of the trend.
 
-**The four arms on our carousel** (8,059 requests; the last column is the organisers' metric):
+**The four arms on our carousel** (8,099 requests; the last column is the organisers' metric):
 
 | Arm | Requests | Trending products per list | Lists with one | Slot 1 is a trending product | Expected purchases per 100 |
 |---|---|---|---|---|---|
-| `v31`: v9 | 2,019 | 2.21 | 50.8 % | 22.2 % | 2.350 |
-| `v38`: v9, new x1.5 | 2,052 | 2.23 | 50.8 % | 21.6 % | 2.440 |
-| `v39`: organic order | 2,009 | 2.14 | 51.5 % | 20.4 % | 2.185 |
-| `v40`: organic order, new x1.5 | 1,979 | 2.23 | 50.3 % | 21.3 % | 2.392 |
+| `v31`: v9 | 2,024 | 2.22 | 50.8 % | 22.2 % | 2.372 |
+| `v38`: v9, new x1.5 | 2,068 | 2.23 | 50.9 % | 21.6 % | 2.415 |
+| `v39`: organic order | 2,023 | 2.14 | 51.5 % | 20.5 % | 2.197 |
+| `v40`: organic order, new x1.5 | 1,984 | 2.22 | 50.4 % | 21.4 % | 2.376 |
 
 Before the trend: 0.14 to 0.18 per list, 7 to 9 % of the lists, slot 1 in 1.2 to 1.5 %. `hold_trending`
 does what it was written for: the organic arms put a trending product first as often as v9's arms
 (20.9 % of the lists against 21.9 %, -1.1 se; in the Vitamins trend it was 18.5 % against 21.9 %).
 
-**The two questions inside the trend** (01:30-02:15 UTC, reference 1.957). The organic order: -0.108
-(-0.7 se), cold requests -0.53 (-1.7 se), warm ones +0.22 (+1.6 se); 1.09 EUR per request against 1.17.
-New products x1.5: +0.148 (+1.0 se), warm +0.27 (+1.9 se); 1.24 EUR against 1.02. The rule for the final
+**The two questions inside the trend** (01:30-02:15 UTC, reference 1.951). The organic order: -0.107
+(-0.7 se), cold requests -0.56 (-1.8 se), warm ones +0.24 (+1.7 se); 1.10 EUR per request against 1.16.
+New products x1.5: +0.111 (+0.8 se), warm +0.26 (+1.9 se); 1.22 EUR against 1.03. The rule for the final
 lets the organic order be up to one standard error below in the minutes of a trend: this trend is inside
 it. It is the second trend in a row in which the organic arms read below v9's (Vitamins: -0.9 and -1.3 se
 for the two organic arms of then).
 
-**Against the other teams** (organisers' metric, the whole team):
+**Against the other teams** (organisers' metric, the whole team, requests left unanswered included;
+`trend_board.py`):
 
 | | Reference | Us | team_14 | team_03 | team_17 | team_37 |
 |---|---|---|---|---|---|---|
-| The 45 minutes before (00:45-01:30 UTC) | 1.905 | 2.152 | under 1.99 | 2.132 | 2.123 | 2.106 |
-| Inside the trend (01:30-02:15 UTC) | 1.957 | 2.342 | 2.305 | 2.294 | 2.221 | 2.210 |
+| The 45 minutes before (00:45-01:30 UTC) | 1.905 | 2.148 | 1.774 | 2.131 | 2.110 | 2.106 |
+| Inside the trend (01:30-02:15 UTC) | 1.951 | 2.340 | 2.285 | 2.280 | 2.170 | 2.210 |
 
-Every team rises inside a trend, by 0.10 to 0.16: the shoppers who follow it arrive with trending products
-among their recent views, and any ranker that follows the session shows them. We rose by 0.19. Our gap to
-the next team was +0.02 before and +0.04 inside (+0.06 on cold requests). Two teams over 45 minutes differ
-by 0.10 by chance, so this is neither clearly the +0.10 to +0.33 of Game Consoles and Vitamins nor clearly
-less. What it does say: the trend is no longer ours alone. team_14 and team_03 were within 0.05 of us
-inside it.
+The teams that were already at our level rise inside a trend by 0.06 to 0.15: the shoppers who follow it
+arrive with trending products among their recent views, and any ranker that follows the session shows
+them. We rose by 0.19. team_14 rose by 0.51 and team_33 by 0.35 (1.85 to 2.20): a better version went in
+around the start of the trend. Our gap to the next team was +0.02 before and +0.06 inside (+0.07 on cold
+requests). Two teams over 45 minutes differ by 0.10 by chance, so this is neither clearly the +0.10 to
++0.33 of Game Consoles and Vitamins nor clearly less; quarter-hour by quarter-hour it read +0.03 to +0.05
+where those two read +0.10 to +0.33. What it does say: the trend is no longer ours alone. team_14 and
+team_03 were within 0.06 of us inside it.
 
 **A flag, not a finding: across lists, the trending products sold less than their slot neighbours.**
 
@@ -254,7 +257,7 @@ inside it.
 | third or later | 10,629 | 6.8 | 4.2 (4.6) | 0.66 (1.12) | 7, 11.9 |
 
 Twenty purchases where the slots give 44 (3.6 standard errors below) and 104 clicks where they give 139,
-on 22 % of all our impressions. In the earlier trends the same table read above the neighbours. But inside
+on 22 % of all our impressions (this table was read on 8,059 of the trend's 8,099 requests). In the earlier trends the same table read above the neighbours. But inside
 a list that holds a trending product, it takes the share of the clicks its slots predict (44.1 % against
 42.5 %, 236 lists) and of the purchases (`v31`: 6 of 18, against 35.5 %). So the deficit is between lists,
 not inside them: in `v31` the lists that hold a trending product gave 1.75 purchases per 100, the lists
@@ -267,7 +270,8 @@ products of those lists. Put to the model session as a question; the organisers'
 the trend were our better ones (+0.39 over the reference against +0.25 before it).
 
 **New products**: the batch of 03:00 CET arrived on the dot (100 products) and none was in any arm's lists
-in its first fourteen minutes (2,562 lists), as the hold-out of twenty minutes intends.
+in its first twenty minutes (3,600 lists), as the hold-out intends; from the twentieth minute they were in
+19 % of the lists: 16 % in `v31` and `v39`, 21 and 23 % in the two arms with the new-product lift.
 
 ### The model session's answer (03:30 CET): no harm at the margin, and what to watch in the next trends
 
