@@ -165,7 +165,7 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sun 15 Nov 2026 06:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+As of Sun 15 Nov 2026 08:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
 answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 1. **Retrieve** — the rules (`score_rules`): popularity x measured lifts, 1,000 candidates.
@@ -203,7 +203,9 @@ The store's calendar (trends, promotions, new products) is in [`docs/data.md`](d
 session writes a live read of the board and of our version in
 [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (Sunday 07:22 CET, v31 alone for 47 minutes of each window): first on the 15- and
+Where we stand. On the public board's last hour at 08:29 CET we are first, 2.255 against 2.231 for team_03, and
+on the organisers' score for 07:00 to 08:00 CET, the first whole hour of v31 alone, 63.5 against 62.8.
+Earlier (07:22 CET, v31 alone for 47 minutes of each window): first on the 15- and
 30-minute boards by 0.015, second on the 60-minute one by 0.006 (team_03 2.189), first on the 180-minute
 one by 0.049. On the organisers' hourly score we led by 2 to 4 points from 03:00 to 06:00 CET (62.5 to
 63.9) and in the hour to 07:00 CET it read team_03 63.6, team_14 62.8, us 62.7. **The three leaders are
@@ -228,10 +230,13 @@ For the final (Javier or Hugo, before 09:30 CET):
    the gap) has been applied as far as it goes: reliability first, then the traffic to our best arm. There
    is no better arm of ours left to move to; what holds the place from here is answering every request.
    From 08:00 CET on, nothing changes on the server without Javier or Hugo (rule 7).
-2. **One swap is still owed, for the cable.** Network cable from the laptop to the router (the laptop has a
-   wired port, unused), then `scripts\swap_server.ps1` (same code, same version), then `scripts\link.ps1`
-   must say Ethernet. A running server keeps the connections it has, on the Wi-Fi: only a server started
-   after the cable is in uses it. The Wi-Fi stays on as the spare.
+2. **No swap is owed: the final runs on Wi-Fi.** The only cable at hand was tried at 08:40 CET and gave no
+   link (the wired port never came up), so nothing was changed. The server that serves the final is the
+   one started at 06:33 CET (v31 alone, no failed poll or insert since), on the link that has answered
+   99.92 % of 124,900 requests since Saturday 21:00 CET. A drop like the one of 04:16 CET would cost about
+   0.1 of the 100 points and has happened once in 14.6 hours (findings §24). Had the cable worked: a
+   running server keeps the connections it has, so it would have taken a swap (`scripts\link.ps1` shows
+   which link the server uses).
 3. **The connection.** Nothing else using the line (OneDrive paused, Steam and browsers closed), no
    assistant session open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi
    from the rest. On Sunday at 03:16 UTC nothing crossed the Wi-Fi for 12 s and 34 requests went

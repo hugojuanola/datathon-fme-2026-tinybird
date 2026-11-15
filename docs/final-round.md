@@ -23,6 +23,9 @@ connection being busy with something else (docs/findings.md §8). So the checkli
       Measured with `scripts/netmon.py`: over Wi-Fi the ping to the router averages 4-27 ms with spikes of
       100-360 ms even in good minutes (a cable gives 1 ms), and on 15 Nov at 03:16 UTC nothing crossed the
       Wi-Fi for 12 s: 34 requests unanswered, the only burst of the night (findings §24).
+      **Sunday 08:40 CET: the cable at hand gave no link (the wired port never came up). The final runs
+      on Wi-Fi**, which has answered 99.92 % of the requests since Saturday 21:00 CET. Leave a cable that
+      gives no link unplugged: one that came and went would be worse than none.
 - [ ] Leave the monitor running in a window of its own: `python scripts/netmon.py` (a few bytes per second).
       If answers are lost, `python scripts/netmon.py --report 30` says whether it was the Wi-Fi.
 
@@ -31,7 +34,7 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 1. Close everything that talks to the internet: OneDrive (pause syncing), Steam (it downloads updates by
    itself; it was running on the night of the 15th), Discord, browsers, Spotify, and any assistant session
    working in this repo (each of its steps uploads megabytes).
-2. Network cable in (see above). Then start the server — or replace the one that is running, without a
+2. Network cable in, if there is one that works (see above). Then start the server — or replace the one that is running, without a
    gap — as a process of its own:
 
    ```powershell
@@ -82,8 +85,8 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 ## Which version serves the final
 
 **`skore_money_v31` alone: v9 with the trend lift in full. It has been running by itself since Sunday
-06:34 CET (05:33:51 UTC).** `ARMS` in `reco/serve.py` holds that one line. The only swap still owed is the
-one after the network cable goes in (step 2): same code, same version.
+06:34 CET (05:33:51 UTC).** `ARMS` in `reco/serve.py` holds that one line. No swap is owed: the only cable
+at hand gave no link (Sunday 08:40 CET), so the final runs on Wi-Fi with this same server.
 
 - Exploration **off** and no A/B in the final: every request gets the best list we have.
 - Why v31. It is the best proven version, and the night's two questions were stopped with neither above
