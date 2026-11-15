@@ -17,35 +17,40 @@ but not worth or not possible to deploy · **FIXED** = a fault found and repaire
 ## 1. Where we stand now
 
 <!-- live:start -->
-_Refreshed 07:09 CET on 15 Nov 2026 (board to 07:05 CET). Expected purchases per 100 requests, the organisers' own number._
+_Refreshed 08:14 CET on 15 Nov 2026 (board to 08:10 CET). Expected purchases per 100 requests, the organisers' own number._
 
 ### The gap to the next team
 
 | Window | Place | Us | Next team | Gap | Gap on cold requests | Reference | Answered on time |
 |---|---|---|---|---|---|---|---|
-| 15 min | 2 | 2.261 | team_03 2.272 | -0.011 | -0.015 | 1.912 | 100.0 % |
-| 30 min | 2 | 2.190 | team_03 2.228 | -0.038 | -0.044 | 1.827 | 100.0 % |
-| 60 min | 2 | 2.177 | team_03 2.199 | -0.023 | -0.034 | 1.815 | 99.9 % |
-| 180 min | 1 | 2.213 | team_03 2.162 | +0.051 | +0.065 | 1.848 | 99.9 % |
+| 15 min | 4 | 2.314 | team_03 2.355 | -0.041 | -0.021 | 2.041 | 100.0 % |
+| 30 min | 2 | 2.280 | team_03 2.297 | -0.017 | +0.031 | 2.009 | 100.0 % |
+| 60 min | 2 | 2.244 | team_03 2.247 | -0.003 | +0.016 | 1.967 | 100.0 % |
+| 180 min | 1 | 2.187 | team_03 2.181 | +0.007 | +0.019 | 1.857 | 100.0 % |
 
-Official hourly score, hour in progress (previous full hour): team_33 64.0 (57.6), team_37 63.7 (60.1), team_06 62.9 (62.7), team_17 62.0 (60.7), team_26 61.7 (59.7).
+Official hourly score, hour in progress (previous full hour): team_03 64.5 (62.8), team_06 63.2 (63.5), team_14 62.3 (50.4), team_26 62.1 (61.8), team_37 61.2 (62.2).
 
 ### The arms now serving, over the same minutes (since 06:35 CET, when the last one started)
 
-**All minutes** — reference 1.827 (cold 1.638, warm 1.968)
+**All minutes** — reference 1.918 (cold 1.723, warm 2.068)
 
 | Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
 |---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 5,400 | 2.190 | +0.363 | 2.670 | 1.834 |  |
+| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 17,100 | 2.223 | +0.305 | 2.700 | 1.853 |  |
 
 
-**Minutes without a trend**: nothing yet (a piece needs 15 minutes).
-
-**Minutes of a trend** — reference 1.827 (cold 1.638, warm 1.968)
+**Minutes without a trend** — reference 1.970 (cold 1.832, warm 2.079)
 
 | Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
 |---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 5,400 | 2.190 | +0.363 | 2.670 | 1.834 |  |
+| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 9,900 | 2.253 | +0.283 | 2.775 | 1.842 |  |
+
+
+**Minutes of a trend** — reference 1.846 (cold 1.570, warm 2.054)
+
+| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
+|---|---|---|---|---|---|---|---|
+| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 7,200 | 2.181 | +0.336 | 2.595 | 1.869 |  |
 
 
 A difference counts from two standard errors and 0.15; a quarter of an hour of a small arm is a lottery.
@@ -80,7 +85,7 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
 | `v39`: v9 picks the ten, the organic factor orders them, and a trending product keeps the slot v9 gave it | 01:46-06:34 | Is the organic order worth it once it cannot move a trending product? | the whole read, 280 minutes with two whole trends, pooled with `v40` against `v31` + `v38` on 25,084 requests against 25,278: -0.10 overall (-1.7 se), -0.17 on cold requests (-1.4 se), -0.04 on warm ones; in the minutes of a trend -0.13 (-1.3 se), without one -0.09 (-1.3 se); `v39` against `v31` directly -0.09 (-1.0 se); 1.11 EUR per request against 1.12. Below on every cut, none of them past two standard errors | the ten are v9's; ten rows for the organic model; inside a trend the placement is v9's | an offline gain of about +2.5 % only; the three organic arms before it sold 1.12 to 1.28 EUR per request against 1.36 for v9 | **CLOSED at 06:34 on 15 Nov, not in the final.** Both conditions of the rule failed (below over the whole night, and more than one standard error below in the minutes of a trend), and the two hours left could not change it. The held-out lists gave it +2.5 % ± 1.1 and the night -4.4 % ± 2.6: the live read does not confirm the offline gain |
 | `v38`: v9 with products added during the event x1.5 for known shoppers, no organic model | 01:46-06:34 | Is the new-product lift worth it on its own? | the whole read, 280 minutes, pooled with `v40` against `v31` + `v39` on 25,308 requests against 25,054: -0.06 overall (-1.0 se); -0.01 on warm requests, where the lift acts, and -0.13 on cold ones (-1.1 se), where it mostly does not (a new shopper gets the same list on both sides, so that figure is how much cold swings by itself); in the minutes of a trend +0.03 (+0.3 se), without one -0.10 (-1.4 se); 1.08 EUR per request against 1.14. Nothing | measured against v9's prediction (x1.59 for known shoppers); costs nothing to run | a small share of the impressions, so a small effect to detect | **CLOSED at 06:34 on 15 Nov, not in the final.** It needed two standard errors above and read one below (decided at 04:50, when it could no longer get there). The held-out lists gave it +0.6 % ± 0.5: too small to see in a night, and nothing is lost by leaving it out |
 | `v40`: `v39` with the new-product lift | 01:46-06:34 | The two together | the whole read: 2.134 against 2.296 for `v31` on 12,541 requests (-2.0 se), and -0.12 against the other three together (-1.8 se): the lowest of the four from the second hour on, as the sum of two small deficits would be | the two questions are crossed, so each is read on all the traffic | - | **CLOSED at 06:34 on 15 Nov** with the other two |
-| **`v31` alone**: v9 with the trend lift at full strength, on all the traffic | since 06:34 on 15 Nov | (not a test: the answer to the night's read, and to team_03 and team_14 reaching us on the 15- and 30-minute boards) | over the night it read 2.296 on 12,511 requests, +0.40 over the reference and 2.90 on cold requests, against 2.250, 2.210 and 2.134 for the three arms next to it; in the half hour before the change the two arms with v9's order read 2.39 together and the two with the organic order 2.06. Alone, over its first half hour (06:35-07:05), it read 2.190 on 5,400 requests, +0.36 over the reference (cold 2.67, warm 1.83), every answer on time | the best arm by the longest clean window; one ranker and the cheapest answer (ranking 78 ms); every piece of it measured against v9's own prediction | nothing to compare it with while it serves alone | **LIVE: the version for the final** |
+| **`v31` alone**: v9 with the trend lift at full strength, on all the traffic | since 06:34 on 15 Nov | (not a test: the answer to the night's read, and to team_03 and team_14 reaching us on the 15- and 30-minute boards) | over the night it read 2.296 on 12,511 requests, +0.40 over the reference and 2.90 on cold requests, against 2.250, 2.210 and 2.134 for the three arms next to it; in the half hour before the change the two arms with v9's order read 2.39 together and the two with the organic order 2.06. Alone, from 06:35 to 08:10, it read 2.223 on 17,100 requests, +0.31 over the reference (cold 2.70, warm 1.85; 2.253 in the 55 minutes without a trend, 2.181 in the 40 of the Watches trend), 100.0 % answered on time; in the organisers' hour from 07:00 to 08:00, its first whole one, it scored 63.5, the highest of the board (team_03 62.8) | the best arm by the longest clean window; one ranker and the cheapest answer (ranking 78 ms); every piece of it measured against v9's own prediction | nothing to compare it with while it serves alone | **LIVE: the version for the final** |
 
 **The four arms of the night, the whole read** (01:50-06:30 CET on 15 Nov, 280 minutes, 25 % of the traffic each; expected purchases per 100 requests, reference 1.893):
 
@@ -111,7 +116,7 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
 | Co-purchase ("who bought this also bought that"), with the history and with the recent views | slot-only control: x1.19 to x1.28, repeated on two windows. With v9's prediction held equal: x1.04 / x0.97 | v9 already has it through attributes and subcategories; reordering by it loses | the textbook signal, and no team's numbers show it | redundant for this simulator | WITHDRAWN (the first control was not enough: slot dummies are a screen, not a test) |
 | Co-purchase with what a new shopper carted or bought today | v9's prediction held equal | x1.21 to x1.34 on purchases (4.4 se) | real | needs the shopper's carts and purchases of the same day: in a two-hour event a fifth of the new shoppers' requests have them. Sized by the model session on the held-out lists: +0.15 % to +0.6 % of all purchases, for about two hours of work in the serving path | NOT USED (findings §21 and §23); the humans' call in the morning, not recommended |
 | Products added during the event | v9's prediction held equal | known shoppers buy them 1.59 times v9's prediction (2.8 se); new shoppers as predicted | collects a real under-prediction; generalises to the final's own new products | small share of impressions | LIVE as `v38` and `v40` (first as `v36`, with the organic model) |
-| A just-added product, first 20 minutes | slots, three batches; then against v9's prediction by the model session | 1 click on 1,188 impressions where 7.2 were expected by slot and about 12 by v9's own prediction; from minute 20 on, x1.3 to x1.6 | free: the slot goes to a product that can be clicked, and the new-product lift no longer pushes dead products | worth about 0.03 for twenty minutes every four hours | KEPT: since 23:34 a product stays out of every arm's lists for its first 20 minutes, like one out of stock. Checked at the batch of 03:00 CET on 15 Nov: the 100 products arrived on the dot, none was in the 3,600 lists of their first twenty minutes, and from the twentieth minute they were in 19 % of the lists (16 % in `v31` and `v39`, 21 and 23 % in the two arms with the new-product lift) |
+| A just-added product, first 20 minutes | slots, three batches; then against v9's prediction by the model session | 1 click on 1,188 impressions where 7.2 were expected by slot and about 12 by v9's own prediction; from minute 20 on, x1.3 to x1.6 | free: the slot goes to a product that can be clicked, and the new-product lift no longer pushes dead products | worth about 0.03 for twenty minutes every four hours | KEPT: since 23:34 a product stays out of every arm's lists for its first 20 minutes, like one out of stock. Checked at the batch of 03:00 CET on 15 Nov: the 100 products arrived on the dot, none was in the 3,600 lists of their first twenty minutes, and from the twentieth minute they were in 19 % of the lists (16 % in `v31` and `v39`, 21 and 23 % in the two arms with the new-product lift); the same at the batch of 07:00 with `v31` alone: none in 3,600 lists, then in 9 % of them in the first minutes after |
 | Region and device | slot-only control | nothing for known shoppers, nothing for the device; for new shoppers x1.05 to x1.12 per sd | a little something for shoppers we know nothing about | small, and not tested against v9's prediction | NOT USED |
 | Spreading a list (products of one subcategory take clicks from each other) | v9's prediction held equal, 30,891 lists | first / second / later product of a subcategory: 0.99 / 1.06 / 0.95 on clicks; a penalty on repeats never beats v9's order | - | the simulator adds products up; sorting by score is right | DROPPED |
 | Recency of the purchases | v9's prediction held equal | no gradient from last week to two months ago (0.93 to 1.00) | - | nothing to add | DROPPED |
@@ -163,16 +168,28 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
   two hours left (under 3 % even if the offline gain is real). The new-product lift read -0.06 (-1.0 se).
   With team_03 and team_14 level with us on the short boards, the model session moved all the traffic to
   `v31` at 06:34: the version for the final, alone. p95 was 1.73 to 1.90 s all night.
-- The rivals at 07:09 CET: team_03 leads the 15-, 30- and 60-minute boards by 0.01, 0.04 and 0.02 (2.272,
-  2.228 and 2.199 against our 2.261, 2.190 and 2.177), team_14 is just behind us, and over three hours we
-  lead by 0.05. It began at 06:14, the first time since 02:28 that we were not first on a board. On the
-  organisers' hourly score we led every hour of the night by 2 to 4 points (62.5, 63.9 and 63.5 against
-  59.3 to 61.4 for the next team from 03:00 to 06:00); in the hour from 06:00 to 07:00 we read 62.7
-  against 63.6 for team_03 and 62.8 for team_14. Our number did not fall: theirs rose. team_03 put a new
-  version in at about 05:36 (`transformada-neta-v8`). In the first half hour of `v31` alone (06:35-07:05)
-  it read 2.190 where the best version of each rival read 2.27 (team_03), 2.30 (team_14's `lynch-v8`) and
-  2.38 (team_37's `fz-v10-nocorr`, on a third of its traffic), each on half of our requests or fewer:
-  within one standard error, all three on the same side. Outside a trend the four teams are level, and
-  theirs still carry a weaker second version (2.04 to 2.19) on the rest of their traffic; inside the two
-  large trends of the night `v31` read 2.37 and 2.48 where their best versions read 2.19 to 2.32. We have
-  no better arm to move to: what is left is a trend of normal size, and answering every request.
+- The rivals at 08:14 CET (board to 08:10): the leaders are level and the short boards change hands inside
+  the noise. From 06:14 (the first time since 02:28 that we were not first on a board) to 07:35 we were
+  second or third on one to three of the 15-, 30- and 60-minute boards by 0.00 to 0.08; at 07:47 and
+  07:59 first on all four by 0.01 to 0.06; at 08:14 team_03 is ahead again by 0.04, 0.02 and 0.00 (2.355,
+  2.297 and 2.247 against our 2.314, 2.280 and 2.244; the first five teams of the 15-minute board are
+  within 0.06), and over three hours we lead by 0.01. Two teams differ by chance by 0.12 on 15 minutes,
+  0.09 on 30 and 0.06 on 60: none of these gaps is a difference. On the organisers' hourly score we led
+  every hour of the night by 2 to 4 points (62.5, 63.9 and 63.5 from 03:00 to 06:00, against 59.3 to 61.4
+  for the next team), were third by 0.9 from 06:00 to 07:00 (62.7 against 63.6 for team_03 and 62.8 for
+  team_14) and first again from 07:00 to 08:00, the first whole hour of `v31` alone: 63.5 against 62.8
+  (team_03), 62.2 (team_37), 62.1 (team_33) and 61.8 (team_26). Our number did not fall: theirs rose
+  (five teams scored 61.8 or more in the hour to 08:00 where only we did in the hour to 04:00).
+  Version by version over the 95 minutes of `v31` alone (06:35-08:10): `v31` 2.223 on 17,100 requests;
+  team_03's `transformada-neta-v8` (in since about 05:36) 2.282 on 8,518 and its `v7` 2.177 on 8,582;
+  team_14's `lynch-v8` 2.237 on 9,716; team_37's `fz-v10-nocorr` 2.218 on 5,608 and its `fz-v9a` 2.170 on
+  11,491; team_33's newest (`m8277ec`, since 07:02) 2.350 on 3,277. The best version of each team is
+  within one standard error of `v31` (0.09 on these sizes), and each team still carries a weaker one on
+  half of its traffic. The one that reads above us pass after pass is team_03's `v8`: +0.06 over the 95
+  minutes (+0.7 se), +0.12 in the 55 minutes without a trend (2.369 against 2.253, +1.0 se), most of it
+  on known shoppers (warm 2.00 against 1.84, +1.4 se; cold 2.85 against 2.78, +0.3 se), which is where
+  the organisers' reference (2.08) is above us too: the headroom of findings §23. Not a difference by our
+  own rule (0.15 and two standard errors); but if team_03 serves it alone in the final, expect them level
+  with us or a little above outside a trend. Inside the two large trends of the night `v31` read 2.37 and
+  2.48 where their best versions read 2.19 to 2.32. We have no better arm to move to: what is left is a
+  trend of normal size, and answering every request.

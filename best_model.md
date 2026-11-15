@@ -1,10 +1,10 @@
 # Best model so far
 
-_Updated 15 Nov 2026, 07:09 CET by [`realtime_analyisi_leaderboard/best_model.py`](realtime_analyisi_leaderboard/best_model.py). Numbers are the organisers' own: expected purchases per 100 requests under the hidden model, per `model_version`._
+_Updated 15 Nov 2026, 08:14 CET by [`realtime_analyisi_leaderboard/best_model.py`](realtime_analyisi_leaderboard/best_model.py). Numbers are the organisers' own: expected purchases per 100 requests under the hidden model, per `model_version`._
 
 **Record: `skore_money_v9`** — attributes + carts by subcategory; learned from the old log and today's feedback. 2.37 expected purchases per 100 requests on 2,822 requests, against 2.02 for the organisers' reference over the same half hours: **+0.35**.
 
-Tied with it, within what the measurement can tell apart (0.15 points): `skore_money_v36` (+0.42), `skore_money_v22` (+0.40), `skore_money_v23` (+0.39), `skore_money_v27` (+0.39), `skore_money_v38` (+0.36), `skore_money_v31` (+0.35), `skore_money_v9w` (+0.34), `skore_money_v37` (+0.32), `skore_money_v21` (+0.32), `skore_money_v32` (+0.31), `skore_money_v39` (+0.30), `skore_money_v28` (+0.30), `skore_money_v15` (+0.25), `skore_money_v40` (+0.25), `skore_money_v8` (+0.25), `skore_money_v33` (+0.24), `skore_money_v26` (+0.24), `skore_money_v25` (+0.23), `skore_money_v13` (+0.23), `skore_money_v14` (+0.21), `skore_money_v24` (+0.20).
+Tied with it, within what the measurement can tell apart (0.15 points): `skore_money_v36` (+0.42), `skore_money_v22` (+0.40), `skore_money_v23` (+0.39), `skore_money_v27` (+0.39), `skore_money_v38` (+0.36), `skore_money_v9w` (+0.34), `skore_money_v31` (+0.34), `skore_money_v37` (+0.32), `skore_money_v21` (+0.32), `skore_money_v32` (+0.31), `skore_money_v39` (+0.30), `skore_money_v28` (+0.30), `skore_money_v15` (+0.25), `skore_money_v40` (+0.25), `skore_money_v8` (+0.25), `skore_money_v33` (+0.24), `skore_money_v26` (+0.24), `skore_money_v25` (+0.23), `skore_money_v13` (+0.23), `skore_money_v14` (+0.21), `skore_money_v24` (+0.20).
 
 - **Best on cold requests** (new shopper, or a new product among the recent views — what the final is expected to bring): `skore_money_v9w`, 3.21 against the reference's 1.77.
 - **Best on the other requests** (known shoppers): `skore_money_v9`, 2.11 against 2.11. On cold requests every version of ours since v7 is 1.0 to 1.5 above the reference; on the other requests the best of ours are level with it. That is the gap still open.
@@ -29,8 +29,8 @@ Ranked by the margin over the reference in the half hours each version was live 
 | `skore_money_v12` | variant served 16:29–16:53 UTC next to v11 (see docs/findings.md) | 16:30–17:00 | 838 | 2.36 | 2.00 | **+0.36** | 2.43 (+0.75) | 2.32 (+0.14) | 1.31 |
 | `skore_money_v38` (tied) | v9 + trend lift, products added during the event × 1.5 for known shoppers (no organic model) | 00:30–06:00 | 13,089 | 2.25 | 1.89 | **+0.36** | 2.76 (+1.10) | 1.87 (-0.19) | 1.11 |
 | `skore_money_v9` **← record** | attributes + carts by subcategory; learned from the old log and today's feedback | 15:30–16:30 | 2,822 | 2.37 | 2.02 | **+0.35** | 2.84 (+0.98) | 2.11 (-0.00) | 1.27 |
-| `skore_money_v31` (tied) | v9 everywhere, trend lift at full strength (^1.0) | 20:30–06:00 | 31,105 | 2.28 | 1.93 | **+0.35** | 2.85 (+1.11) | 1.88 (-0.18) | 1.16 |
 | `skore_money_v9w` (tied) | v9 with today's feedback weighted ×20 (best on cold requests) | 16:00–17:00 | 2,533 | 2.32 | 1.99 | **+0.34** | 3.21 (+1.44) | 1.87 (-0.24) | 1.30 |
+| `skore_money_v31` (tied) | v9 everywhere, trend lift at full strength (^1.0) | 20:30–07:00 | 41,905 | 2.27 | 1.93 | **+0.34** | 2.80 (+1.07) | 1.88 (-0.19) | 1.15 |
 | `skore_money_v7` | + product attributes from the description (20 phrases, 2 per product) | 15:00–15:30 | 1,432 | 2.42 | 2.09 | **+0.34** | 2.88 (+1.15) | 2.17 (-0.10) | 1.28 |
 | `skore_money_v37` (tied) | v9 + trend lift picks the ten, v9 × organic only orders them | 22:00–01:00 | 5,160 | 2.33 | 2.01 | **+0.32** | 2.99 (+1.11) | 1.91 (-0.18) | 1.15 |
 | `skore_money_v21` (tied) | v9 everywhere, trend lift off | 17:30–20:30 | 1,733 | 2.30 | 1.98 | **+0.32** | 3.06 (+1.25) | 1.87 (-0.22) | 1.03 |
