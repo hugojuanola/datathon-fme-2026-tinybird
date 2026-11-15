@@ -17,40 +17,40 @@ but not worth or not possible to deploy · **FIXED** = a fault found and repaire
 ## 1. Where we stand now
 
 <!-- live:start -->
-_Refreshed 08:14 CET on 15 Nov 2026 (board to 08:10 CET). Expected purchases per 100 requests, the organisers' own number._
+_Refreshed 09:00 CET on 15 Nov 2026 (board to 09:00 CET). Expected purchases per 100 requests, the organisers' own number._
 
 ### The gap to the next team
 
 | Window | Place | Us | Next team | Gap | Gap on cold requests | Reference | Answered on time |
 |---|---|---|---|---|---|---|---|
-| 15 min | 4 | 2.314 | team_03 2.355 | -0.041 | -0.021 | 2.041 | 100.0 % |
-| 30 min | 2 | 2.280 | team_03 2.297 | -0.017 | +0.031 | 2.009 | 100.0 % |
-| 60 min | 2 | 2.244 | team_03 2.247 | -0.003 | +0.016 | 1.967 | 100.0 % |
-| 180 min | 1 | 2.187 | team_03 2.181 | +0.007 | +0.019 | 1.857 | 100.0 % |
+| 15 min | 1 | 2.328 | team_03 2.313 | +0.015 | +0.060 | 1.984 | 100.0 % |
+| 30 min | 1 | 2.297 | team_03 2.249 | +0.048 | +0.088 | 1.940 | 100.0 % |
+| 60 min | 1 | 2.223 | team_03 2.190 | +0.033 | +0.085 | 1.912 | 100.0 % |
+| 180 min | 1 | 2.210 | team_03 2.201 | +0.009 | +0.031 | 1.886 | 100.0 % |
 
-Official hourly score, hour in progress (previous full hour): team_03 64.5 (62.8), team_06 63.2 (63.5), team_14 62.3 (50.4), team_26 62.1 (61.8), team_37 61.2 (62.2).
+Official hourly score, hour in progress (previous full hour): team_14 67.5 (62.5), team_37 67.1 (62.1), team_03 65.9 (63.5), team_40 65.3 (57.7), team_33 64.6 (61.8).
 
 ### The arms now serving, over the same minutes (since 06:35 CET, when the last one started)
 
-**All minutes** — reference 1.918 (cold 1.723, warm 2.068)
+**All minutes** — reference 1.910 (cold 1.750, warm 2.034)
 
 | Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
 |---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 17,100 | 2.223 | +0.305 | 2.700 | 1.853 |  |
+| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 26,100 | 2.223 | +0.314 | 2.744 | 1.820 |  |
 
 
-**Minutes without a trend** — reference 1.970 (cold 1.832, warm 2.079)
-
-| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
-|---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 9,900 | 2.253 | +0.283 | 2.775 | 1.842 |  |
-
-
-**Minutes of a trend** — reference 1.846 (cold 1.570, warm 2.054)
+**Minutes without a trend** — reference 1.932 (cold 1.823, warm 2.016)
 
 | Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
 |---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 7,200 | 2.181 | +0.336 | 2.595 | 1.869 |  |
+| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 13,500 | 2.216 | +0.284 | 2.771 | 1.784 |  |
+
+
+**Minutes of a trend** — reference 1.886 (cold 1.670, warm 2.052)
+
+| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
+|---|---|---|---|---|---|---|---|
+| `v31` | v9 + trend lift, alone on all the traffic: the version for the final | 12,600 | 2.231 | +0.345 | 2.714 | 1.859 |  |
 
 
 A difference counts from two standard errors and 0.15; a quarter of an hour of a small arm is a lottery.
@@ -85,7 +85,7 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
 | `v39`: v9 picks the ten, the organic factor orders them, and a trending product keeps the slot v9 gave it | 01:46-06:34 | Is the organic order worth it once it cannot move a trending product? | the whole read, 280 minutes with two whole trends, pooled with `v40` against `v31` + `v38` on 25,084 requests against 25,278: -0.10 overall (-1.7 se), -0.17 on cold requests (-1.4 se), -0.04 on warm ones; in the minutes of a trend -0.13 (-1.3 se), without one -0.09 (-1.3 se); `v39` against `v31` directly -0.09 (-1.0 se); 1.11 EUR per request against 1.12. Below on every cut, none of them past two standard errors | the ten are v9's; ten rows for the organic model; inside a trend the placement is v9's | an offline gain of about +2.5 % only; the three organic arms before it sold 1.12 to 1.28 EUR per request against 1.36 for v9 | **CLOSED at 06:34 on 15 Nov, not in the final.** Both conditions of the rule failed (below over the whole night, and more than one standard error below in the minutes of a trend), and the two hours left could not change it. The held-out lists gave it +2.5 % ± 1.1 and the night -4.4 % ± 2.6: the live read does not confirm the offline gain |
 | `v38`: v9 with products added during the event x1.5 for known shoppers, no organic model | 01:46-06:34 | Is the new-product lift worth it on its own? | the whole read, 280 minutes, pooled with `v40` against `v31` + `v39` on 25,308 requests against 25,054: -0.06 overall (-1.0 se); -0.01 on warm requests, where the lift acts, and -0.13 on cold ones (-1.1 se), where it mostly does not (a new shopper gets the same list on both sides, so that figure is how much cold swings by itself); in the minutes of a trend +0.03 (+0.3 se), without one -0.10 (-1.4 se); 1.08 EUR per request against 1.14. Nothing | measured against v9's prediction (x1.59 for known shoppers); costs nothing to run | a small share of the impressions, so a small effect to detect | **CLOSED at 06:34 on 15 Nov, not in the final.** It needed two standard errors above and read one below (decided at 04:50, when it could no longer get there). The held-out lists gave it +0.6 % ± 0.5: too small to see in a night, and nothing is lost by leaving it out |
 | `v40`: `v39` with the new-product lift | 01:46-06:34 | The two together | the whole read: 2.134 against 2.296 for `v31` on 12,541 requests (-2.0 se), and -0.12 against the other three together (-1.8 se): the lowest of the four from the second hour on, as the sum of two small deficits would be | the two questions are crossed, so each is read on all the traffic | - | **CLOSED at 06:34 on 15 Nov** with the other two |
-| **`v31` alone**: v9 with the trend lift at full strength, on all the traffic | since 06:34 on 15 Nov | (not a test: the answer to the night's read, and to team_03 and team_14 reaching us on the 15- and 30-minute boards) | over the night it read 2.296 on 12,511 requests, +0.40 over the reference and 2.90 on cold requests, against 2.250, 2.210 and 2.134 for the three arms next to it; in the half hour before the change the two arms with v9's order read 2.39 together and the two with the organic order 2.06. Alone, from 06:35 to 08:10, it read 2.223 on 17,100 requests, +0.31 over the reference (cold 2.70, warm 1.85; 2.253 in the 55 minutes without a trend, 2.181 in the 40 of the Watches trend), 100.0 % answered on time; in the organisers' hour from 07:00 to 08:00, its first whole one, it scored 63.5, the highest of the board (team_03 62.8) | the best arm by the longest clean window; one ranker and the cheapest answer (ranking 78 ms); every piece of it measured against v9's own prediction | nothing to compare it with while it serves alone | **LIVE: the version for the final** |
+| **`v31` alone**: v9 with the trend lift at full strength, on all the traffic | since 06:34 on 15 Nov | (not a test: the answer to the night's read, and to team_03 and team_14 reaching us on the 15- and 30-minute boards) | over the night it read 2.296 on 12,511 requests, +0.40 over the reference and 2.90 on cold requests, against 2.250, 2.210 and 2.134 for the three arms next to it; in the half hour before the change the two arms with v9's order read 2.39 together and the two with the organic order 2.06. Alone, from 06:35 to 09:00, it read 2.223 on 26,100 requests, +0.31 over the reference (cold 2.74, warm 1.82; 2.216 in the 75 minutes without a trend, 2.231 in the 70 minutes of two small trends, Watches and Face Cream), 100.0 % answered on time; in its two whole hours on the organisers' score it was first both times: 63.5 from 07:00 to 08:00 (team_03 62.8) and 64.8 from 08:00 to 09:00 (team_03 63.5) | the best arm by the longest clean window; one ranker and the cheapest answer (ranking 78 ms); every piece of it measured against v9's own prediction | nothing to compare it with while it serves alone | **LIVE: the version for the final** |
 
 **The four arms of the night, the whole read** (01:50-06:30 CET on 15 Nov, 280 minutes, 25 % of the traffic each; expected purchases per 100 requests, reference 1.893):
 
@@ -132,10 +132,10 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
 |---|---|---|---|---|---|
 | OneDrive uploading the Python environment and data files from inside the repository; a second process loading its state; a model scoring with every core | 14:14-14:31 and 14:58-15:01 | a quarter of the answers, three times | environment, data and logs outside the synced folder; offline scripts at low priority; a new version loads in standby | no repeat | FIXED |
 | The server's console window closed by hand | 19:53-19:57 | 723 requests, four minutes | a windowless supervisor that restarts the server | nothing to close by mistake; survives the assistant app | FIXED at 20:11 |
-| Long assistant sessions uploading megabytes per step over the home connection | afternoon | bursts of late answers; `on_time` 96.4 % against 99.8 % for the others | fewer, shorter steps; no session open during the final | 99.9-100 % since 21:00 | KEPT as a rule for the final |
+| Long assistant sessions uploading megabytes per step over the home connection | afternoon | bursts of late answers; `on_time` 96.4 % against 99.8 % for the others | fewer, shorter steps; no session open during the final | 99.9-100 % since 21:00 | KEPT as a rule for the final, with one exception that Javier decided at 08:55 on 15 Nov: the model session stays open to watch the server (a local watcher on its log and one light check every 10 minutes; no analysis, no pushes), and the watch session closes at 09:30 |
 | Replacing the server | every deploy | 2 to 6 requests per swap | `scripts/swap_server.ps1`: standby, self-test, hand-over | every swap of the evening went through with a handful of requests lost, never a gap | KEPT |
 | The answers get slower since the organic model went in | since 21:35 | ranking 63 → 100 ms per request; latency of the answers, half hour by half hour from 21:00 to 23:36: p50 1.17 → 1.33 s, p95 1.78 → 2.31 s, p99 2.16 → 2.91 s; answers over 3 s from 1 to 12 per half hour. Nothing lost yet (`on_time` 99.8-99.9 %). The network is flat (router ping 5 ms, RawTree connect 110 ms): it is the process, and what else runs on the machine | at 23:41 the organic model went from the best 300 candidates to the best 100 (the same list in 115 of 120 requests, the same first product in all of them); no analysis runs on the serving machine for the rest of the night | ranking 100 → 83 ms; p95 back to 1.9-2.0 s; answers over 3 s from 15 to 2-9 per quarter of an hour | **FIXED** for now and watched every 15 minutes (`latency_history.csv`). Latency is the second thing the morning's choice looks at (p95 under 2 s): v9 alone and `v37` are cheap, `v32` and `v36` less so |
-| The laptop lost its link to the router for 11.5 seconds (the router ping and the connection to RawTree both failing in the log of `scripts/netmon.py`; the only such episode in the 10.6 hours the monitor has logged). Wi-Fi at 5 GHz with full signal, and Windows logged no disconnection: the radio stayed associated and nothing crossed it | 04:16:42-04:16:53 on 15 Nov | 34 requests left unanswered (request times 04:16:41.8 to 04:16:52.7): `on_time` 98.7 % for that quarter of an hour, 99.9 % over three hours. Every other team stayed at 100 %, so it was ours and not the platform | none in the code: the server caught each failure (3 inserts, 4 polls, the refreshes) and went on answering by itself, 1.9 s after the link came back. A request has 3 seconds, so 31 of the 34 were out of reach whatever the loop does; the other 3 would need every poll and insert to connect differently, not worth changing the night before (findings §24) | - | **OPEN for the final: the network cable.** The laptop has a wired port, unused; a connection stays on the adapter it was opened on, so the cable goes in before the swap that sets the final's version (`scripts/link.ps1` says which link the server uses). One such gap in the final's two hours is 0.16 % of its requests |
+| The laptop lost its link to the router for 11.5 seconds (the router ping and the connection to RawTree both failing in the log of `scripts/netmon.py`; the only such episode in the 14.6 hours the monitor had logged by 08:47). Wi-Fi at 5 GHz with full signal, and Windows logged no disconnection: the radio stayed associated and nothing crossed it | 04:16:42-04:16:53 on 15 Nov | 34 requests left unanswered (request times 04:16:41.8 to 04:16:52.7): `on_time` 98.7 % for that quarter of an hour, 99.9 % over three hours. Every other team stayed at 100 %, so it was ours and not the platform | none in the code: the server caught each failure (3 inserts, 4 polls, the refreshes) and went on answering by itself, 1.9 s after the link came back. A request has 3 seconds, so 31 of the 34 were out of reach whatever the loop does; the other 3 would need every poll and insert to connect differently, not worth changing the night before (findings §24) | - | **CLOSED without the cable: the final runs on Wi-Fi.** The laptop has a wired port and a connection stays on the adapter it was opened on, so the plan was a cable and one more swap (`scripts/link.ps1` says which link the server uses). At 08:40 on 15 Nov Javier plugged in the only cable he has and the port never got a link, so nothing was changed and no swap was made. What stands for the final: Wi-Fi at 5 GHz (channel 48, 90 % signal at 08:47), the laptop on mains, Steam and OneDrive closed, and a server that resumes by itself. Since 21:00 on Saturday: 124,897 requests, 96 unanswered (99.92 %). One such gap in the final's two hours would be 0.16 % of its requests |
 
 ## 5. What it adds up to
 
@@ -168,28 +168,34 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
   two hours left (under 3 % even if the offline gain is real). The new-product lift read -0.06 (-1.0 se).
   With team_03 and team_14 level with us on the short boards, the model session moved all the traffic to
   `v31` at 06:34: the version for the final, alone. p95 was 1.73 to 1.90 s all night.
-- The rivals at 08:14 CET (board to 08:10): the leaders are level and the short boards change hands inside
-  the noise. From 06:14 (the first time since 02:28 that we were not first on a board) to 07:35 we were
-  second or third on one to three of the 15-, 30- and 60-minute boards by 0.00 to 0.08; at 07:47 and
-  07:59 first on all four by 0.01 to 0.06; at 08:14 team_03 is ahead again by 0.04, 0.02 and 0.00 (2.355,
-  2.297 and 2.247 against our 2.314, 2.280 and 2.244; the first five teams of the 15-minute board are
-  within 0.06), and over three hours we lead by 0.01. Two teams differ by chance by 0.12 on 15 minutes,
-  0.09 on 30 and 0.06 on 60: none of these gaps is a difference. On the organisers' hourly score we led
-  every hour of the night by 2 to 4 points (62.5, 63.9 and 63.5 from 03:00 to 06:00, against 59.3 to 61.4
-  for the next team), were third by 0.9 from 06:00 to 07:00 (62.7 against 63.6 for team_03 and 62.8 for
-  team_14) and first again from 07:00 to 08:00, the first whole hour of `v31` alone: 63.5 against 62.8
-  (team_03), 62.2 (team_37), 62.1 (team_33) and 61.8 (team_26). Our number did not fall: theirs rose
-  (five teams scored 61.8 or more in the hour to 08:00 where only we did in the hour to 04:00).
-  Version by version over the 95 minutes of `v31` alone (06:35-08:10): `v31` 2.223 on 17,100 requests;
-  team_03's `transformada-neta-v8` (in since about 05:36) 2.282 on 8,518 and its `v7` 2.177 on 8,582;
-  team_14's `lynch-v8` 2.237 on 9,716; team_37's `fz-v10-nocorr` 2.218 on 5,608 and its `fz-v9a` 2.170 on
-  11,491; team_33's newest (`m8277ec`, since 07:02) 2.350 on 3,277. The best version of each team is
-  within one standard error of `v31` (0.09 on these sizes), and each team still carries a weaker one on
-  half of its traffic. The one that reads above us pass after pass is team_03's `v8`: +0.06 over the 95
-  minutes (+0.7 se), +0.12 in the 55 minutes without a trend (2.369 against 2.253, +1.0 se), most of it
-  on known shoppers (warm 2.00 against 1.84, +1.4 se; cold 2.85 against 2.78, +0.3 se), which is where
-  the organisers' reference (2.08) is above us too: the headroom of findings §23. Not a difference by our
-  own rule (0.15 and two standard errors); but if team_03 serves it alone in the final, expect them level
-  with us or a little above outside a trend. Inside the two large trends of the night `v31` read 2.37 and
-  2.48 where their best versions read 2.19 to 2.32. We have no better arm to move to: what is left is a
-  trend of normal size, and answering every request.
+- The rivals at 09:00 CET, the last read before the final: we are first on the four boards (by 0.05, 0.07,
+  0.03 and 0.01 on 15, 30, 60 and 180 minutes at 08:55, team_03 second on all four) and on the
+  organisers' hourly score: 64.8 from 08:00 to 09:00 against 63.5 (team_03), 62.5 (team_14), 62.4
+  (team_26), 62.1 (team_37) and 61.8 (team_33). Hour by hour since 02:00 we were first six times in seven:
+  by 1.7 to 3.8 points from 02:00 to 06:00 (63.7, 62.5, 63.9, 63.5), third by 0.9 from 06:00 to 07:00
+  (62.7 against 63.6 for team_03 and 62.8 for team_14), first by 0.7 and by 1.3 in the two whole hours of
+  `v31` alone (63.5, 64.8). Our number did not fall: theirs rose (five teams scored 61.8 or more in the
+  hours to 08:00 and to 09:00 where only we did in the hour to 04:00). The short boards changed hands
+  inside the noise all morning: from 06:14 (the first time since 02:28 that we were not first on one) to
+  07:35 we were second or third on one to three of them by 0.00 to 0.08; first on all four at 07:47 and
+  07:59; at 08:14 team_03 ahead on the three short ones by 0.04, 0.02 and 0.00 (five teams within 0.06 on
+  15 minutes, where we were fourth); second on 30 minutes by 0.003 at 08:28; first on all four at 08:36,
+  08:48 and 09:00. Two teams differ by chance by 0.12 on 15 minutes, 0.09 on 30 and 0.06 on 60 (about 2
+  points of the hourly score): none of these gaps is a difference, and first by a point is level with a
+  slight edge. Version by version over the 145 minutes of `v31` alone (06:35-09:00): `v31` 2.223 on
+  26,100 requests (cold 2.74, warm 1.82); team_03's `transformada-neta-v8` 2.275 on 13,063 (+0.05, +0.7
+  se; warm 1.90, +1.1 se) and its `v7` 2.145 on 13,025; team_33's `m8277ec` (since 07:02) 2.342 on 6,018
+  (+0.12, +1.3 se; warm 1.98, +1.7 se) next to three weaker ones (2.06 to 2.16); team_37's
+  `fz-v10-nocorr` 2.234 on 8,628 and its `fz-v9a` 2.141 on 17,471; team_14's `lynch-v8` 2.194 on 18,716.
+  By half hour (the reads overlap) team_03's `v8` has been above `v31` six times, by 0.05 to 0.19, and
+  below three times, by 0.03 to 0.09: one standard error either way each time. What does repeat is where:
+  the best version of each of these four teams is within 0.10 of us on cold requests, either side (2.65 to
+  2.81 against 2.74), and above us on warm ones (1.84 to 1.98 against 1.82), where the organisers'
+  reference reads 2.03. That is the headroom of findings §23. At 08:20, with Javier asking for more ("hay
+  que espabilar, no podemos ir segundos"), the model session was asked for a candidate: it holds none
+  with held-out or live evidence that beats v9 on known shoppers (every arm of the night read 1.81 to
+  1.87 on warm requests; reordering the ten by how often the shopper had already been shown each product,
+  measured that hour on 80,100 lists, loses 0.4 to 2.4 %). The gap is real and unexplained, and a change
+  made then could not have been measured before 10:00: Javier confirmed `v31` for the final at 08:33.
+  What to expect: level with team_03 on conversion, with our edge on cold start and inside a large trend
+  (`v31` read 2.37 and 2.48 inside the night's two, where their best versions read 2.19 to 2.32).
