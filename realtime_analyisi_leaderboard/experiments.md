@@ -17,56 +17,56 @@ but not worth or not possible to deploy · **FIXED** = a fault found and repaire
 ## 1. Where we stand now
 
 <!-- live:start -->
-_Refreshed 05:03 CET on 15 Nov 2026 (board to 05:00 CET). Expected purchases per 100 requests, the organisers' own number._
+_Refreshed 06:14 CET on 15 Nov 2026 (board to 06:10 CET). Expected purchases per 100 requests, the organisers' own number._
 
 ### The gap to the next team
 
 | Window | Place | Us | Next team | Gap | Gap on cold requests | Reference | Answered on time |
 |---|---|---|---|---|---|---|---|
-| 15 min | 1 | 2.241 | team_14 2.126 | +0.115 | +0.203 | 1.832 | 100.0 % |
-| 30 min | 1 | 2.362 | team_14 2.253 | +0.109 | +0.164 | 1.944 | 100.0 % |
-| 60 min | 1 | 2.258 | team_37 2.152 | +0.106 | +0.146 | 1.912 | 99.7 % |
-| 180 min | 1 | 2.257 | team_03 2.176 | +0.081 | +0.117 | 1.944 | 99.9 % |
+| 15 min | 3 | 2.164 | team_14 2.208 | -0.044 | -0.053 | 1.691 | 100.0 % |
+| 30 min | 3 | 2.190 | team_14 2.199 | -0.009 | -0.016 | 1.743 | 100.0 % |
+| 60 min | 1 | 2.133 | team_14 2.119 | +0.014 | +0.044 | 1.765 | 100.0 % |
+| 180 min | 1 | 2.209 | team_03 2.124 | +0.085 | +0.111 | 1.879 | 99.9 % |
 
-Official hourly score, hour in progress (previous full hour): team_06 67.0 (63.9), team_03 59.2 (60.0), team_26 59.2 (57.4), team_37 58.0 (60.1), team_33 57.4 (57.6).
+Official hourly score, hour in progress (previous full hour): team_03 65.6 (61.0), team_14 65.4 (61.4), team_06 64.0 (63.5), team_37 61.6 (59.8), team_17 61.5 (47.1).
 
 ### The arms now serving, over the same minutes (since 01:50 CET, when the last one started)
 
-**All minutes** — reference 1.935 (cold 1.679, warm 2.118)
+**All minutes** — reference 1.897 (cold 1.658, warm 2.070)
 
 | Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
 |---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 8,508 | 2.298 | +0.363 | 2.900 | 1.867 |  |
-| `v38` | v9 with products added during the event x1.5 for known shoppers | 8,637 | 2.247 | +0.312 | 2.740 | 1.889 | -0.05 (-0.5), -0.16 (-0.8), +0.02 (+0.2) |
-| `v39` | v9 picks the ten, the organic factor orders them (a trending product keeps v9's slot) | 8,551 | 2.274 | +0.339 | 2.820 | 1.885 | -0.02 (-0.2), -0.08 (-0.4), +0.02 (+0.2) |
-| `v40` | v39 with new products x1.5 for known shoppers | 8,467 | 2.165 | +0.229 | 2.537 | 1.908 | -0.13 (-1.3), -0.36 (-1.7), +0.04 (+0.4) |
+| `v31` | v9 + trend lift (the proven one) | 11,579 | 2.300 | +0.403 | 2.904 | 1.860 |  |
+| `v38` | v9 with products added during the event x1.5 for known shoppers | 11,845 | 2.236 | +0.339 | 2.739 | 1.869 | -0.06 (-0.8), -0.17 (-0.9), +0.01 (+0.1) |
+| `v39` | v9 picks the ten, the organic factor orders them (a trending product keeps v9's slot) | 11,702 | 2.221 | +0.324 | 2.722 | 1.859 | -0.08 (-0.9), -0.18 (-1.0), -0.00 (-0.0) |
+| `v40` | v39 with new products x1.5 for known shoppers | 11,636 | 2.145 | +0.248 | 2.590 | 1.835 | -0.15 (-1.8), -0.31 (-1.8), -0.02 (-0.3) |
 
-- Pooled, the organic order (v39 + v40) against v9's order (v31 + v38): all -0.053 (-0.7 se), cold -0.138 (-0.9 se), warm +0.018 (+0.3 se); EUR per request 1.110 against 1.112; 17,018 against 17,145 requests.
-- Pooled, new products x1.5 (v38 + v40) against none (v31 + v39): all -0.080 (-1.1 se), cold -0.219 (-1.5 se), warm +0.022 (+0.3 se); EUR per request 1.057 against 1.165; 17,104 against 17,059 requests.
+- Pooled, the organic order (v39 + v40) against v9's order (v31 + v38): all -0.084 (-1.4 se), cold -0.163 (-1.3 se), warm -0.018 (-0.3 se); EUR per request 1.117 against 1.122; 23,338 against 23,424 requests.
+- Pooled, new products x1.5 (v38 + v40) against none (v31 + v39): all -0.069 (-1.2 se), cold -0.147 (-1.2 se), warm -0.007 (-0.1 se); EUR per request 1.083 against 1.156; 23,481 against 23,281 requests.
 
-**Minutes without a trend** — reference 1.927 (cold 1.684, warm 2.103)
-
-| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
-|---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 5,125 | 2.224 | +0.296 | 2.608 | 1.945 |  |
-| `v38` | v9 with products added during the event x1.5 for known shoppers | 5,267 | 2.162 | +0.235 | 2.635 | 1.820 | -0.06 (-0.5), +0.03 (+0.1), -0.13 (-1.0) |
-| `v39` | v9 picks the ten, the organic factor orders them (a trending product keeps v9's slot) | 5,143 | 2.285 | +0.358 | 2.905 | 1.836 | +0.06 (+0.5), +0.30 (+1.1), -0.11 (-0.9) |
-| `v40` | v39 with new products x1.5 for known shoppers | 5,129 | 2.045 | +0.118 | 2.396 | 1.790 | -0.18 (-1.4), -0.21 (-0.8), -0.16 (-1.3) |
-
-- Pooled, the organic order (v39 + v40) against v9's order (v31 + v38): all -0.028 (-0.3 se), cold +0.029 (+0.2 se), warm -0.069 (-0.8 se); EUR per request 1.074 against 1.012; 10,272 against 10,392 requests.
-- Pooled, new products x1.5 (v38 + v40) against none (v31 + v39): all -0.150 (-1.7 se), cold -0.239 (-1.3 se), warm -0.085 (-1.0 se); EUR per request 0.932 against 1.155; 10,396 against 10,268 requests.
-
-**Minutes of a trend** — reference 1.948 (cold 1.671, warm 2.140)
+**Minutes without a trend** — reference 1.872 (cold 1.652, warm 2.032)
 
 | Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
 |---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 3,383 | 2.411 | +0.463 | 3.350 | 1.749 |  |
-| `v38` | v9 with products added during the event x1.5 for known shoppers | 3,370 | 2.380 | +0.432 | 2.902 | 1.998 | -0.03 (-0.2), -0.45 (-1.4), +0.25 (+1.6) |
-| `v39` | v9 picks the ten, the organic factor orders them (a trending product keeps v9's slot) | 3,408 | 2.258 | +0.310 | 2.689 | 1.958 | -0.15 (-1.0), -0.66 (-2.0), +0.21 (+1.4) |
-| `v40` | v39 with new products x1.5 for known shoppers | 3,338 | 2.349 | +0.401 | 2.769 | 2.080 | -0.06 (-0.4), -0.58 (-1.7), +0.33 (+2.2) |
+| `v31` | v9 + trend lift (the proven one) | 7,561 | 2.234 | +0.363 | 2.677 | 1.907 |  |
+| `v38` | v9 with products added during the event x1.5 for known shoppers | 7,793 | 2.150 | +0.278 | 2.668 | 1.772 | -0.08 (-0.8), -0.01 (-0.0), -0.13 (-1.3) |
+| `v39` | v9 picks the ten, the organic factor orders them (a trending product keeps v9's slot) | 7,594 | 2.208 | +0.336 | 2.777 | 1.791 | -0.03 (-0.3), +0.10 (+0.5), -0.12 (-1.1) |
+| `v40` | v39 with new products x1.5 for known shoppers | 7,615 | 2.051 | +0.179 | 2.521 | 1.715 | -0.18 (-1.7), -0.16 (-0.7), -0.19 (-1.9) |
 
-- Pooled, the organic order (v39 + v40) against v9's order (v31 + v38): all -0.092 (-0.8 se), cold -0.396 (-1.7 se), warm +0.147 (+1.4 se); EUR per request 1.163 against 1.266; 6,746 against 6,753 requests.
-- Pooled, new products x1.5 (v38 + v40) against none (v31 + v39): all +0.030 (+0.3 se), cold -0.181 (-0.8 se), warm +0.185 (+1.7 se); EUR per request 1.249 against 1.180; 6,708 against 6,791 requests.
+- Pooled, the organic order (v39 + v40) against v9's order (v31 + v38): all -0.062 (-0.8 se), cold -0.022 (-0.1 se), warm -0.085 (-1.2 se); EUR per request 1.084 against 1.047; 15,209 against 15,354 requests.
+- Pooled, new products x1.5 (v38 + v40) against none (v31 + v39): all -0.120 (-1.6 se), cold -0.131 (-0.8 se), warm -0.105 (-1.5 se); EUR per request 0.983 against 1.149; 15,408 against 15,155 requests.
+
+**Minutes of a trend** — reference 1.945 (cold 1.669, warm 2.140)
+
+| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
+|---|---|---|---|---|---|---|---|
+| `v31` | v9 + trend lift (the proven one) | 4,018 | 2.424 | +0.478 | 3.344 | 1.774 |  |
+| `v38` | v9 with products added during the event x1.5 for known shoppers | 4,052 | 2.402 | +0.457 | 2.875 | 2.055 | -0.02 (-0.1), -0.47 (-1.5), +0.28 (+2.0) |
+| `v39` | v9 picks the ten, the organic factor orders them (a trending product keeps v9's slot) | 4,108 | 2.246 | +0.301 | 2.619 | 1.982 | -0.18 (-1.2), -0.73 (-2.4), +0.21 (+1.5) |
+| `v40` | v39 with new products x1.5 for known shoppers | 4,021 | 2.324 | +0.378 | 2.725 | 2.057 | -0.10 (-0.7), -0.62 (-2.0), +0.28 (+2.1) |
+
+- Pooled, the organic order (v39 + v40) against v9's order (v31 + v38): all -0.128 (-1.3 se), cold -0.436 (-2.0 se), warm +0.105 (+1.1 se); EUR per request 1.179 against 1.264; 8,129 against 8,070 requests.
+- Pooled, new products x1.5 (v38 + v40) against none (v31 + v39): all +0.029 (+0.3 se), cold -0.175 (-0.8 se), warm +0.177 (+1.8 se); EUR per request 1.274 against 1.170; 8,073 against 8,126 requests.
 
 A difference counts from two standard errors and 0.15; a quarter of an hour of a small arm is a lottery.
 <!-- live:end -->
@@ -97,9 +97,9 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
 | The organic factor inside a trend | 22:30-22:51 | (found, not planned) | `v32` and `v36` put Face Cream in 57 % of their lists, slot 1 in 14-16 %: 1,820 impressions, 2 clicks, no purchase. The organic model had never seen such products as candidates | - | twenty minutes of half the traffic | FIXED at 22:51 (`level_trending`): after it 0.20 to 0.30 trend products per list in every arm, and they sell like their neighbours. Tightened at 01:46 (`hold_trending`): a trending product keeps the slot v9 gave it, after the Vitamins trend showed the organic arms still letting other products pass it. Held in the two trends since (Leashes, Sneakers): the four arms show a trend alike, and a replay of 300 requests by the model session gives every trending product the same slot with and without the organic order |
 | `v36`: `v32` with products added during the event x1.5 for known shoppers | since 22:32; counts from 22:55 | New products sell more than v9 expects to known shoppers (observed / predicted purchases 1.37 on held-out lists): does a lift collect it? | read at 01:15: +0.05 against v9 (+0.4 se) on 4,039 requests in 110 minutes; inside the Vitamins trend +0.18 (+0.9 se). Nothing yet | measured with v9's prediction held equal; keyed on "added during the event", not on today's products | it pushed products in their first 20 minutes, when nobody clicks them, until they were held out at 23:34 (section 3) | closed at 01:46 with `v32`: +0.05 over v9 (+0.5 se) on 5,118 requests, and +0.16 over `v32` (+1.3 se), the only live sign for the lift. It continues without the organic model as `v38`, and with the organic order as `v40` |
 | `v37`: v9 picks the ten, the organic factor only orders them | since 23:23 | Is the organic gain in the order or in the products it brings in? | offline, on 38,627 held-out lists: reordering v9's ten is worth about +2.5 % purchases (± 1.1) under today's attention curve, +4.7 % under the old log's steeper one; as a choice model the organic factor is the strongest signal found outside v9 (0.59 ± 0.07 on purchases next to v9's own prediction). Live, read at 01:15: -0.12 against v9 (-0.9 se) on 3,986 requests in 110 minutes; inside the Vitamins trend -0.28 (-1.3 se); on warm requests -0.20 (-1.6 se). Nothing yet, and no sign of the offline gain | the ten products are v9's, so the risk is bounded; almost no extra latency (ten rows, where `v32` scores 300); the one use of the organic model that could be valued offline | gives up whatever the outside products bring; the offline gain is small | closed at 01:46: -0.09 against v9 (-0.7 se) on 5,054 requests; inside the Vitamins trend it put the trending product first less often than v9 (18.5 % of lists against 21.9 %). It continues as `v39` with that fixed |
-| `v39`: v9 picks the ten, the organic factor orders them, and a trending product keeps the slot v9 gave it | since 01:46 | Is the organic order worth it once it cannot move a trending product? | read at 05:03, pooled with `v40` against `v31` + `v38` on 17,018 requests against 17,145 (190 minutes, 75 of them inside a trend: Leashes and most of Sneakers): -0.05 overall (-0.7 se), -0.14 on cold requests (-0.9 se), +0.02 on warm ones; in the minutes of a trend -0.09 (-0.8 se), without one -0.03 (-0.3 se); `v39` against `v31` directly -0.02 (-0.2 se); 1.11 EUR per request on both sides. Level, a little under | the ten are v9's; ten rows for the organic model; inside a trend the placement is v9's | an offline gain of about +2.5 % only; the three organic arms before it sold 1.12 to 1.28 EUR per request against 1.36 for v9 | **LIVE** |
-| `v38`: v9 with products added during the event x1.5 for known shoppers, no organic model | since 01:46 | Is the new-product lift worth it on its own? | read at 05:03, pooled with `v40` against `v31` + `v39` on 17,104 requests against 17,059: -0.08 overall (-1.1 se); +0.02 on warm requests (+0.3 se), where the lift acts, and -0.22 on cold ones (-1.5 se), where it mostly does not (a new shopper gets the same list on both sides, so that figure is how much cold swings by itself); in the minutes of a trend +0.03 (+0.3 se), without one -0.15 (-1.7 se); 1.06 EUR per request against 1.17. Nothing | measured against v9's prediction (x1.59 for known shoppers); costs nothing to run | a small share of the impressions, so a small effect to detect | **LIVE** until the morning, and **out of the final**: decided at 04:50 on 15 Nov, since it can no longer reach two standard errors above by 08:30 |
-| `v40`: `v39` with the new-product lift | since 01:46 | The two together | read at 05:03: 2.165 against 2.298 for `v31` on 8,467 requests (-1.3 se), and -0.11 against the other three together (-1.3 se), the lowest of the four; it stays to cross the two questions and would be taken out at two standard errors below the others | the two questions are crossed, so each is read on all the traffic | - | **LIVE** |
+| `v39`: v9 picks the ten, the organic factor orders them, and a trending product keeps the slot v9 gave it | since 01:46 | Is the organic order worth it once it cannot move a trending product? | read at 06:14, pooled with `v40` against `v31` + `v38` on 23,338 requests against 23,424 (260 minutes, 90 of them inside the Leashes and Sneakers trends): -0.08 overall (-1.4 se), -0.16 on cold requests (-1.3 se), -0.02 on warm ones; in the minutes of a trend -0.13 (-1.3 se), without one -0.06 (-0.8 se); `v39` against `v31` directly -0.08 (-0.9 se); 1.12 EUR per request on both sides. Below on every cut, none of them past two standard errors | the ten are v9's; ten rows for the organic model; inside a trend the placement is v9's | an offline gain of about +2.5 % only; the three organic arms before it sold 1.12 to 1.28 EUR per request against 1.36 for v9 | **LIVE** |
+| `v38`: v9 with products added during the event x1.5 for known shoppers, no organic model | since 01:46 | Is the new-product lift worth it on its own? | read at 06:14, pooled with `v40` against `v31` + `v39` on 23,481 requests against 23,281: -0.07 overall (-1.2 se); -0.01 on warm requests, where the lift acts, and -0.15 on cold ones (-1.2 se), where it mostly does not (a new shopper gets the same list on both sides, so that figure is how much cold swings by itself); in the minutes of a trend +0.03 (+0.3 se), without one -0.12 (-1.6 se); 1.08 EUR per request against 1.16. Nothing | measured against v9's prediction (x1.59 for known shoppers); costs nothing to run | a small share of the impressions, so a small effect to detect | **LIVE** until the morning, and **out of the final**: decided at 04:50 on 15 Nov, since it can no longer reach two standard errors above by 08:30 |
+| `v40`: `v39` with the new-product lift | since 01:46 | The two together | read at 06:14: 2.145 against 2.300 for `v31` on 11,636 requests (-1.8 se), and -0.11 against the other three together (-1.5 se), the lowest of the four; it stays to cross the two questions and would be taken out at two standard errors below the others | the two questions are crossed, so each is read on all the traffic | - | **LIVE** |
 
 ## 3. Signals and ideas tried on the data
 
@@ -163,9 +163,16 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
   The new-product lift (+0.6 % ± 0.5) only if its side (`v38` + `v40`) is two standard errors above the
   other by itself. Otherwise `v31`, the version every other arm is one step from. Latency is the second
   axis: p95 under 2 s.
-- Where that choice stands at 05:19 CET, 205 minutes and two whole trends into the night's read: the
-  organic order -0.07 (-1.0 se) over the whole night and -0.13 (-1.3 se) in the minutes of a trend
-  (Leashes -0.11, Sneakers -0.15); `v39` against `v31` directly, -0.04 and -0.18. Both conditions of the
-  rule fail as it stands, so it gives `v31`. The new-product lift is out of the final (it reads -0.07 and
-  could no longer reach two standard errors above by 08:30; the model session, 04:50). Two trends and
-  three hours of reading are still to come; p95 has been 1.77 to 1.90 s all night.
+- Where that choice stands at 06:14 CET, 260 minutes and two whole trends into the night's read: the
+  organic order -0.08 (-1.4 se) over the whole night, -0.13 (-1.3 se) in the minutes of a trend (Leashes
+  -0.11, Sneakers -0.15) and -0.06 without one; `v39` against `v31` directly, -0.08. Both conditions of
+  the rule fail as it stands, so it gives `v31`. The new-product lift is out of the final (it reads -0.07
+  and could no longer reach two standard errors above by 08:30; the model session, 04:50). Two trends and
+  two hours of reading are still to come; p95 has been 1.75 to 1.90 s all night.
+- The rivals at 06:14 CET: team_14 and team_03 are ahead of us on the 15- and 30-minute boards by 0.01 to
+  0.04 (2.20 and 2.19 against our 2.19 over the half hour), the first time since 02:28; over the hour we
+  lead by 0.01 and over three hours by 0.09. team_03 put a new version in at about 05:36
+  (`transformada-neta-v8`: 2.29 where its last one reads 2.10), and the best version of each of the three
+  teams behind us read 2.27 to 2.29 in that half hour. They split their traffic between two versions as
+  we do between four; our four arms read 2.42, 2.31, 2.12 and 1.91 in the same half hour, which is what a
+  quarter of the traffic does in thirty minutes.
