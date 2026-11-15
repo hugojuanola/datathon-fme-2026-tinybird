@@ -79,11 +79,15 @@ connection being busy with something else (docs/findings.md §8). So the checkli
   | **as it is** | v31, the version to beat | v39 |
   | **products added during the event x1.5** (known shoppers) | v38 | v40 |
 
-  The rule, one question at a time: **a change goes into the final only if its side is at least 2 standard
-  errors above the other side over the whole night and not below it in the minutes with a trend** (45
-  minutes from :30 of every odd UTC hour: `arms.py 01:30 02:15`, `03:30 04:15`, `05:30 06:15`). For the
-  organic order also look at the money per request (the tie-breaker, `EUR/req` in `arms.py`): before
-  midnight the three arms with the organic model earned 1.12 to 1.26 EUR per request against 1.34 for v31.
+  The rule, one question at a time (findings §23 has the reasoning). Each change has two estimates of
+  what it adds: the held-out lists and the night, side against side.
+  - **The organic order** (held-out lists: +2.5 % ± 1.1): it goes into the final **if its side is not below
+    the other over the whole night, nor more than one standard error below in the minutes with a trend**
+    (45 minutes from :30 of every odd UTC hour: `arms.py 01:30 02:15`, `03:30 04:15`, `05:30 06:15`). Look
+    at the money per request too (the tie-breaker, `EUR/req` in `arms.py`).
+  - **New products x1.5** (held-out lists: +0.6 % ± 0.5, too little to carry it): only if its side is 2
+    standard errors above the other over the night.
+  - If in doubt, or if the humans prefer the proven version whatever the reading: v31.
   Then leave a single line in `ARMS` (`reco/serve.py`) at 100 %, commit it, and replace the running server
   as in step 2 (`scripts\swap_server.ps1`):
 
@@ -95,12 +99,10 @@ connection being busy with something else (docs/findings.md §8). So the checkli
   | both | `("skore_money_v40", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10, "fresh": 1.5}, 100)` |
 
   What one night can tell: with 36,000 requests on each side the standard error of a difference is 0.05
-  purchases per 100 requests, so 2 standard errors are 0.10, about 4 % of what we sell. The offline
-  estimates are smaller than that (+2.5 % for the organic order, findings §22; less for the x1.5, which
-  touches few lists, §21), so the likely reading is "level, within a standard error or two", and then
-  v31 serves the final: it is the proven one. What the night does settle is harm: a side that is clearly
-  below is out. None of the four costs time (the organic model is asked about ten products: 2 ms
-  more than v31 per answer); p95 of the answers must stay under 2,000 ms (`queries/health.sql`).
+  purchases per 100 requests, about 2 % of what we sell, so it can show harm but not confirm a gain of
+  2.5 %. That is why the night is only asked whether it contradicts the held-out lists. None of the four
+  arms costs time (the organic model is asked about ten products: 2 ms more than v31 per answer); p95 of
+  the answers must stay under 2,000 ms (`queries/health.sql`).
   The best proven version and the line that puts it back are in [`best_model.md`](../best_model.md).
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products
   and trends. What carries over, by construction: features are counts, shares and matches (never ids);

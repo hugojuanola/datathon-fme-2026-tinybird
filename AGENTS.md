@@ -208,11 +208,12 @@ and 0.17 all night; the second session logs it every 15 minutes.
 Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
 1. **Read the night**: the three commands in [`docs/final-round.md`](docs/final-round.md) (`scripts/arms.py
    00:47 07:30` UTC, piped into `pool_arms.py`), or the table in `best_model.md`. v31 is the version to
-   beat. A change goes into the final only if its side is 2 standard errors above the other over the whole
-   night and not below it in the minutes with a trend (45 minutes from :30 of every odd UTC hour); for the
-   organic order, look at the money per request too. One night can show harm or a gain above 4 %, not a
-   gain of 2.5 % (findings §23): if nothing passes, v31 serves the final. The first hours (22:25 to 00:46
-   UTC, arms v31, v32, v36, v37) are in findings §23.
+   beat. The organic order (v39) goes into the final if its side is not below the other over the whole
+   night, nor more than a standard error below in the minutes with a trend (45 minutes from :30 of every
+   odd UTC hour): the held-out lists give it +2.5 % ± 1.1 and one night can show harm but not confirm a
+   gain that size, so the night is only asked whether it contradicts them. New products x1.5 (v38) only
+   if its side is 2 standard errors above: the held-out lists give it +0.6 % ± 0.5. Otherwise, or if in
+   doubt, v31 (findings §23). The first hours (22:25 to 00:46 UTC, arms v31, v32, v36, v37) are in §23 too.
    **If a reading shows us off first place before the final** (standing order from Javier, 15 Nov 00:15 CET:
    recover it as fast as possible, hold it, widen the gap). The second session reads the board every 15
    minutes and raises the alarm when we are not first on the 60-minute window (a 15-minute window is noise:

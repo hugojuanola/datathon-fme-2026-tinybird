@@ -910,3 +910,48 @@ which touches few lists). The night can therefore show harm, and it can show a g
 it cannot confirm a gain of 2.5 %. The rule for the final stays the one of the proven version: v31 serves
 it unless a side is 2 standard errors above over the whole night and not below in trend minutes
 ([`docs/final-round.md`](final-round.md)).
+
+**What each change is worth, on the same scale.** The three candidates that passed the control of §21 (v9's
+own prediction held equal), sized the same way: v9 picks the ten, the candidate orders them, purchases
+counted with the position-based estimate of §22 under the attention curve v9 implies (in brackets, under
+the one measured on today's lists). Held-out lists since 17:00 UTC: 30,891 lists, 724 purchases.
+
+| The ten ordered by | Lists it can change | Purchases in those lists | Purchases overall |
+|---|---|---|---|
+| v9 × organic (§22, lists since 16:14 UTC) | all | | **+2.5 % ± 1.1** |
+| v9, products added during the event ×1.5 for known shoppers | 52 % of known shoppers' lists | +1.9 % ± 1.4 (+1.3 ± 1.4) | +0.6 % ± 0.5 (+0.5 ± 0.5) |
+| v9 × e^(0.2 z), z = co-purchase with the shopper's abandoned carts, new shoppers only | 63 % of new shoppers' lists | +1.6 % ± 1.4 (+2.6 ± 1.4) | +0.6 % ± 0.5 (+1.0 ± 0.5) |
+
+The third is the one signal of §21 that is not in any arm, raised again by the second session when the
+teams behind us drew level outside trends (01:10 UTC: first by 0.08 on the hour, by 0.005 on the half
+hour). It stays out, for what it is worth and for what it needs:
+
+- It is worth what the ×1.5 is worth, a quarter of the organic order, and only when the shopper has had
+  the time to fill a cart. The 63 % above are shoppers 7 to 11 hours into the event. In the first two
+  hours of Saturday (measured by the second session on `shop.requests` against the shopper's earlier
+  `add_to_cart` events) 6 %, 17 %, 26 % and 32 % of the new shoppers' requests, by half hour, came after a
+  cart: a fifth. If the final starts from nothing that is about +0.15 % of the purchases; if its stream
+  carries on from the practice round, the +0.6 %.
+- For known shoppers it loses purchases (−1.2 % ± 1.1 at the same dose, −4.4 % ± 1.7 at e^(0.5 z)): v9
+  already reads their carts better than a co-purchase count does. It would have to be switched by the kind
+  of shopper.
+- It needs "bought by the same shoppers" for every pair of products: 5,000 × 5,000 numbers from the 60-day
+  history in the server's state, keyed on product ids, so empty for every product added during the event —
+  the one kind of thing the rest of the system avoids (features are counts, shares and matches, never
+  an id), added to the serving path the night before the final.
+
+**Putting the two estimates of a change together.** A night cannot confirm +2.5 % (above), and held-out
+lists cannot see what a live list does to the next request. Each is one estimate with its error, so they
+are combined, each weighted by its precision (1 / error²), and a change goes into the final when (a) the
+night does not contradict it — its side is not below the other over the whole night, nor more than one
+standard error below in the minutes with a trend — and (b) the combined estimate is 2 standard errors
+above zero. With a night worth ± 2.1 % on each question, that reads:
+
+| Change | Held-out lists | Goes into the final if the night reads |
+|---|---|---|
+| the organic order (v39) | +2.5 % ± 1.1 | at or above the other side: then the two together are +2.0 % ± 1.0 or better |
+| new products ×1.5 (v38) | +0.6 % ± 0.5 | 2 standard errors above the other side by itself: the held-out lists alone do not carry it |
+
+A reading "at or above" is a weak test — with no effect at all it comes out half of the time — so it is
+never the evidence: the held-out lists are, and the night is asked only whether it contradicts them. If
+the humans prefer the proven version whatever the reading, that is v31, and nothing is lost that we had.
