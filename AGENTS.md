@@ -37,7 +37,7 @@ The best version must be running, unattended, **before Sunday 10:00 CET (09:00 U
 | [`scripts/rt.py`](scripts/rt.py) | Run SQL against RawTree from the shell (stdlib, read-only by default) |
 | [`scripts/leaderboard.py`](scripts/leaderboard.py) | Print the public leaderboard |
 | [`scripts/arms.py`](scripts/arms.py) | **How we judge an A/B**: expected purchases per 100 requests per `model_version` (the organisers' own metric), cold and warm, over any window |
-| [`scripts/netmon.py`](scripts/netmon.py) | Router ping and RawTree connect time once per second: tells Wi-Fi from the rest when answers are lost |
+| [`scripts/netmon.py`](scripts/netmon.py), [`scripts/link.ps1`](scripts/link.ps1) | Router ping and RawTree connect time once per second: tells Wi-Fi from the rest when answers are lost · which link (cable or Wi-Fi) the live server's connections leave through |
 | [`scripts/swap_server.ps1`](scripts/swap_server.ps1), [`reco/supervise.py`](reco/supervise.py), [`docs/final-round.md`](docs/final-round.md) | Start or replace the live server without a gap. It runs with **no window** under a supervisor that restarts it (it does not die with a terminal or an assistant session, and there is nothing to close by mistake); the runbook for the final |
 | [`best_model.md`](best_model.md) | The best proven version, the line that puts it back, what is being measured against it, and the log of improvements |
 | [`reco/`](reco/) | **Our recommender**: `serve.py` (live loop), `state.py` (event-sourced live state), `features.py` (the one definition of every model feature, shared by training and serving), `recommend.py` (policies: rules, and rules-retrieve + model-rank), `rawtree.py` (client), `priority.py` |
@@ -196,15 +196,17 @@ Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/
 versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
 organic model and the arms of the night, §21 ten signals checked against what v9 already predicts, the lift
 for new products and the organic factor during a trend, §22 the organic model as a second stage, §23 the first read of the night and the arms as two questions
-crossed). The store's calendar (trends, promotions, new
+crossed, §24 twelve seconds without Wi-Fi and what the loop did). The store's calendar (trends, promotions, new
 products) is in [`docs/data.md`](docs/data.md). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (Sunday 03:10 CET): first on the four windows the second session reads (15 minutes to the
-longest: +0.03, +0.06, +0.05 and +0.11 over the next team), `on_time` 100 %, p95 1.9 s. Since about 02:00 CET
-the nearest teams (team_03, team_17, team_14) are level with us outside trends, and in the last trend
-(Leashes, 02:30 CET) the gap inside it was +0.04 where earlier trends gave +0.10 to +0.33: the lead is thin
-(findings §23). The second session logs it every 15 minutes.
+Where we stand (Sunday 04:45 CET): first on the public board's last hour, 2.272 against 2.177 (team_37) and
+2.165 (team_03), +0.10; `on_time` 99.7 % in that hour for the 34 answers lost at 04:16 CET (findings §24),
+p95 1.8 s. On the four windows the second session reads (04:29 CET) first on all, by +0.003 and +0.017 on
+the 15- and 30-minute ones, which hold the lost minute, and by +0.06 on the 60- and 180-minute ones. Since
+about 02:00 CET the nearest teams (team_03, team_37, team_14) are level with us outside trends, and in the
+last complete trend (Leashes, 02:30 CET) the gap inside it was +0.055 where earlier trends gave +0.10 to
++0.33: the lead is thin (findings §23). The second session logs it every 15 minutes.
 
 Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
 1. **Read the night**: the three commands in [`docs/final-round.md`](docs/final-round.md) (`scripts/arms.py
@@ -228,6 +230,12 @@ Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 ha
    arm is v9 or a step or two from it, and all the traffic has the lift.
 3. **The connection.** A network cable to the router, nothing else using the line, no assistant session
    open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi from the rest.
+   On Sunday at 03:16 UTC nothing crossed the Wi-Fi for 12 s and 34 requests went unanswered, the only
+   burst of the night; the server resumed by itself and only about three of them were within reach of a
+   different loop, so the loop is unchanged (findings §24). The laptop has a wired port, unused. **The
+   cable goes in before the swap that sets the final's version** (a running server keeps the connections
+   it has, on the Wi-Fi), the Wi-Fi stays on as the spare, and `scripts\link.ps1` confirms which link the
+   server uses. Never restart the server because of a network drop.
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
 (outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:

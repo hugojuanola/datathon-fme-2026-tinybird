@@ -972,8 +972,60 @@ se) and 0.00. Nothing either way yet. Two things to keep:
   with trending products are the ones of shoppers with weak signals of their own, where every product
   draws three quarters of the clicks its slot usually gets. What would reopen it: that share falling
   clearly under the slot prediction in another trend (the case for lift ^ 0.5, which ran as v35).
-- **The trend is no longer ours alone.** Inside it we read 2.342 against 2.305, 2.294 and 2.221 for the
-  next three teams: +0.04, where Game Consoles and Vitamins had given +0.10 to +0.33. Every team rose by
-  0.10 to 0.16 inside the trend (a ranker that reads the recent views picks a trend up by itself); we rose
-  by 0.19. Two teams differ by 0.10 over 45 minutes by chance, so it is one reading, but outside trends the
-  nearest teams are level with us since about 01:00 UTC.
+- **The trend is no longer ours alone.** Inside it we read 2.340 against 2.285 and 2.280 for the next two
+  teams (team_14, team_03; every request counted, the ones a team did not answer included): +0.055, against
+  +0.017 in the 45 minutes before, where Game Consoles and Vitamins had given +0.10 to +0.33. Every team
+  rises inside a trend (a ranker that reads the recent views picks it up by itself), and team_14 put a
+  better version in as this one began. Two teams differ by 0.10 over 45 minutes by chance, so it is one
+  reading, but outside trends the nearest teams are level with us since about 01:00 UTC.
+
+## 24. Reliability, third look: twelve seconds without Wi-Fi (15 Nov, 03:16 UTC)
+
+The one burst of lost answers of the night: 34 requests in a row (ts 03:16:41.8 to 03:16:52.7; a feedback
+row is stamped 4.2 s after its request, so they show in the feedback of 03:16:46 to 03:16:57) came back
+`missing`. Every other team answered 100 % of those minutes: it was ours. The monitor
+(`scripts/netmon.py`, one line per second), the server's log and the list of what it ranked, side by
+side, on RawTree's clock (the laptop's runs 0.4 s ahead, measured):
+
+| UTC | The link, seen by the monitor | The server |
+|---|---|---|
+| 03:16:37.5 | ping to the router 26–40 ms (usually 4–5) | answering as usual |
+| 03:16:40.5 | a new connection to RawTree fails (2 s) | still answering on the connections it has; the last request it ranks has ts 03:16:41.700 |
+| 03:16:42 | silent | the four polls on their way time out after 2.5 s, three inserts after 2 s, every refresh after 5 s |
+| 03:16:43.5 | the router does not answer pings | `no poll came back for 2 s`, six times |
+| 03:16:53.5 | a connection gets through, after waiting 6.8 s; clean from here | |
+| 03:16:55.4 | | the first poll comes back, 10.6 s after it was sent: the requests of the last 2.8 s are ranked in one go |
+| 03:16:56.3 | | their answers land: 3.6 s after the oldest (too late), 3.2 s after the next (taken), in time for the rest |
+| 03:16:59.5 | ping 127–247 ms for five seconds, nothing lost | answers take 1.3–2.1 s for five seconds, then 1.0–1.4 s again |
+
+**What a different loop would have saved: about three requests of the 34.** With the link silent for 11.5 s,
+some 31 were out of reach for any loop: a request has to be read, ranked and answered within 3 s of its ts.
+The server's first poll came back 1.9 s after the monitor's first good connection instead of the 0.6 s a
+fresh connection and a query take. The poll that came back had lasted 10.6 s with a time limit of 2.5 s:
+the limit covers connecting and each read, not looking the host's address up, which a new connection does
+first (the record is short-lived: it read 12 s and 1 s of life left when we looked) and which waits on
+Windows' own retries, seconds apart. Three requests are 0.014 % of a final. Closing that gap means changing
+how every poll and every insert connects, the night before, with no way to rehearse a real outage on the
+machine that is serving. **The loop stays as it is.** It did what it is built for: no thread died, nothing
+was restarted (the supervisor only starts a server that has exited: a restart, a minute or two of loading,
+would have cost more than the drop), and the answers resumed by themselves.
+
+**What it was.** Windows logged nothing in those minutes: no disconnection, no roaming, no new address
+(WLAN-AutoConfig, System, DHCP and network-status logs all empty). The link was 5 GHz, channel 48 (not a
+radar channel), 802.11ac at 867 Mbps, signal 88 %; the laptop was on mains, the adapter set to maximum
+performance, no sleep, no restart pending. So the radio stayed associated and nothing crossed it for twelve
+seconds: the router or the air, not a setting on the laptop. In the 10.6 hours the monitor has logged
+(Saturday 16:57 UTC to Sunday 03:37 UTC) it is the only outage; three single pings lost on Saturday evening
+cost nothing. Since Saturday 20:00 UTC, 89 of 83,320 requests went unanswered (99.89 % answered): these 34
+are the largest single piece.
+
+**For the final.** One such drop in the two hours is 0.16 % of the answers, and from one event in 10.6
+hours the chance of one is about one in six: small in expectation. What a cable removes is the tail, a
+drop that lasts a minute. The laptop has a wired port (gigabit), unused so far. Two things to know:
+
+- **A connection stays on the adapter it was opened on.** The server holds twelve connections to RawTree,
+  all through the Wi-Fi (`scripts/link.ps1` shows them). With a cable plugged in, Windows sends new
+  connections through it by itself, but the server opens new ones only when it has to. So the cable goes in
+  *before* the swap that sets the final's version, and `scripts/link.ps1` confirms it afterwards.
+- **The Wi-Fi stays on, as the spare.** If the cable fails, the server's connections fail with it and are
+  opened again over the Wi-Fi within seconds.

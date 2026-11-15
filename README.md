@@ -122,8 +122,10 @@ no ids, a profile builds itself from the stream, and the detector does not know 
 Nothing waits for a single call: four staggered pollers, four senders, an insert that has not come back in
 0.6 s is sent again on another connection. A new version loads in standby, answers real requests in a
 self-test, and takes over without a gap ([`scripts/swap_server.ps1`](scripts/swap_server.ps1)). If the ranker fails the rules answer; if the rules fail, the best
-sellers in stock. What costs answers is the home connection, not the code: findings §8,
-[`scripts/netmon.py`](scripts/netmon.py), [`docs/final-round.md`](docs/final-round.md).
+sellers in stock. What costs answers is the home connection, not the code: findings §8, §18,
+[`scripts/netmon.py`](scripts/netmon.py), [`docs/final-round.md`](docs/final-round.md). The night before
+the final the Wi-Fi went silent for 12 seconds: 34 requests unanswered, of which about three were within
+reach of any loop, and the server went on by itself two seconds after the link came back (findings §24).
 
 ## Repository map
 
@@ -136,7 +138,7 @@ sellers in stock. What costs answers is the home connection, not the code: findi
 | [`models/`](models/) | The trained rankers (LightGBM text files) |
 | [`docs/findings.md`](docs/findings.md) | Every measurement behind the design, in the order we made them |
 | [`docs/challenge.md`](docs/challenge.md), [`docs/data.md`](docs/data.md), [`docs/rawtree.md`](docs/rawtree.md) | Rules and scoring · data dictionary · RawTree cheat sheet |
-| [`queries/`](queries/), [`scripts/`](scripts/) | Reusable SQL · `rt.py` (SQL from the shell), `arms.py` (A/B on the organisers' metric), `leaderboard.py`, `netmon.py` |
+| [`queries/`](queries/), [`scripts/`](scripts/) | Reusable SQL · `rt.py` (SQL from the shell), `arms.py` (A/B on the organisers' metric), `leaderboard.py`, `netmon.py` and `link.ps1` (is it the Wi-Fi? which link does the server use?) |
 | [`avanced_data_analysis/`](avanced_data_analysis/README.md) | Exploratory analysis: what drives a purchase (figures, clustering, SHAP) |
 | [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md) | Live watch of the leaderboard and of each arm |
 | [`starter/`](starter/), [`docs/sources/`](docs/sources/README.md) | Official starter kit and material, unmodified |

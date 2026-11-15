@@ -15,9 +15,14 @@ connection being busy with something else (docs/findings.md §8). So the checkli
       after: **Never**". The server also asks Windows not to sleep while it runs, but closing the lid or a
       forced update restart is stronger than that: lid open, charger in.
 - [ ] Windows Update: *Pause updates* for a week (a restart at 10:30 would be the end of it).
-- [ ] **A network cable from the laptop to the router.** Measured with `scripts/netmon.py` on 14 Nov: over
-      Wi-Fi the ping to the router averages 11-27 ms with spikes of 100-360 ms even in good minutes (a cable
-      gives 1 ms), and the bursts of lost answers are stalls of every connection at once.
+- [ ] **A network cable from the laptop to the router** (the laptop has a wired port, unused so far).
+      Plug it in **before the last swap of the server** and leave the Wi-Fi on. A connection stays on the
+      adapter it was opened on, so a running server does not move to the cable by itself: the server
+      started after the cable is in opens its connections through it (Windows prefers the wired link by
+      itself), and the Wi-Fi remains as the spare. `scripts\link.ps1` says which link the server is using.
+      Measured with `scripts/netmon.py`: over Wi-Fi the ping to the router averages 4-27 ms with spikes of
+      100-360 ms even in good minutes (a cable gives 1 ms), and on 15 Nov at 03:16 UTC nothing crossed the
+      Wi-Fi for 12 s: 34 requests unanswered, the only burst of the night (findings §24).
 - [ ] Leave the monitor running in a window of its own: `python scripts/netmon.py` (a few bytes per second).
       If answers are lost, `python scripts/netmon.py --report 30` says whether it was the Wi-Fi.
 
@@ -25,7 +30,8 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 
 1. Close everything that talks to the internet: OneDrive (pause syncing), Discord, browsers, Spotify,
    and any assistant session working in this repo (each of its steps uploads megabytes).
-2. Start the server — or replace the one that is running, without a gap — as a process of its own:
+2. Network cable in (see above). Then start the server — or replace the one that is running, without a
+   gap — as a process of its own:
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts\swap_server.ps1
@@ -47,6 +53,10 @@ connection being busy with something else (docs/findings.md §8). So the checkli
    python scripts/leaderboard.py                     # the light must be GREEN during the final
    ```
 
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\link.ps1    # "... connections to RawTree open through Ethernet"
+   ```
+
    Healthy log line (one per minute, `$SKORE_LOGS_DIR/serve.log`):
    `answered=… failed_polls=0 failed_inserts=0 … poll_ms avg≈200 … rank_ms/request avg≈80`.
 
@@ -56,6 +66,10 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 - Look at the log or run `queries/health.sql` every 15 minutes or so. Only two things justify acting:
   - the laptop restarted, or no `python` process with `reco.serve` is left → start it again (step 2);
   - `failed_polls` / `failed_inserts` climbing fast → something is using the connection: find it and close it.
+- **A drop of the connection is not one of them.** It shows as `no poll came back for 2 s` and timeouts in
+  the log, and some seconds of answers missing. Do not restart the server: it goes on by itself two seconds
+  after the link is back (measured, findings §24), and a restart takes longer than the drop.
+  `python scripts/netmon.py --report 10` tells whether it was the Wi-Fi (router pings lost).
 - The leaderboard only shows a light per team: green = more than 90 % of the last 5 minutes answered in time.
 
 ## Which version serves the final
