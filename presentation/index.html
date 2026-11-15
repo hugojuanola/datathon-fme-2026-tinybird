@@ -11,9 +11,9 @@
   Keys   → (or ↓) next        ← (or ↑) back        Nothing else: no other key and no click does anything.
          Full screen is the browser's own (F11).
   URL    ?notas   speaker notes and the clock under the slide, for rehearsing        #7  open on slide 7
-         ?min=4   rescale the plan (4 min 40 s) to 4 minutes        ?static   no animation (for screenshots / PDF)
+         ?min=5   rescale the plan (3 min 50 s) to 5 minutes        ?static   no animation (for screenshots / PDF)
 
-  Numbers of the "goal and result" and "learning" slides come from data.js (python3 presentation/update_data.py).
+  The final's figures on slide 2 come from data.js (python3 presentation/update_data.py).
   Every other number is quoted from docs/findings.md; the section is named in the speaker notes of each slide.
   The look is RawTree's slide template (the one the organisers' deck uses): design.md records every token and its source.
 -->
@@ -128,98 +128,32 @@ p b,li b{color:var(--ink);font-weight:500}
 .trio span{display:block;font-size:24px;color:var(--muted);margin-top:12px;line-height:1.38}
 .trio span strong{font-weight:500;color:var(--ink)}
 
-/* ---------- two numbers side by side (the trend) ---------- */
-.versus{display:grid;grid-template-columns:1fr auto 1fr;gap:70px;align-items:start;margin-top:48px}
-.versus .big{font-size:220px}
-.versus .big:not(.a){color:var(--neutral-ink)}
-.versus.tight{margin-top:34px}
-.versus.tight .big{font-size:150px}
-.versus.tight .cap{margin-top:8px}
-.versus .mid{align-self:center;font:400 24px/1 var(--mono);color:var(--muted)}
-.tagline{font:400 22px/1 var(--mono);color:var(--muted);margin-bottom:22px}
-
-/* ---------- the architecture, end to end: what we read, the server, what we write, and the offline loop ---------- */
-.arch{display:grid;grid-template-columns:1fr 70px;margin-top:30px}
-.arch .lbl{font:400 19px/1 var(--mono);color:var(--muted);margin-bottom:12px}
-.arch .in{grid-column:1 / 3;grid-row:1}
-.arch .down{grid-column:1 / 3;grid-row:2;display:grid;grid-template-columns:repeat(4,1fr);gap:22px;height:32px;place-items:center;font:400 22px/1 var(--mono);color:var(--neutral-ink)}
-.arch .srv{grid-column:1;grid-row:3}
-.arch .gap{grid-column:1;grid-row:4;position:relative;height:32px}
-.arch .gap span{position:absolute;top:50%;transform:translate(-50%,-50%);font:400 22px/1 var(--mono);color:var(--neutral-ink);white-space:nowrap}
-.arch .gap span small{font-size:16px;margin-left:8px}
-.arch .base{grid-column:1 / 3;grid-row:5;display:grid;grid-template-columns:944px 1fr;gap:56px}
-.tbls{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
-.tbl{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:13px 20px 15px}
-.tbl code{display:flex;justify-content:space-between;align-items:center;gap:10px;font:400 20px/1.3 var(--mono);color:var(--accent)}
-.tbl code i{font-style:normal;font-size:16px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:3px 11px;white-space:nowrap}
-.tbl h3{font-size:22px;line-height:1.3;font-weight:500;color:var(--ink)}
-.tbl p{font-size:20px;line-height:1.3;color:var(--muted);margin-top:6px}
-.srv{border:1.5px solid var(--accent);border-radius:16px;background:rgb(236 238 255 / .6);padding:16px 24px 22px}
-.srv .lbl{display:flex;justify-content:space-between;color:var(--accent)}
-.srv .lbl span:last-child{color:var(--muted)}
-.state{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:30px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 20px}
-.state h3{font-size:24px;line-height:1.2;font-weight:500;color:var(--ink)}
-.state p{font-size:19px;line-height:1.3;color:var(--muted);margin-top:3px}
-.state .facets{display:flex;gap:12px;justify-content:flex-end}
-.state .facets span{font:400 17px/1.3 var(--mono);color:var(--ink);background:var(--soft);border-radius:8px;padding:8px 14px;white-space:nowrap}
-.state .facets b{font-weight:400;color:var(--accent)}
-.srv .mid{height:24px;display:grid;place-items:center;font:400 20px/1 var(--mono);color:var(--neutral-ink)}
-.flow{display:grid;grid-template-columns:1fr 1fr 1.4fr 1fr 1fr;gap:34px}
-.flow > div{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px 16px}
-.flow > div + div::before,.offl .tbl + .tbl::before{content:"→";position:absolute;left:-28px;top:50%;transform:translateY(-50%);font:400 22px/1 var(--mono);color:var(--neutral-ink)}
-.offl .tbl + .tbl::before{left:-21px;font-size:18px}
-.flow h3{font:400 18px/1 var(--mono);color:var(--accent);margin-bottom:10px}
-.flow b{display:block;font-size:24px;line-height:1.2;font-weight:500;color:var(--ink);letter-spacing:-.015em}
-.flow p{font-size:19px;line-height:1.3;color:var(--muted);margin-top:8px}
-.flow .lgbm{background:var(--accent);border-color:var(--accent);box-shadow:0 18px 40px -18px rgb(0 25 255 / 55%)}
-.flow .lgbm h3,.flow .lgbm b{color:#fff}
-.flow .lgbm p{color:rgb(255 255 255 / 82%)}
-.offl{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-.offl .tbl{border-style:dashed}
-.outs{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-.loop{grid-column:2;grid-row:2 / 5;position:relative;margin-bottom:-31px}      /* from what we write, through the hidden simulator, back to our feedback */
-.loop::before{content:"";position:absolute;left:50%;top:8px;bottom:0;border-left:2px dashed var(--accent)}
-.loop::after{content:"";position:absolute;left:50%;top:0;margin-left:-6px;border:7px solid transparent;border-top:0;border-bottom:11px solid var(--accent)}
-.loop span{position:absolute;left:50%;top:50%;margin-left:1px;transform:translate(-50%,-50%) rotate(-90deg);white-space:nowrap;font:400 17px/1 var(--mono);color:var(--accent);background:var(--paper);padding:5px 12px}
-/* ---------- line chart ---------- */
-#trend{width:100%;height:100%;overflow:visible}
-#trend text{font-family:var(--mono);fill:var(--muted);font-size:20px}
-#trend .end{fill:var(--ink);font-size:23px;font-weight:500}
-#trend .grid{stroke:var(--line);stroke-width:1}
-#trend .mark{stroke:var(--neutral-ink);stroke-width:1.5;stroke-dasharray:3 7}
-#trend .band{fill:var(--accent);opacity:.08} #trend .band-t{fill:var(--accent);font-weight:500}
-#trend .line{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
-#trend .dot{stroke:var(--paper);stroke-width:4;opacity:0}
-.slide.active #trend .line{stroke-dashoffset:0;transition:stroke-dashoffset 1.8s var(--ease) .5s}
-.slide.active #trend .dot,.slide.active #trend .end{opacity:1;transition:opacity .5s ease 2.1s}
-#trend .end{opacity:0}
-.legend{display:flex;gap:34px;font:400 20px/1 var(--mono);color:var(--muted);margin-bottom:22px}
-.legend i{display:inline-block;width:26px;height:5px;border-radius:3px;vertical-align:middle;margin-right:12px}
-
-/* ---------- three exams; who did what ---------- */
-.judges > div{display:grid;grid-template-columns:1fr auto;align-items:center;gap:32px;padding:24px 0;border-top:1px solid var(--line)}
-.judges > div:last-child{border-bottom:1px solid var(--line)}
-.judges h3{font-size:32px;font-weight:500;line-height:1.25}
-.judges p{font-size:23px;line-height:1.35;color:var(--muted);margin-top:4px}
-.judges .ft{font:300 52px/1 var(--mono);letter-spacing:-.04em;color:var(--neutral-ink);white-space:nowrap}
-.judges .ft b{font-weight:300;color:var(--accent)}
-.judges .ft small{font-size:.6em;letter-spacing:0;margin-left:.1em}
-.judges .ft i{font-style:normal;font-size:.62em;color:var(--muted);margin:0 .3em;position:relative;top:-.08em}
-.facts{list-style:none;display:flex;flex-direction:column}
-.facts li{padding:22px 0;border-top:1px solid var(--line);font-size:29px;line-height:1.36;color:var(--muted)}
-.facts li:last-child{border-bottom:1px solid var(--line)}
-.facts b{color:var(--ink);font-weight:500}
-
-
-/* ---------- code: the template's dark terminal ---------- */
-.term{background:var(--code);border-radius:15px;overflow:hidden;box-shadow:0 27px 61px -19px rgb(16 18 40 / 40%)}
-.term .dots{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:22px 27px 6px;font:400 17px/1 var(--mono);color:var(--code-gray)}
-.term .dots i{width:15px;height:15px;border-radius:50%;background:#3b3c46}
-.term .dots i:nth-child(1){position:absolute;left:27px}.term .dots i:nth-child(2){position:absolute;left:52px}.term .dots i:nth-child(3){position:absolute;left:77px}
-pre{font:400 22px/1.65 var(--mono);color:var(--code-ink);padding:16px 36px 34px;white-space:pre;overflow:hidden}
-pre .k{color:var(--code-blue)} pre .c{color:var(--code-green)} pre .m{color:var(--code-gray)}
-
-
+/* ---------- exploratory analysis: two columns of bars ---------- */
+.tagline{font:400 22px/1 var(--mono);color:var(--muted);margin-bottom:26px}
+.eda{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:40px}
+.eda .bars{gap:22px}
+.eda .bar{grid-template-columns:330px 1fr;gap:22px}
+.eda .bar .lab{font-size:26px;color:var(--ink)}
+.eda .bar .lab small{display:block;font-size:19px;color:var(--muted);margin-top:4px}
+.eda .bar .val{font-size:26px}
+.bar.bad .fill{background:var(--bad)}
+/* ---------- the agentic loop and the architecture (SVG) ---------- */
+.loopd{width:100%;margin-top:30px;overflow:visible;font-family:var(--sans)}
+.loopd .card{fill:var(--paper);stroke:var(--line);stroke-width:2}
+.loopd .ck,.archd .ck{font:400 20px var(--mono);fill:var(--accent)}
+.loopd .al{font:400 18px var(--mono);fill:var(--muted)}
+.loopd .arw{fill:none;stroke:var(--accent);stroke-width:2.5;marker-end:url(#ah)}
+.loopd .dash,.archd .dash{stroke-dasharray:7 7}
+.archd{width:100%;height:740px;margin-top:6px;overflow:visible;font-family:var(--sans)}
+.archd .blk{stroke:var(--ink);stroke-width:1.6}
+.archd .cont{fill:#f1f2f5;stroke:#c9ccd6;stroke-width:1.5}
+.archd .bt{font-size:23px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.archd .bs{font-size:17px;fill:var(--muted);text-anchor:middle}
+.archd .io{font-size:21px;font-style:italic;fill:var(--ink);text-anchor:middle}
+.archd .nx{font-size:24px;font-weight:600;fill:var(--ink);text-anchor:end}
+.archd .ar{fill:none;stroke:var(--ink);stroke-width:1.8;marker-end:url(#ak)}
+.archd .fb{font-size:18px;font-style:italic;fill:var(--muted)}
+.archd .ot{font-size:20px;fill:var(--muted)}
 /* ---------- closing ---------- */
 .bye{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto}
 .bye .thanks{font-size:220px;font-weight:600;letter-spacing:-.05em;line-height:1.02;margin-left:-6px}
@@ -240,8 +174,7 @@ body.notes-on #notes{display:block}
 /* ---------- no animation: ?static, reduced motion, print ---------- */
 html.static *{transition:none!important;animation:none!important}
 html.static .r,html.static [data-step]{opacity:1!important;transform:none!important;filter:none!important}
-html.static .fill{transform:none!important} html.static .val,html.static #trend .dot,html.static #trend .end{opacity:1!important}
-html.static #trend .line{stroke-dashoffset:0!important}
+html.static .fill{transform:none!important} html.static .val{opacity:1!important}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation:none!important}}
 @media print{
   @page{size:1920px 1080px;margin:0}
@@ -270,7 +203,7 @@ html.static #trend .line{stroke-dashoffset:0!important}
 </section>
 
 <!-- 2 · El objetivo, y la curva de los organizadores -->
-<section class="slide" data-title="El objetivo y la curva" data-t="20">
+<section class="slide" data-title="Nuestra solución" data-t="40">
   <header class="furn"><span class="kick"><span id="round">Objetivo y resultado</span></span><span class="ticket">Skore Money</span></header>
   <h1 class="r" style="font-size:62px"><em>Nuestra solución</em>.</h1>
   <figure class="curve r"><img src="assets/curva-organizadores.png" alt="Puntuación sobre 100, hora a hora, publicada por los organizadores: el mejor equipo, el 3.º, el 10.º, la mediana, su referencia y los superventas, del sábado a las 10:00 al final del domingo; anotación «Skore Money beats the reference · Sat 16:00»"><figcaption>Puntuación sobre 100, hora a hora · gráfica publicada por los organizadores</figcaption></figure>
@@ -279,238 +212,132 @@ html.static #trend .line{stroke-dashoffset:0!important}
     <div><b id="conv">2,24</b><span id="conv-cap">compras por cada 100 visitas en la final (referencia: 2,14 · superventas: 0,75)</span></div>
     <div><b id="times">×3,0</b><span>lo que venden los superventas, la línea base</span></div>
   </div>
-  <aside class="notes">Veinte segundos. El objetivo en una frase: a cada cliente que entra en la tienda online le enseñamos diez productos, y queremos que sean los que más probabilidad tiene de comprar; se mide en compras por cada 100 visitas. El problema no se explica más: el jurado lo escribió. Después, la gráfica, que es suya: la puntuación sobre 100 de cada hora, del sábado a las 10:00 al final del domingo. La línea gruesa de arriba es el mejor equipo de cada hora, y la anotación con nuestro nombre la pusieron ellos: a las 16:00 del sábado pasamos a su referencia y ya no volvimos a bajar de ella. Desde las 13:00 del sábado, en la puntuación horaria que publica su API, fuimos el mejor equipo en 19 de las 21 horas de la práctica (las otras dos, terceros a las 06:00 y segundos a las 09:00 por una décima). Decir «casi siempre», no «siempre». Abajo, el resultado de la final, que es lo que puntúa: 2,24 compras por cada 100 visitas, frente a 2,14 de la referencia de los organizadores y 0,75 de los superventas: el triple. Son compras esperadas según el modelo oculto de la tienda, sin suerte. Si preguntan por la final en la gráfica: en el tramo sombreado de la final la línea de arriba es la del equipo que ganó, no la nuestra; nosotros ganamos la segunda hora y perdimos la primera, y en el total nos separaron 0,014 compras por cada 100 visitas (la respuesta entera está en las notas de la última diapositiva). Si preguntan por el resto: con compradores y productos nuevos, 2,62 frente a 2,20 de la referencia; 21.599 de 21.600 visitas respondidas a tiempo. (Gráfica: presentación de los organizadores; data.js, escrito por update_data.py desde la API pública; scripts/arms.py 09:00 11:00)</aside>
+  <aside class="notes">Unos 40 segundos. El objetivo en una frase: a cada cliente que entra en la tienda online le enseñamos diez productos, y queremos que sean los que más probabilidad tiene de comprar; se mide en compras por cada 100 visitas. El problema no se explica más: el jurado lo escribió. Después, la gráfica, que es suya: la puntuación sobre 100 de cada hora, del sábado a las 10:00 al final del domingo. La línea gruesa de arriba es el mejor equipo de cada hora, y la anotación con nuestro nombre la pusieron ellos: a las 16:00 del sábado pasamos a su referencia y ya no volvimos a bajar de ella. Desde las 13:00 del sábado, en la puntuación horaria que publica su API, fuimos el mejor equipo en 19 de las 21 horas de la práctica (las otras dos, terceros a las 06:00 y segundos a las 09:00 por una décima). Decir «casi siempre», no «siempre». Abajo, el resultado de la final, que es lo que puntúa: 2,24 compras por cada 100 visitas, frente a 2,14 de la referencia de los organizadores y 0,75 de los superventas: el triple. Son compras esperadas según el modelo oculto de la tienda, sin suerte. Si preguntan por la final en la gráfica: en el tramo sombreado de la final la línea de arriba es la del equipo que ganó, no la nuestra; nosotros ganamos la segunda hora y perdimos la primera, y en el total nos separaron 0,014 compras por cada 100 visitas (la respuesta entera está en las notas de la última diapositiva). Si preguntan por el resto: con compradores y productos nuevos, 2,62 frente a 2,20 de la referencia; 21.599 de 21.600 visitas respondidas a tiempo. (Gráfica: presentación de los organizadores; data.js, escrito por update_data.py desde la API pública; scripts/arms.py 09:00 11:00)</aside>
 </section>
 
-<!-- 3 · Medir antes de modelar -->
-<section class="slide" data-title="Medir antes de modelar" data-t="25">
-  <header class="furn"><span class="kick">Método / medir</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">Antes de modelar, medimos <em>qué hace comprar</em>.</h1>
-  <p class="small r" style="margin-top:26px">Cuántas veces más se compra un producto mostrado · en gris, los dos porcentajes de compra que se dividen · histórico y feedback en vivo</p>
-  <div class="bars" style="margin-top:44px;--label:640px">
-    <div class="bar us r" style="--w:55%"><div class="lab">Lo dejó en el carrito y no lo compró</div><div class="track"><div class="fill"></div><div class="val">×10<small>0,53 % frente a 0,052 %</small></div></div></div>
-    <div class="bar us r" style="--w:55%"><div class="lab">Lo acaba de ver en esta sesión</div><div class="track"><div class="fill"></div><div class="val">×10<small>0,37 % frente a 0,038 %</small></div></div></div>
-    <div class="bar r" style="--w:36.3%"><div class="lab">Va en la posición 1 y no en la 10 <span class="small">(clics)</span></div><div class="track"><div class="fill"></div><div class="val">×6,6<small>21.483 clics frente a 3.260</small></div></div></div>
-    <div class="bar r" style="--w:27.5%"><div class="lab">Es de la categoría que está mirando</div><div class="track"><div class="fill"></div><div class="val">×5<small>0,27 % frente a 0,052 %</small></div></div></div>
-    <div class="bar r" style="--w:7.7%"><div class="lab">Es de la misma subcategoría</div><div class="track"><div class="fill"></div><div class="val">×1,4<small>sobre ser solo de la misma categoría</small></div></div></div>
-    <div class="bar r" style="--w:5.5%"><div class="lab">Lo vio hace semanas</div><div class="track"><div class="fill"></div><div class="val">×1<small>ninguna señal: 0,032 % frente a 0,038 %</small></div></div></div>
+<!-- 3 · Análisis exploratorio -->
+<section class="slide" data-title="Análisis exploratorio" data-t="55">
+  <header class="furn"><span class="kick">Primero, los datos</span><span class="ticket">Skore Money</span></header>
+  <h1 class="r" style="font-size:62px">Antes de modelar, <em>qué hace hacer clic y comprar</em>.</h1>
+  <p class="small r" style="margin-top:18px">Análisis exploratorio de 2 M de sesiones y 12 M de eventos, con SQL dentro de RawTree · cuántas veces más que sin la señal (escala logarítmica)</p>
+  <div class="eda">
+    <div class="r"><div class="tagline">Lo que hace hacer clic</div><div class="bars">
+      <div class="bar us r" style="--w:71.3%"><div class="lab">La categoría que más le gusta<small>afinidad alta frente a baja</small></div><div class="track"><div class="fill"></div><div class="val">×19</div></div></div>
+      <div class="bar us r" style="--w:49.2%"><div class="lab">Ya lo ha visto en esta sesión<small>frente a cualquier otro producto</small></div><div class="track"><div class="fill"></div><div class="val">×7,1</div></div></div>
+      <div class="bar  r" style="--w:47.6%"><div class="lab">Va en la posición 1<small>frente a la posición 10</small></div><div class="track"><div class="fill"></div><div class="val">×6,6</div></div></div>
+      <div class="bar bad r" style="--w:4.0%"><div class="lab">Ya lo compró<small>en vivo: no lo quiere otra vez</small></div><div class="track"><div class="fill"></div><div class="val">×0,5</div></div></div>
+    </div></div>
+    <div class="r"><div class="tagline">Lo que hace comprar</div><div class="bars">
+      <div class="bar us r" style="--w:60.4%"><div class="lab">Un comprador que ya compra mucho<small>11 o más compras al mes frente a ninguna</small></div><div class="track"><div class="fill"></div><div class="val">×12</div></div></div>
+      <div class="bar us r" style="--w:57.2%"><div class="lab">Lo dejó en el carrito<small>0,53 % frente a 0,052 %</small></div><div class="track"><div class="fill"></div><div class="val">×10</div></div></div>
+      <div class="bar us r" style="--w:56.1%"><div class="lab">Lo acaba de ver<small>0,37 % frente a 0,038 %</small></div><div class="track"><div class="fill"></div><div class="val">×10</div></div></div>
+      <div class="bar  r" style="--w:42.3%"><div class="lab">Es de la categoría que mira<small>0,27 % frente a 0,052 %</small></div><div class="track"><div class="fill"></div><div class="val">×5</div></div></div>
+    </div></div>
   </div>
-  <p class="lead" data-step="1" style="margin-top:auto">Solo con señales, nuestra primera versión vendió lo mismo que los superventas: <b>puntuación = popularidad × señales medidas</b>.</p>
-  <aside class="notes">Todo el sistema sale de medir, y nada de esto viene en el enunciado: lo contamos nosotros con SQL dentro de RawTree, sobre 2 millones de sesiones y 12 millones de eventos. Cómo se mide: de todos los productos que se enseñaron en un carrusel, qué porcentaje se compró cuando tenían la señal y qué porcentaje cuando no; el multiplicador es la división, y los dos porcentajes van en gris junto a cada barra. Dos fuentes: el histórico (los últimos 7 días del carrusel antiguo, con el historial de cada comprador tomado solo de antes de esos 7 días, para no ver el futuro) y nuestro propio feedback en vivo. Barra a barra: carrito sin comprar, 0,53 % frente a 0,052 %, en vivo (en el histórico sale aún más, 0,54 % frente a 0,038 %, unas 14 veces); recién visto, 0,37 % frente a 0,038 %, histórico; posición, 21.483 clics en el primer hueco frente a 3.260 en el décimo, histórico; misma categoría que lo que mira, 0,27 % frente a 0,052 %, en vivo (el carrusel antiguo solo enseñaba productos de la misma categoría, así que esto solo se podía medir en vivo); misma subcategoría, ×1,4 sobre ser solo de la misma categoría, histórico; visto hace semanas, 0,032 % frente a 0,038 %: ninguna señal. Lo que más pesa son las señales del propio comprador: un carrito abandonado o algo que acaba de ver. [siguiente] La lección de nuestra primera versión, que no sale de una tabla sino de un error: ordenar solo por señales (primero lo recién visto, luego el carrito) convirtió 0,66 % en 758 visitas en vivo, lo mismo que la línea base. Al mirar por qué: un producto poco conocido que el comprador había visto recibía clic el 0,9 % de las veces; un superventas que también había visto, el 3,8 %. Un producto desconocido no se vende por haberlo visto: las señales multiplican lo atractivo que ya es. Cada multiplicador de las reglas es una de estas barras. Si preguntan por qué la regla de «recién visto» usa ×3 y no ×10: se acumula con el ×5 de categoría y el ×1,4 de subcategoría, y el valor se eligió con una prueba en vivo (ganó a ×1,5, ×10 y ×30). Y el aviso que da paso al resto: el histórico puede engañar. Según él, lo ya comprado era la mejor señal (1,23 %); en vivo fue la peor. Por eso cada medida se comprobó con el feedback real. (findings §1, §2, §4, §5; reco/recommend.py: los LIFT_*)</aside>
+  <p class="lead" data-step="1" style="margin-top:auto">De ahí la receta: <b>popularidad × señales medidas</b> para escoger candidatos, y un modelo que aprende a combinarlas.</p>
+  <aside class="notes">Unos 55 segundos. Lo primero que hicimos, el sábado por la mañana, fue un análisis exploratorio: antes de escribir un modelo, medir qué hace que alguien pulse y qué hace que compre. Todo con SQL dentro de RawTree, porque el histórico es demasiado grande para bajarlo entero: 2 millones de sesiones del carrusel antiguo y 12 millones de eventos de la tienda; solo bajamos tablas agregadas. Cada barra es una división: cuántas veces más se pulsa o se compra un producto mostrado cuando tiene esa señal que cuando no. Clics, a la izquierda: lo que más pesa es el propio comprador, la categoría que más le gusta (×19 entre afinidad alta y baja); después, que ya lo haya visto en esta sesión (×7) y la posición (el primer hueco recibe 6,6 veces los clics del décimo). Y una sorpresa: en el histórico, lo ya comprado era la mejor señal, pero en vivo lo pulsan la mitad: el comprador no quiere otra vez lo que ya tiene. Por eso no se enseña nunca. Compras, a la derecha: un comprador que ya compra mucho convierte 12 veces más que uno que no ha comprado nunca; un producto que dejó en el carrito, 10 veces; uno que acaba de ver, 10 veces; uno de la categoría que está mirando, 5 veces. Lo que no importa: la hora, el día de la semana, la marca. [siguiente] La lección: una primera versión que ordenaba solo por señales vendió lo mismo que los superventas, porque un producto desconocido no se vende por haberlo visto: las señales multiplican lo atractivo que ya es. De ahí la receta: popularidad multiplicada por señales medidas para escoger candidatos, y un modelo que aprenda a combinarlas. (avanced_data_analysis/README.md y figures/; docs/findings.md §1, §2, §4, §5)</aside>
 </section>
 
-<!-- 4 · La arquitectura -->
-<section class="slide" data-title="La arquitectura, de principio a fin" data-t="30">
-  <header class="furn"><span class="kick">Método / la arquitectura</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">El sistema, <em>de principio a fin</em>.</h1>
-  <div class="arch">
-    <div class="in r">
-      <div class="lbl">RawTree · lo que leemos</div>
-      <div class="tbls">
-        <div class="tbl"><code>shop.requests<i>cada 0,15 s</i></code><p>Quién llega y qué está mirando</p></div>
-        <div class="tbl"><code>shop.events<i>cada segundo</i></code><p>Vistas, carritos y compras</p></div>
-        <div class="tbl"><code>shop.catalog_updates<i>cada segundo</i></code><p>Precios, stock y productos nuevos</p></div>
-        <div class="tbl"><code>team_06.feedback<i>cada 2 s</i></code><p>Lo que vendió nuestro carrusel</p></div>
-      </div>
-    </div>
-    <div class="down r"><span>↓</span><span>↓</span><span>↓</span><span>↓</span></div>
-    <div class="srv r">
-      <div class="lbl"><span>Nuestro servidor · un solo proceso de Python</span><span>75 ms por visita · responde en 1 s de los 3</span></div>
-      <div class="state">
-        <div><h3>Estado en vivo</h3><p>60 días de histórico y cada evento del directo, aplicado uno a uno</p></div>
-        <div class="facets"><span><b>comprador</b> vistas, carrito, compras</span><span><b>producto</b> popularidad, precio, stock</span><span><b>tienda</b> qué se dispara ahora</span></div>
-      </div>
-      <div class="mid">↓</div>
-      <div class="flow">
-        <div><h3>1 · Reglas</h3><b>5.200 → 1.000</b><p>candidatos: lo popular × las señales del comprador</p></div>
-        <div><h3>Variables</h3><b>52 por candidato</b><p>recuentos y tasas, ningún identificador</p></div>
-        <div class="lgbm"><h3>2 · LightGBM × 2</h3><b>¿Hará clic? × ¿Lo comprará?</b><p>dos modelos de árboles (gradient boosting): 302 y 314 árboles</p></div>
-        <div><h3>Tendencias</h3><b>× la tendencia</b><p>lo que mide el detector en su subcategoría</p></div>
-        <div><h3>Reglas fijas</h3><b>10 productos</b><p>en stock, no comprados, distintos</p></div>
-      </div>
-    </div>
-    <div class="loop r"><span>simulador oculto: clic, compra</span></div>
-    <div class="gap r"><span style="left:821px">↑<small>los modelos, sin hueco</small></span><span style="left:1483px">↓</span></div>
-    <div class="base r">
-      <div>
-        <div class="lbl">Offline · entrenar y examinar</div>
-        <div class="offl">
-          <div class="tbl"><h3>Histórico y feedback</h3><p>2 M de sesiones y 14 M de eventos</p></div>
-          <div class="tbl"><h3>Se reproduce la tienda</h3><p>Con el mismo código que sirve: 3,3 M de filas</p></div>
-          <div class="tbl"><h3>Entrenar y examinar</h3><p>Dos LightGBM, tres exámenes, relevo</p></div>
-        </div>
-      </div>
-      <div>
-        <div class="lbl">RawTree · lo que escribimos</div>
-        <div class="outs">
-          <div class="tbl"><code>team_06.scratch</code><p>El porqué de cada producto</p></div>
-          <div class="tbl"><code>team_06.submissions</code><p>10 productos por visita, en lote</p></div>
-        </div>
-      </div>
-    </div>
+<!-- 4 · Nuestro workflow agéntico -->
+<section class="slide" data-title="Nuestro workflow agéntico" data-t="65">
+  <header class="furn"><span class="kick">Cómo trabajamos</span><span class="ticket">Skore Money</span></header>
+  <h1 class="r" style="font-size:62px">Nuestro <em>workflow agéntico</em>: dos agentes en bucle.</h1>
+  <svg class="loopd r" viewBox="0 0 1712 560" role="img" aria-label="El agente iterador sirve versiones en RawTree; el agente analizador lee su feedback y su marcador y devuelve qué mejora sube el score; Hugo y Javier deciden">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+    <rect x="556" y="0" width="600" height="56" rx="28" fill="var(--soft)"/>
+    <text x="856" y="36" font-size="22" text-anchor="middle" fill="var(--ink)"><tspan font-weight="600">Hugo y Javier</tspan> deciden qué se prueba y qué sirve</text>
+    <path d="M700 56 C 560 70 400 70 330 112" class="arw dash"/><path d="M1012 56 C 1150 70 1310 70 1382 112" class="arw dash"/>
+    <rect x="0" y="118" width="660" height="350" rx="20" class="card"/>
+    <text x="40" y="168" class="ck">construye y prueba</text>
+    <text x="40" y="214" font-size="38" font-weight="600" fill="var(--ink)">Agente iterador</text>
+    <text x="40" y="268" font-size="21" fill="var(--muted)">Propone una mejora: una variable, un modelo, una regla</text><text x="40" y="308" font-size="21" fill="var(--muted)">Entrena reproduciendo la tienda, sin ver el futuro</text><text x="40" y="348" font-size="21" fill="var(--muted)">La valida en la última semana, que el modelo no vio</text><text x="40" y="388" font-size="21" fill="var(--muted)">La sirve como una versión más, sin cortar el servicio</text><text x="40" y="428" font-size="21" fill="var(--muted)">Busca la que generaliza a clientes y productos nuevos</text>
+    <rect x="1052" y="118" width="660" height="350" rx="20" class="card"/>
+    <text x="1092" y="168" class="ck">mide y decide</text>
+    <text x="1092" y="214" font-size="38" font-weight="600" fill="var(--ink)">Agente analizador</text>
+    <text x="1092" y="268" font-size="21" fill="var(--muted)">Lee el marcador y el feedback de cada versión, con SQL</text><text x="1092" y="308" font-size="21" fill="var(--muted)">Compara cada mejora con la que sirve, en las mismas horas</text><text x="1092" y="348" font-size="21" fill="var(--muted)">La mide contra el ruido, con una regla escrita antes</text><text x="1092" y="388" font-size="21" fill="var(--muted)">Da el veredicto: se queda o se descarta, y por qué</text><text x="1092" y="428" font-size="21" fill="var(--muted)">Lo apunta todo: qué subió el score y qué no</text>
+    <rect x="751" y="208" width="210" height="170" rx="18" fill="var(--accent)"/>
+    <text x="856" y="262" font-size="34" font-weight="600" text-anchor="middle" fill="#fff">RawTree</text>
+    <text x="856" y="304" font-size="18" text-anchor="middle" fill="rgb(255 255 255 / 85%)" font-family="var(--mono)">submissions</text>
+    <text x="856" y="332" font-size="18" text-anchor="middle" fill="rgb(255 255 255 / 85%)" font-family="var(--mono)">feedback</text>
+    <text x="856" y="360" font-size="18" text-anchor="middle" fill="rgb(255 255 255 / 85%)" font-family="var(--mono)">marcador</text>
+    <path d="M664 300 H743" class="arw"/><path d="M963 300 H1044" class="arw"/>
+    <text x="705" y="284" class="al" text-anchor="middle">versiones</text>
+    <text x="1003" y="284" class="al" text-anchor="middle">datos</text>
+    <path d="M1382 470 C 1382 548 1250 548 856 548 C 462 548 330 548 330 478" class="arw"/>
+    <text x="856" y="532" font-size="22" text-anchor="middle" fill="var(--accent)">qué sube el score, y si generaliza</text>
+  </svg>
+  <div class="trio goal r" style="margin-top:auto">
+    <div><b>40</b><span>versiones servidas en directo en 24 horas, cada una con su nombre</span></div>
+    <div><b>0,12</b><span>lo que difieren dos copias idénticas en media hora: el ruido, medido antes de decidir</span></div>
+    <div><b>Claude Code</b><span>los dos agentes; el repositorio es su memoria: reglas, medidas y cada despliegue</span></div>
   </div>
-  <aside class="notes">La arquitectura entera en una imagen; recorrerla de arriba abajo en 30 segundos. Arriba, lo que leemos de RawTree, cada cosa con su cadencia: las visitas cada 0,15 s (cuatro lectores escalonados, para que una llamada lenta no retrase a las demás), los eventos de la tienda y los cambios de catálogo cada segundo, y nuestro propio feedback cada dos. En el centro, nuestro servidor: un solo proceso de Python (reco/serve.py), sin ventana y con un supervisor que lo relanza. Mantiene un estado en vivo: los 60 días de histórico más cada evento del directo aplicado uno a uno (reco/state.py), así que para cada comprador sabe qué ha visto, qué tiene en el carrito y qué ha comprado; para cada producto, su popularidad, precio y stock; y para la tienda, qué subcategoría está en tendencia. Con eso, cada visita pasa por cinco pasos. Uno, las reglas se quedan con 1.000 candidatos de los 5.200 productos. Dos, para cada candidato se calculan 52 variables (reco/features.py): describen el producto, cómo encaja con la sesión y cómo encaja con el comprador; son recuentos, tasas y coincidencias, nunca un identificador, y por eso sirve para compradores y productos que no ha visto. Tres, el corazón: dos modelos LightGBM, que son conjuntos de árboles de decisión entrenados uno detrás de otro, cada uno corrigiendo los errores de los anteriores (gradient boosting). Uno estima la probabilidad de clic (302 árboles) y otro la de compra tras el clic (314 árboles); se multiplican y se ordena por el resultado. Árboles de hasta 31 hojas y profundidad 6, tasa de aprendizaje 0,05, y el número de árboles lo elige la validación. ¿Por qué LightGBM? Los datos son una tabla de números, que es donde mejor funcionan los árboles; puntúa 1.000 candidatos con los dos modelos en unos 50 ms; y se puede abrir: models/v9/click.txt es texto legible y cada variable se explica. Cuatro, si el detector ve una subcategoría en tendencia, sus productos se multiplican por lo que está midiendo. Cinco, las reglas fijas: en stock, nunca lo ya comprado, diez distintos. Abajo a la derecha, lo que escribimos: las respuestas en lote, por cuatro conexiones y con reenvío a los 0,6 s si una se atasca, y en scratch la razón de cada producto. El simulador decide clic y compra y eso vuelve como feedback, arriba a la derecha: el bucle se cierra. Abajo a la izquierda, el ciclo offline: se reproduce la tienda evento a evento con el mismo código que sirve en vivo (una única función featurize), de modo que el modelo ve en directo exactamente los números con los que se entrenó; salen 3,3 millones de filas, una por producto mostrado; se entrenan los dos modelos reservando la última semana del histórico y el último cuarto de nuestro feedback; y la versión nueva entra por el relevo sin hueco. Esto es, pieza por pieza, lo que sirvió la final: la versión skore_money_v31, sola desde el domingo a las 06:34. Los tiempos del rótulo son los del domingo por la mañana: ordenar una lista, unos 75 ms con el servidor en marcha (50 ms medido aparte); la respuesta llega a 1,05 s de mediana, 1,6 s el 95 % y 2,0 s el 99 %; el resto es red. Cómo se entrenan los dos modelos es la diapositiva siguiente. Si preguntan por el «tercer modelo» que aparece en el repositorio: se probó toda la noche y no entró (diapositiva 7). (reco/serve.py, reco/state.py, reco/features.py, reco/recommend.py; offline/build_dataset.py, offline/train.py; findings §9, §14)</aside>
+  <aside class="notes">Lo pidió el jurado: cómo usamos los agentes. Unos 65 segundos. Trabajamos con Claude Code, y no como un asistente al que se le pide código, sino con dos papeles separados que forman un bucle. El agente iterador construye y prueba: propone una mejora (una variable nueva, otro modelo, un peso, una regla), entrena reproduciendo la tienda evento a evento sin ver nunca el futuro, la valida en la última semana del histórico, que el modelo no ha visto, y si pasa la sirve como una versión más, con su propio nombre (model_version) y sin cortar el servicio. Lo que busca no es el mejor número de hoy sino lo que generaliza: la final traía clientes, productos y tendencias nuevos, así que el modelo nunca usa un identificador, solo recuentos y coincidencias. El agente analizador mide y decide: lee con SQL el marcador de los organizadores y nuestro feedback de cada versión, compara cada mejora con la que está sirviendo en las mismas horas, la pone frente al ruido (medimos que dos copias idénticas del mismo modelo difieren 0,12 en media hora, así que un resultado de media hora no prueba nada) y da el veredicto con una regla escrita antes de mirar los datos: se queda o se descarta, y por qué. Lo apunta todo (realtime_analyisi_leaderboard/experiments.md, una fila por prueba) y eso vuelve al iterador: qué sube el score y qué no generaliza. Ejemplo: un tercer modelo ganaba un 2,5 % en la validación offline; el analizador lo midió toda la noche en vivo, perdía, y no entró en la final. Nosotros dos, arriba: el agente propone y mide, pero qué se prueba y qué sirve la final lo decidimos Hugo y Javier. Abajo: unas 40 versiones medidas en directo en 24 horas, algo que dos personas a mano no hacen. Y el agente no recuerda nada entre sesiones, así que la memoria es el repositorio: AGENTS.md con la misión y nueve reglas (una sola respuesta por visita, la clave nunca sale, nada cambia en el servidor sin uno de los dos), docs/findings.md con cada medida y su fecha, y un commit por despliegue. Quién hizo qué: Javier dirigió al iterador y operó el servidor, incluida la noche y la final; Hugo preparó el repositorio para que los agentes supieran qué hacer desde el primer minuto y dirigió la revisión desde su propia rama. (AGENTS.md; realtime_analyisi_leaderboard/; docs/final-round.md; best_model.md)</aside>
 </section>
 
-<!-- 5 · Cómo se entrenan -->
-<section class="slide" data-title="Cómo se entrenan los modelos" data-t="35">
-  <header class="furn"><span class="kick">Método / el entrenamiento</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">Cómo se entrenan: <em>reproduciendo la tienda</em>.</h1>
-  <p class="small r" style="margin-top:26px">Cada decisión del entrenamiento, y por qué la tomamos</p>
-  <ul class="list" style="--key:330px;--pad:15px;--fs:28px;margin-top:30px">
-    <li class="r"><span class="k">3,3 M de filas</span><span>Una por producto enseñado, del carrusel antiguo y de nuestro feedback. El feedback cuenta ×5: es el simulador real.</span></li>
-    <li class="r"><span class="k">El mismo código</span><span>La tienda se reproduce evento a evento con la función que sirve en vivo: nada ve el futuro, y en directo el modelo recibe los mismos números.</span></li>
-    <li class="r"><span class="k">52 variables, ningún id</span><span>Recuentos, tasas y coincidencias. Los atributos de la descripción dieron el mayor salto: de 1,81 a 2,42.</span></li>
-    <li class="r"><span class="k">Dos LightGBM</span><span>¿Hará clic? × ¿comprará tras el clic? Hay tres veces más clics que compras: el primero aprende de más datos.</span></li>
-    <li class="r"><span class="k">La posición</span><span>Se entrena sabiendo en qué hueco se enseñó cada producto y se sirve como si todos fueran el primero: no premia lo que ya iba arriba.</span></li>
-    <li class="r"><span class="k">El futuro, reservado</span><span>Los últimos 7 días del histórico y el último cuarto del feedback eligen cuántos árboles. Después se reentrena con todo.</span></li>
-  </ul>
-  <aside class="notes">Lo que el jurado pidió expresamente: cómo se entrenan los modelos, y el porqué de cada decisión. Elegir tres filas y decirlas; las demás, si preguntan. Los datos (offline/build_dataset.py): una fila por cada producto que se enseñó en un carrusel, con si hubo clic y si hubo compra. Dos orígenes: el carrusel antiguo de los 60 días de histórico (2,9 millones de filas: todas las visitas con clic y un 12 % de las demás, con su peso corregido) y nuestro propio feedback en vivo (280.000 filas en el primer modelo, más en cada reentreno). Una fila en vivo cuenta como cinco del histórico porque viene del simulador real y es el único sitio donde hay recomendaciones de otras categorías y saciedad. Las filas de productos que el comprador ya había comprado se quitan: en vivo nunca se enseñan. El mismo código: la tabla se construye reproduciendo la tienda en orden temporal, los 12 millones de eventos intercalados con las visitas, manteniendo al día lo que se sabe de cada comprador, y llamando a la misma función featurize() que usa el servidor (reco/features.py). Dos consecuencias: ninguna fila conoce el futuro, y no hay diferencia entre lo que el modelo ve al entrenar y al servir, que es la forma clásica en que un recomendador que va bien offline falla en vivo. Lo comprobamos comprador a comprador: 378 de 400 estados idénticos, y los otros 22 tenían eventos nuevos. Las variables: 52 en el modelo que sirve, en tres grupos: el producto (popularidad, precio, tasas, si es nuevo, si está rebajado, sus atributos), cómo encaja con la sesión y cómo encaja con el comprador. Ninguna es un identificador: por eso sirve para compradores y productos que no ha visto. El mayor hallazgo: cada descripción del catálogo nombra 2 de 20 atributos, y dentro de una subcategoría los atributos de lo que el comprador tocó adivinan su próxima compra (AUC 0,71 con lo del carrito, 0,69 con lo comprado, 0,66 con lo solo mirado) mejor que «quien compró X compró Y» (0,63); la marca, nada (0,50). En vivo, de 1,81 a 2,42 compras por 100 visitas. Y quitar las dos variables de marca mejoró todas las filas de la validación. Dos modelos (offline/train.py): P(clic) × P(compra | clic), dos LightGBM, que son conjuntos de árboles de decisión entrenados uno tras otro, cada uno corrigiendo los errores de los anteriores (gradient boosting). 302 y 314 árboles de hasta 31 hojas y profundidad 6, tasa de aprendizaje 0,05, mínimo 300 ejemplos por hoja. ¿Por qué LightGBM? Los datos son una tabla de números, donde mejor van los árboles; puntúa 1.000 candidatos en unos 50 ms; y se puede abrir: models/v9/click.txt es texto. ¿Por qué dos? Un único modelo de «compra» salió peor en vivo: 2,12 frente a 2,37. La posición: el primer hueco recibe 6,6 veces los clics del décimo, así que un modelo ingenuo aprendería «lo de arriba se pulsa». El hueco es una variable al entrenar; al servir, todos los candidatos se puntúan como si fueran en el primero. Y al validar, cada clic pesa el inverso de la atención de su hueco. La validación: se reservan los últimos 7 días del histórico y el último cuarto de nuestro feedback; ahí se elige el número de árboles y sale el informe (entre los 10 enseñados, ¿en qué puesto pone el modelo el que se compró?). Después se reentrena con todos los datos y esos árboles más un 10 %. Lo que el modelo no hace: no se reentrena solo en directo. En directo cambian el estado y el detector; un modelo nuevo se entrena aparte y entra por relevo, después de los tres exámenes de la diapositiva siguiente. (findings §9, §13, §14; offline/build_dataset.py, offline/train.py, reco/features.py)</aside>
+<!-- 5 · La arquitectura -->
+<section class="slide" data-title="La arquitectura" data-t="60">
+  <header class="furn"><span class="kick">La arquitectura final</span><span class="ticket">Skore Money</span></header>
+  <h1 class="r" style="font-size:62px">El modelo final, <em>de un vistazo</em>.</h1>
+  <svg class="archd r" viewBox="0 0 1712 740" role="img" aria-label="Arquitectura: el estado en vivo (comprador, producto, tienda) alimenta, para cada visita, la recuperación de 1.000 candidatos, 52 variables, dos LightGBM que se multiplican, el lift de tendencia y las reglas fijas, hasta los 10 productos">
+    <defs><marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker></defs>
+    <!-- right tower: one request -->
+    <text x="1000" y="30" class="io">10 productos → team_06.submissions</text>
+    <path d="M1000 72 V46" class="ar"/>
+    <rect x="720" y="72" width="560" height="58" rx="10" fill="#e2d5ee" class="blk"/><text x="1000.0" y="97.0" class="bt">Reglas fijas</text><text x="1000.0" y="122.0" class="bs">en stock · nunca lo ya comprado · 10 distintos</text>
+    <path d="M1000 166 V132" class="ar"/>
+    <rect x="696" y="166" width="608" height="398" rx="16" class="cont"/>
+    <text x="1324" y="482" class="nx" text-anchor="start" style="text-anchor:start">×1.000 <tspan font-weight="400" fill="var(--muted)" font-size="20">candidatos</tspan></text>
+    <rect x="720" y="186" width="560" height="58" rx="10" fill="#d6ecca" class="blk"/><text x="1000.0" y="211.0" class="bt">× Tendencia</text><text x="1000.0" y="236.0" class="bs">el lift de la subcategoría que se dispara</text>
+    <circle cx="1000" cy="276" r="15" class="blk" fill="#fff"/><path d="M989 265L1011 287M1011 265L989 287" stroke="var(--ink)" stroke-width="2"/>
+    <path d="M1000 261 V246" class="ar"/>
+    <path d="M855 304 V284 H983" class="ar"/><path d="M1145 304 V284 H1017" class="ar"/>
+    <rect x="720" y="306" width="270" height="62" rx="10" fill="#c8e6f5" class="blk"/><text x="855.0" y="333.0" class="bt">LightGBM</text><text x="855.0" y="358.0" class="bs">P(clic) · 302 árboles</text>
+    <rect x="1010" y="306" width="270" height="62" rx="10" fill="#c8e6f5" class="blk"/><text x="1145.0" y="333.0" class="bt">LightGBM</text><text x="1145.0" y="358.0" class="bs">P(compra | clic) · 314</text>
+    <path d="M1000 404 V386 H855 V370" class="ar"/><path d="M1000 386 H1145 V370" class="ar"/>
+    <rect x="720" y="404" width="560" height="58" rx="10" fill="#f5f2c0" class="blk"/><text x="1000.0" y="429.0" class="bt">52 variables por candidato</text><text x="1000.0" y="454.0" class="bs">recuentos, tasas y coincidencias: nunca un id</text>
+    <path d="M1000 490 V464" class="ar"/>
+    <rect x="720" y="490" width="560" height="58" rx="10" fill="#fcdcbc" class="blk"/><text x="1000.0" y="515.0" class="bt">Recuperación</text><text x="1000.0" y="540.0" class="bs">popularidad × señales medidas: 5.200 → 1.000</text>
+    <path d="M1000 606 V566" class="ar"/>
+    <rect x="720" y="606" width="560" height="58" rx="10" fill="#fbd5da" class="blk"/><text x="1000.0" y="631.0" class="bt">Visita</text><text x="1000.0" y="656.0" class="bs">quién es, qué página, qué acaba de ver</text>
+    <path d="M1000 712 V666" class="ar"/>
+    <text x="1000" y="732" class="io">shop.requests · cada 0,15 s</text>
+    <!-- left tower: the live state -->
+    <rect x="86" y="300" width="488" height="264" rx="16" class="cont"/>
+    <text x="110" y="290" class="ck">estado en vivo</text>
+    <rect x="110" y="320" width="440" height="58" rx="10" fill="#d6ecca" class="blk"/><text x="330.0" y="345.0" class="bt">Tienda</text><text x="330.0" y="370.0" class="bs">detector de tendencias, cada segundo</text>
+    <rect x="110" y="404" width="440" height="58" rx="10" fill="#fcdcbc" class="blk"/><text x="330.0" y="429.0" class="bt">Producto</text><text x="330.0" y="454.0" class="bs">popularidad, precio, stock</text>
+    <rect x="110" y="490" width="440" height="58" rx="10" fill="#fcdcbc" class="blk"/><text x="330.0" y="515.0" class="bt">Comprador</text><text x="330.0" y="540.0" class="bs">vistas, carrito, compras</text>
+    <path d="M330 606 V566" class="ar"/>
+    <rect x="110" y="606" width="440" height="58" rx="10" fill="#fbd5da" class="blk"/><text x="330.0" y="631.0" class="bt">Cada evento, uno a uno</text><text x="330.0" y="656.0" class="bs">60 días de histórico + el directo</text>
+    <path d="M330 712 V666" class="ar"/>
+    <text x="330" y="732" class="io">shop.events · catalog_updates</text>
+    <!-- state → features, detector → trend -->
+    <path d="M576 476 H630 V433 H716" class="ar"/>
+    <path d="M552 349 H650 V215 H716" class="ar"/>
+    <!-- feedback closes the loop -->
+    <path d="M780 22 H330 V296" class="ar dash"/>
+    <text x="545" y="52" class="fb" text-anchor="middle">el simulador: clic y compra → feedback, cada 2 s</text>
+    <!-- offline -->
+    <path d="M1300 306 h16 v62 h-16" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+    <text x="1336" y="318" class="ot" font-weight="600" fill="var(--ink)">Entrenados offline</text>
+    <text x="1336" y="346" class="ot">la tienda reproducida evento a</text>
+    <text x="1336" y="372" class="ot">evento, con el mismo código:</text>
+    <text x="1336" y="398" class="ot">3,3 M filas; validados en una</text>
+    <text x="1336" y="424" class="ot">semana que no vieron</text>
+    <text x="1336" y="540" class="ot" fill="var(--accent)">75 ms por visita</text>
+    <text x="1336" y="566" class="ot">respuesta en ≈ 1 s</text>
+  </svg>
+  <aside class="notes">Unos 60 segundos, de abajo arriba, como el dibujo del Transformer. Dos columnas. La de la izquierda es el estado en vivo: cada evento de la tienda (vistas, carritos, compras, cambios de precio y de stock) se aplica uno a uno sobre los 60 días de histórico, así que en todo momento sabemos, para cada comprador, qué ha visto, qué tiene en el carrito y qué ha comprado; para cada producto, su popularidad, precio y stock; y para la tienda, qué subcategoría se está disparando (el detector de tendencias, cada segundo). La de la derecha es lo que pasa con cada visita, tres por segundo. Entra la visita: quién es, en qué página está y qué acaba de ver. Recuperación: popularidad por las señales medidas en el análisis exploratorio, y nos quedamos con 1.000 de los 5.200 productos. Para cada uno de esos 1.000 candidatos (el ×1.000 es el «N×» del dibujo original) se calculan 52 variables con el estado de la izquierda: recuentos, tasas y coincidencias, nunca un identificador, y por eso funciona con clientes y productos nuevos. El corazón: dos modelos LightGBM, conjuntos de árboles de decisión; uno estima la probabilidad de clic y el otro la de compra una vez pulsado, y se multiplican: es la probabilidad de compra, que es lo que puntúa. Encima, si el detector ve una subcategoría disparada, sus productos se multiplican por lo que está midiendo (una tendencia vendía ×8 en nuestro carrusel). Arriba, las reglas fijas: en stock, nunca lo ya comprado, diez distintos. Y salen los diez productos a RawTree. La línea discontinua cierra el bucle: el simulador decide clic y compra, eso vuelve como feedback cada dos segundos y actualiza el estado. A la derecha, de dónde salen los modelos: se entrenan offline reproduciendo la tienda evento a evento con el mismo código que sirve, 3,3 millones de filas, y se validan en una semana que no vieron. Todo esto ordena una visita en unos 75 ms y responde en un segundo de los tres. Es exactamente lo que sirvió la final, la versión skore_money_v31. (reco/serve.py, reco/state.py, reco/features.py, reco/recommend.py; offline/build_dataset.py, offline/train.py; findings §9, §14, §16)</aside>
 </section>
 
-<!-- 6 · Tres exámenes -->
-<section class="slide" data-title="Tres exámenes" data-t="30">
-  <header class="furn"><span class="kick">Método / validación offline</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">Cada idea pasa <em>tres exámenes</em>.</h1>
-  <div class="cols" style="grid-template-columns:1fr 1fr;gap:80px;margin-top:44px">
-    <ul class="list" style="--key:216px;--pad:20px;--fs:28px">
-      <li class="r"><span class="k">1 · Offline</span><span>Con datos guardados: se reserva el futuro y la tienda se reproduce en orden. Ningún dato ve lo que viene después.</span></li>
-      <li class="r"><span class="k">2 · Juez rápido</span><span>¿Estaba en la lista lo que el comprador acabó comprando en la tienda? 2.384 compras que ningún modelo eligió.</span></li>
-      <li class="r"><span class="k">3 · En vivo</span><span>Cada versión, con la métrica de los organizadores. Dos versiones idénticas difieren 0,12 en media hora: ese es el ruido.</span></li>
-    </ul>
-    <div class="r">
-      <p class="small" style="margin-bottom:22px">El mismo paso (enseñar al modelo los atributos de los productos), visto por los tres</p>
-      <div class="judges">
-        <div><div><h3>Offline</h3><p>la compra, entre sus 3 primeros</p></div><div class="ft">40,9<small>%</small><i>→</i><b>60,7<small>%</small></b></div></div>
-        <div><div><h3>Juez rápido</h3><p>la próxima compra, entre sus 10</p></div><div class="ft">10,1<small>%</small><i>→</i><b>12,8<small>%</small></b></div></div>
-        <div><div><h3>En vivo</h3><p>compras por 100 visitas</p></div><div class="ft">1,81<i>→</i><b>2,35</b></div></div>
-      </div>
-    </div>
-  </div>
-  <p class="lead" data-step="1" style="margin-top:auto">Si no coinciden, <b>manda el directo</b>. Y la regla se escribe antes de mirar: una versión nueva solo entra si gana por más del doble del ruido.</p>
-  <aside class="notes">Criterio del jurado: método validado offline. Tres exámenes, de más rápido a más fiable. Uno, offline: la tabla de entrenamiento se construye reproduciendo la tienda evento a evento con el mismo código que sirve en vivo (una única función featurize), así que no hay fuga del futuro ni diferencia entre entrenar y servir; se reservan la última semana del histórico y el último cuarto de nuestro feedback, y se corrige la posición en que se mostró cada producto. De la v5 a la v8 la compra reservada pasa del 41 % al 61 % entre los 3 primeros (197 compras). Dos, el juez rápido: un A/B necesita horas, pero el 10 % de nuestras visitas va seguido, en media hora, de una compra de ese comprador en la tienda. Ningún modelo eligió ese producto, así que la comparación es limpia y se apoya en miles de compras: reproducimos el stream y preguntamos a cada modelo si lo tenía entre sus 10. Reglas 7,5 %, v5 10,1 %, v8 12,8 %: ordena las versiones igual que el vivo, así que una idea que no lo mueve no merece una variante. Tres, en vivo: cada versión es una variante con su model_version, repartida por un hash de la visita, y se juzga con el número de los organizadores (scripts/arms.py): reglas 1,45, v5 1,81, v8 2,35; la referencia, 2,06. Y medimos el ruido: dos variantes con el mismo código difieren 0,12 en media hora (y 15 frente a 29 compras reales); tres idénticas, en un cuarto de hora, 1,92, 2,40 y 2,59. Una ventaja menor de 0,15 es un empate. [siguiente] Los números offline criban ideas; el directo decide. Y la regla de decisión está escrita antes de leer los datos (docs/final-round.md): la versión probada se queda salvo que otra le saque al menos dos errores estándar en toda la noche, y 0,15 puntos, sin perder en los minutos de tendencia. El error estándar no sale de una fórmula: es la dispersión medida entre variantes que corrían el mismo código. El mejor ejemplo de «manda el directo» es de esta misma noche: un tercer modelo ganaba un 2,5 % (± 1,1) en listas reservadas y en vivo, con 25.500 visitas por lado, leyó un 4,3 % menos (± 2,5). No entró en la final; es la última fila de la diapositiva siguiente, la de las ideas que no pasaron. Si preguntan por el paso del ejemplo: «enseñar al modelo los atributos» es contar cuántos de los atributos de un producto coinciden con los de lo que el comprador vio, metió al carrito o compró. (findings §6, §9, §13, §14, §15, §17, §19, §20, §23; offline/train.py, offline/next_purchase.py; best_model.md; docs/final-round.md)</aside>
-</section>
-
-<!-- 7 · Lo que no funcionó -->
-<section class="slide" data-title="Lo que no funcionó" data-t="20">
-  <header class="furn"><span class="kick">Método / lo que descartamos</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">Lo que <em>no funcionó</em> también está medido.</h1>
-  <p class="small r" style="margin-top:26px">Seis ideas razonables que no pasaron los exámenes, y el número que las tumbó</p>
-  <ul class="list" style="--key:540px;--pad:16px;--fs:29px;margin-top:34px">
-    <li class="r"><span class="k">Las marcas que ya compró</span><span>En bruto parecía un ×2,2. En vivo no sumó: 1,70 frente a 1,81 sin ellas.</span></li>
-    <li class="r"><span class="k">Dar 20 veces más peso a lo de hoy</span><span>Brilló una hora. En toda la tarde, con compradores nuevos: 2,66 frente a 2,96.</span></li>
-    <li class="r"><span class="k">Un modelo para cada tipo de visita</span><span>+0,23 sobre la referencia. Con un solo modelo para todos, +0,38.</span></li>
-    <li class="r"><span class="k">Reentrenar con más datos y variables</span><span>Empataba offline. En vivo perdió con los compradores conocidos: 1,76 frente a 1,99.</span></li>
-    <li class="r"><span class="k">«Quien compró esto compró aquello»</span><span>×1,2 si solo se descuenta la posición. ×1,0 si se descuenta lo que el modelo ya predice.</span></li>
-    <li class="r"><span class="k">Un tercer modelo que reordena los diez</span><span>Offline, +2,5 % de compras. En vivo, toda la noche: −4 %. No entró en la final.</span></li>
-  </ul>
-  <p class="lead" data-step="1" style="margin-top:auto">La final la sirvió el modelo del sábado por la tarde, más las tendencias: <b>nada de lo que probamos después lo superó</b>.</p>
-  <aside class="notes">Cierra el criterio de método: no solo lo que funcionó. Elegir dos filas y contarlas (la última es la mejor); las demás están para las preguntas. Marcas: en los datos en bruto, un producto de una marca que el comprador ya compró se vende 2,2 a 2,5 veces más; la versión que lo usaba (v6) hizo 1,70 frente a 1,81 de la anterior, y con los atributos dentro la marca no añade nada. Peso ×20 a lo de hoy (v9w): la primera hora hizo 3,21 en visitas frías y parecía la mejor; en toda la tarde, 2,66 frente a 2,96 de la v9. Tres medidas en contra. Un modelo por tipo de visita (uno para las frías, otro para el resto): +0,23 sobre la referencia en 7.218 visitas, frente a +0,38 de la v9 para todos. Más datos y más variables (v16: todo el sábado, 57 variables): igual o mejor en los dos exámenes offline, y en vivo perdió con compradores conocidos, 1,76 frente a 1,99 con 8.150 visitas cada una, 3,2 errores estándar. La v9b (mismas variables, más datos) empató: el problema eran las variables de más, no los datos. Co-compra, la señal de manual: «quien compró esto también compró aquello». Comparando solo productos en la misma posición parecía un ×1,2 y se repetía en dos ventanas; al comparar además con lo que la v9 ya predice para cada producto queda en ×1,04 en clics y ×0,97 en compras: el modelo ya lo tiene, a través de atributos y subcategorías. Lo habíamos anotado como hallazgo y lo retiramos. Con ese control (mantener igual lo que el modelo ya predice) probamos diez señales en 30.893 listas que la v9 no había visto; descontando solo la posición habríamos «encontrado» cuatro, y con el control bueno pasó una: los productos añadidos durante el evento, que un comprador conocido compra más de lo que la v9 espera (37 % tras un clic, frente a 26 %). La probamos en vivo toda la noche (×1,5, variante v38): −0,06, un error estándar por debajo. Tampoco entró. El tercer modelo, la fila que hay que contar: lo entrenamos no con carruseles sino con lo que 153.580 compradores acabaron comprando en la tienda media hora después de un momento como este, y lo usamos solo para reordenar los diez que eligen los otros dos, que es justo lo que se puede medir offline porque esos diez sí se enseñaron. En 38.627 listas reservadas: +2,5 % de compras (± 1,1). En vivo, de 01:46 a 06:33 del domingo, cruzado con la otra pregunta y con 25.500 visitas por lado: −0,10 compras por 100 visitas, un 4,3 % menos (± 2,5), 1,7 errores estándar por debajo. Las dos medidas están a 2,5 errores estándar una de otra. Por qué falla la medida offline: juzgar un orden nuevo con listas que se enseñaron en otro orden supone que un producto atrae igual sea lo que sea lo que tiene alrededor, y que nuestra curva de atención es la del simulador. Sirvió para elegir qué probar y se equivocó en el tamaño; cuando no coinciden, decide el directo. A las 06:34, con dos rivales empatados con nosotros y la mitad del tráfico en el lado que perdía, todo el tráfico volvió a la versión probada. [siguiente] La frase final: la final la sirvió skore_money_v31, que es la v9 (en directo desde el sábado a las 16:41) más el empujón de tendencias (sábado, 21:35). Una treintena de versiones después, ninguna la superó por más que el ruido; muchas empatan. No es que no lo intentáramos: es que lo medimos. Otras cosas medidas y dejadas fuera, por si preguntan: subir lo rebajado (la compra queda en el mismo puesto con cualquier fuerza: 0,384 de rango recíproco); la repetición, la mañana de la final (un producto enseñado diez veces vale la mitad, pero sigue valiendo más que lo que tiene debajo: reordenar por ello pierde un 2,4 %); y la co-compra con el carrito para compradores nuevos, la única señal colaborativa que añade algo (+0,6 % ± 0,5), que exigía una tabla de 5.000 × 5.000 por id de producto, vacía para los productos nuevos, la noche antes de la final. Todas las pruebas del fin de semana, con lo que dio y lo que costó cada una, están en realtime_analyisi_leaderboard/experiments.md. (findings §15, §17, §20, §21, §22, §23; best_model.md)</aside>
-</section>
-
-<!-- 8 · Aprender del directo -->
-<section class="slide" data-title="Aprender del directo" data-t="35">
-  <header class="furn"><span class="kick">Aprender del directo</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">El sistema aprende <em>mientras sirve</em>.</h1>
-  <div class="cols" style="grid-template-columns:.92fr 1fr;gap:64px;margin-top:44px">
-    <div class="r" style="display:flex;flex-direction:column;min-height:0">
-      <div class="legend"><span><i style="background:var(--us-ink)"></i>Skore Money</span><span><i style="background:var(--ref)"></i>Referencia</span><span><i style="background:var(--neutral-ink)"></i>Superventas</span></div>
-      <div style="flex:1;min-height:0"><svg id="trend" viewBox="0 0 900 590" preserveAspectRatio="xMinYMin meet"></svg></div>
-      <p class="small" style="margin-top:8px" id="trend-cap">Compras por 100 visitas · clasificación pública de la ronda de práctica<br>cada marca, un cambio de versión en directo</p>
-    </div>
-    <ul class="list" style="--key:240px;--pad:15px;--fs:28px">
-      <li class="r"><span class="k">Feedback</span><span>En el histórico, lo ya comprado era la mejor señal. En vivo: 1 compra en 10.497 impresiones. Ya no se enseña.</span></li>
-      <li class="r"><span class="k">Exploración</span><span>En práctica, un 20 % de listas barajadas: datos sin sesgo, a cambio de un cuarto de las ventas.</span></li>
-      <li class="r"><span class="k">Tendencias</span><span>Qué subcategoría se dispara, y cuánto: la detectamos a los 41 segundos.</span></li>
-      <li class="r"><span class="k">Cambios de precio</span><span>El precio se relee cada segundo. Una rebaja del 19 % vende ×1,2 en la tienda; subirla más en la lista no mejora nada.</span></li>
-      <li class="r"><span class="k">Arranque en frío</span><span>Comprador nuevo: el 90 % ya ha hecho algo en directo. Producto nuevo: espera 20 minutos, antes nadie lo pulsa.</span></li>
-    </ul>
-  </div>
-  <aside class="notes">Criterio del jurado: aprender del stream. Las cinco filas son las palabras de su propia rúbrica; decir una frase de cada una. Feedback: lo primero que nos enseñó, en la primera hora, fue la saciedad. En el histórico, un producto ya comprado se vuelve a comprar el 1,23 % de las veces, la mejor señal de todas (32 veces un producto cualquiera); en nuestro carrusel, el 0,01 %: 1 compra en 10.497 impresiones. El histórico y la tienda en vivo se contradicen, y un modelo entrenado tal cual con el histórico recomendaría justo lo que ya no quieren. De ahí la regla fija de no enseñar nunca lo ya comprado; sus compras se quedan como pista de sus gustos. Como las ventas del carrusel no aparecen en los eventos de la tienda, las seguimos desde nuestro feedback cada dos segundos. Además el estado se reconstruye del stream cada segundo y los modelos se entrenan con nuestro propio feedback (280.000 filas en la v9). La final continúa el mundo del sábado (lo dijeron los organizadores el domingo): lo que alguien compró sigue contando, y nuestro estado ya lo tenía por las tres vías: histórico, eventos de la tienda y nuestro feedback. Exploración: desde las 14:57 del sábado, un 20 % de las visitas (y luego un 10 %) recibía 10 productos al azar de los 20 mejores del modelo, en orden aleatorio. Compra dos cosas que el resto no da: ver qué pasa con productos que el modelo no habría puesto arriba, y separar la posición de la calidad. Costaba entre un cuarto y un tercio de las ventas de esas visitas (2,35 → 1,76), y la ronda de práctica no puntúa: era el momento de pagarlo. Apagada antes de la final. Tendencias: tienen su diapositiva, la siguiente. Cambios de precio: una promoción cada tres horas, de un 17 a un 20 % sobre 500 a 665 productos durante dos horas; en la tienda los rebajados venden entre ×1,2 y ×1,5 de su cuota anterior. El catálogo se relee cada segundo y el modelo tiene una variable «rebaja». Y comprobamos si había que hacer más: en 38.629 listas, lo rebajado vende 1,06 ± 0,14 veces lo que la v9 predice, y multiplicar su puntuación por el descuento deja la compra en el mismo puesto con cualquier fuerza. No añadimos nada, y lo decimos: es un efecto pequeño al lado de una tendencia. Arranque en frío: un comprador «nuevo» solo es nuevo para el histórico: el 90 % de sus visitas van precedidas de eventos suyos en directo; un producto nuevo se describe por atributos, sin esperar historial. Lo que nos enseñó el feedback el sábado por la noche: en la tienda un producto nuevo se vende desde el primer minuto, pero en el carrusel nadie lo pulsa en sus primeros 20 (1 clic en 1.954 impresiones donde el modelo esperaba 12, en cuatro tandas); desde el minuto 20 se pulsa entre 1,3 y 1,6 veces lo que un producto cualquiera en la misma posición. Así que espera 20 minutos antes de entrar en una lista, como si no tuviera stock. En frío es donde más ventaja sacamos a la referencia (diapositiva 2). Si preguntan por el calendario: la tienda sigue un reloj (una tendencia cada 2 horas durante 45 minutos, una promoción cada 3, 100 productos nuevos cada 4), sacado con SQL de shop.catalog_updates y del stream. Lo usamos para leer las pruebas por tramos, nunca como regla del recomendador: la final trae tendencias y productos nuevos, y el detector tiene que encontrarlos en el stream. En la gráfica: cada marca es un cambio de versión; a las 17:06 del sábado cruzamos la referencia; la caída de las 19:50 son cuatro minutos sin servidor (alguien cerró por error la ventana donde corría: desde entonces no tiene ventana y un supervisor lo relanza en dos segundos); la última marca es la vuelta a una sola versión, a las 06:34 del domingo. La franja sombreada es la final, de 10:00 a 12:00, como un solo punto al cierre (la API de la final da las dos horas juntas): 2,24 nosotros, 2,14 la referencia, 0,75 los superventas. (findings §2, §3, §11, §12, §15, §16, §17, §19, §21, §22; docs/data.md: el calendario de la tienda; docs/sources/final-announcement.md)</aside>
-</section>
-
-<!-- 9 · Una tendencia, en vivo -->
-<section class="slide" data-title="Una tendencia, en vivo" data-t="25">
-  <header class="furn"><span class="kick">Aprender del directo / tendencias</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">Vimos la tendencia a los <em>41 segundos</em>.</h1>
-  <p class="small r" style="margin-top:26px">Videoconsolas, sábado de 20:30 a 21:15 · cuántas veces más de lo habitual se vendió toda la subcategoría</p>
-  <div class="versus tight">
-    <div class="r"><div class="tagline">Lo que midió el detector en la tienda</div><div class="big">×8<span class="sep">,</span>6</div><p class="cap" style="max-width:560px">leyendo solo las vistas y las compras del stream, cada segundo</p></div>
-    <div class="mid r">y después</div>
-    <div class="r"><div class="tagline">Lo que vendió nuestro carrusel</div><div class="big a">×8<span class="sep">,</span>3</div><p class="cap" style="max-width:560px">52 compras donde el modelo esperaba 6, en 9.074 impresiones</p></div>
-  </div>
-  <div class="trio r" style="margin-top:44px">
-    <div><b>+0,33</b><span>de ventaja sobre el mejor rival en plena tendencia. De madrugada, +0,06 y +0,13: los demás también suben; nosotros, más</span></div>
-    <div><b>×1,0</b><span>los clics de los productos en tendencia frente a lo que predice su posición, en cuatro tendencias más: el empujón está en su dosis</span></div>
-    <div><b>10 de 10</b><span>tendencias de la tienda encontradas al reproducir el stream entero: las grandes en un minuto, las pequeñas en dos</span></div>
-  </div>
-  <p class="lead" data-step="1" style="margin-top:auto">El histórico no tiene ni una tendencia: <b>solo se aprenden mirando la tienda en directo</b>.</p>
-  <aside class="notes">La final trae «tendencias nuevas» y el histórico de 60 días no tiene ninguna, así que su forma solo se podía leer del stream del sábado (offline/store_moves.py, todo agregado en RawTree en 8 segundos): una subcategoría cada vez, 45 minutos, compras ×8–12 y vistas ×3–4, todos sus productos por igual; nada se mueve a nivel de categoría, de marca ni de producto. El detector corre cada segundo dentro del servidor. Las vistas dicen cuándo, porque son 20 veces más numerosas: al menos el doble de su cuota habitual con 40 vistas. Las compras dicen cuánto. Reproducido sobre 9,5 horas del sábado: 19 segundos de falsa alarma en todo el día. La primera tendencia con el detector en producción fueron las videoconsolas, de 19:30 a 20:15 UTC: el servidor la anunció a los 41 segundos y la soltó 90 segundos después de acabar; su estimación subió de 3,6 a unas 10 en diez minutos (mediana 8,6). Y lo que cierra el círculo: en las 9.074 impresiones de esos productos que enseñamos, hubo 52 compras donde la v9, que no sabe nada de tendencias, esperaba 6,2: ×8,3 (intervalo 6,3–11,0). Lo mismo para quien estaba mirando otra cosa (×8,4). Lo que dice la tienda es lo que hace el carrusel, uno a uno; por eso el empujón se aplica entero. Los tres números de abajo. Uno, dónde se hace la ventaja: cuarto de hora a cuarto de hora frente al mejor de los equipos que nos siguen, +0,13, +0,33 y +0,23 mientras duraron las videoconsolas, y unas 0,05 el resto de la tarde. Por la noche los rivales lo aprendieron: dentro de una tendencia suben todos (un modelo que lee lo recién visto la recoge solo), y nosotros más: la ventaja pasó de +0,02 a +0,06 con las correas y de +0,06 a +0,13 con las zapatillas. El empujón vale unas 0,08 en la clasificación mientras dura una tendencia de tamaño normal. Dos, la dosis: dentro de las listas que llevan un producto en tendencia, esos productos reciben los clics que su posición predice: 0,93 (vitaminas), 1,04 (correas), 1,01 (zapatillas) y 0,99 (crema facial, la mañana del domingo: una tendencia pequeña, el 1,2 % de las compras de la tienda, que el detector vio a los 32 segundos y sostuvo los 45 minutos sin un parpadeo). Con un empujón el doble de fuerte de lo debido recibirían unos dos tercios de lo que su posición predice. Por eso el exponente se queda en 1. Tres: reproduciendo segundo a segundo el stream entero (4,5 millones de vistas y compras, las diez tendencias que ha tenido la tienda), el detector las encuentra todas: las seis grandes entre 50 y 61 segundos después de empezar, las cuatro pequeñas entre 121 y 143. El límite, dicho tal cual: una tendencia en una subcategoría diminuta (relojes, domingo 06:30: 37 compras en 45 minutos) queda en el borde del detector, que se encendió y apagó 19 veces; no movió la clasificación de nadie, así que no tocamos el detector tres horas antes de la final. Una tendencia mueve la clasificación en proporción a su parte de las compras de la tienda. Si preguntan por un fallo: en la tendencia de la crema facial (sábado, 22:30) las variantes con el tercer modelo llenaban las listas de productos de la tendencia que nadie pulsaba (2.936 impresiones, 2 clics, ninguna compra); la segunda sesión, que lee nuestro scratch con SQL, lo vio a los 12 minutos y a los 21 el arreglo estaba en directo. La lección: una variante hay que vigilarla en cada régimen; esa llevaba una hora ganando en minutos sin tendencia. [siguiente] Contarlo con honestidad: como A/B sobre una única tendencia, con el empujón a tres cuartos, el total no se movió (+0,03 ± 0,20): los productos en tendencia venden, y los que desplazan pierden parte. La dosis se decidió con la medida directa y se confirmó en cuatro tendencias más. Una tendencia son 45 de los 120 minutos de la final. La de la final no la hemos podido medir después: la clave de RawTree dejó de valer al cerrar el reto; el servidor anotó lo que vio su detector en su log (serve.log, en el portátil de Javier), así que si Javier lo ha mirado, que lo cuente. Lo que sí dice el marcador: perdimos la primera hora de la final por 1,7 puntos y ganamos la segunda por 0,6. (findings §16, §21, §23; realtime_analyisi_leaderboard/trend_board.py; reco/features.py: Trends)</aside>
-</section>
-
-<!-- 10 · RawTree hace el trabajo pesado -->
-<section class="slide" data-title="RawTree hace el trabajo pesado" data-t="20">
-  <header class="furn"><span class="kick">Uso de RawTree</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">RawTree hace <em>el trabajo pesado</em>.</h1>
-  <div class="cols" style="grid-template-columns:.86fr 1fr;gap:60px">
-    <ul class="list" style="--key:240px;--pad:16px;--fs:28px">
-      <li class="r"><span class="k">Variables en SQL</span><span>Popularidad, cuotas y tendencias se agregan dentro de RawTree sobre 14&nbsp;M de eventos. Solo bajan tablas pequeñas.</span></li>
-      <li class="r"><span class="k">Leer y escribir</span><span>Visitas cada 0,15 s; eventos y catálogo, cada segundo. Las respuestas se escriben en lote.</span></li>
-      <li class="r"><span class="k">Explicar</span><span>En <span class="mono">scratch</span> queda el porqué de cada producto: cada prueba se explica con SQL.</span></li>
-      <li class="r"><span class="k">Embeddings</span><span>No hicieron falta. La señal que darían, «quien compró X compró Y», ya la recogen los atributos: lo medimos.</span></li>
-    </ul>
-    <div class="r">
-<div class="term"><div class="dots"><i></i><i></i><i></i>offline/store_moves.py</div>
-<pre><span class="m">-- vistas y compras por minuto y subcategoría</span>
-<span class="k">SELECT</span> toStartOfMinute(e.ts<span class="c">::DateTime64(3)</span>) <span class="k">AS</span> t,
-       c.subcategory<span class="c">::String</span> <span class="k">AS</span> sub,
-       countIf(e.event_type<span class="c">::String</span> = 'view') <span class="k">AS</span> v,
-       countIf(e.event_type<span class="c">::String</span> = 'purchase') <span class="k">AS</span> p
-<span class="k">FROM</span> shop.events <span class="k">AS</span> e
-<span class="k">JOIN</span> shop.catalog <span class="k">AS</span> c
-  <span class="k">ON</span> c.product_id<span class="c">::String</span> = e.product_id<span class="c">::String</span>
-<span class="k">GROUP BY</span> t, sub</pre></div>
-      <p class="small" style="margin-top:22px">Sin esquema: todas las columnas son <span class="mono">Dynamic</span>. Se convierte cada clave y cada argumento (en verde).</p>
-    </div>
-  </div>
-  <aside class="notes">Criterio del jurado: uso de RawTree. Su rúbrica nombra tres cosas y las filas las siguen. Variables calculadas en SQL: el histórico es demasiado grande para bajarlo crudo y las consultas tienen un tope de 30 s, así que las agregaciones se hacen dentro: popularidad y cuotas por producto, perfil por comprador, y el informe de tendencias (offline/store_moves.py), que cruza 12 millones de eventos del histórico y 2 millones en vivo con el catálogo y los agrupa por minuto y subcategoría, categoría y marca en 8 segundos. La consulta de la pantalla es esa, simplificada (la real añade los productos nuevos al catálogo). En verde, las conversiones: en RawTree todas las columnas son Dynamic y hay que convertir cada clave de cruce y cada argumento. Cómo lee y escribe: el camino caliente son dos sentencias cada 150 ms (leer las visitas de los últimos 4 segundos, insertar las respuestas en lote); tres hilos más mantienen el estado con consultas pequeñas y acotadas: catálogo y eventos cada segundo, nuestro feedback cada dos. Scratch: cada respuesta se guarda con la variante, el modelo, la razón de cada uno de los 10 productos y lo que veía el detector; una segunda sesión lo cruza con el feedback en SQL y puede explicar una prueba, no solo puntuarla (así se saca, por ejemplo, la lista de una visita concreta con la razón de cada producto). Embeddings: decirlo sin rodeos. No los usamos: el catálogo se describe con 20 frases, dos por producto, y contar coincidencias de atributos ya da lo que daría un embedding del texto, con la ventaja de que cada variable se puede explicar. Y no es una suposición: medimos la señal que darían unos embeddings de comportamiento, la similitud entre los compradores de dos productos («quien compró esto compró aquello»). Para un comprador conocido, con lo que el modelo ya predice mantenido igual, no añade nada (×1,04 en clics, ×0,97 en compras), y reordenar por ella empeora. Donde sí añade es con compradores nuevos y su carrito del día (×1,34), que es donde los probaríamos con más tiempo. Otra cosa que salió de SQL sobre shop.catalog_updates: el calendario de la tienda (tendencias, promociones y productos nuevos llegan con reloj), que usamos para leer las pruebas por tramos. Lo que aprendimos de la plataforma está en docs/rawtree.md y docs/data.md. (queries/health.sql, variants.sql, tiers.sql; realtime_analyisi_leaderboard/; findings §21; docs/data.md)</aside>
-</section>
-
-<!-- 11 · Nuestro workflow agéntico -->
-<section class="slide" data-title="Nuestro workflow agéntico" data-t="30">
-  <header class="furn"><span class="kick">Equipo y agentes</span><span class="ticket">Skore Money</span></header>
-  <h1 class="r">Nuestro <em>workflow agéntico</em>.</h1>
-  <div class="cols" style="grid-template-columns:.78fr 1fr;gap:72px;margin-top:44px">
-    <div class="r">
-      <div class="tagline">Quién hizo qué</div>
-      <ul class="facts">
-        <li><b>Javier Aranda</b>: construir e iterar. El recomendador, el entrenamiento, las pruebas en directo y el servidor que sirvió la final.</li>
-        <li><b>Hugo Juanola</b>: preparar y revisar. Al principio, el repositorio para que los agentes supieran qué hacer: enunciado, datos y RawTree. Después, desde otra rama, sus agentes revisaban cada decisión.</li>
-        <li><b>Los dos</b>: todas las decisiones (qué se prueba, qué sirve la final) y esta presentación.</li>
-      </ul>
-    </div>
-    <div class="r">
-      <div class="tagline">Con qué agente: Claude Code (Claude Fable 5.2). Y cómo</div>
-      <ul class="list" style="--key:262px;--pad:14px;--fs:27px">
-        <li><span class="k">AGENTS.md</span><span>El contrato de cada sesión: misión, reglas y estado actual. Un agente no recuerda: lo que no se escribe se pierde.</span></li>
-        <li><span class="k">Un papel por sesión</span><span>Unas construyen y miden; otras, desde otra rama, revisan lo que se decide; otra vigila el marcador cada 15 minutos.</span></li>
-        <li><span class="k">Todo escrito</span><span>Cada medida va a <span class="mono">findings.md</span> con su fecha; cada despliegue, a un commit con su versión.</span></li>
-        <li><span class="k">Los límites</span><span>Una sola respuesta por visita, la clave nunca sale, y nada cambia en el servidor sin uno de los dos.</span></li>
-      </ul>
-    </div>
-  </div>
-  <p class="lead" data-step="1" style="margin-top:auto">RawTree se deja usar por un agente: <b>su skill oficial, su documentación en el repositorio y SQL de solo lectura</b>.</p>
-  <aside class="notes">Lo pidió el jurado: qué agentes usamos y qué hizo cada uno. Decirlo sin adornos. Quién hizo qué. Javier construyó e iteró: el recomendador que sirve (reco/), el entrenamiento y la validación (offline/), todas las pruebas en vivo y la operación del servidor desde su portátil, incluida la noche y la final. Hugo hizo dos cosas. Al principio, el sábado a mediodía, preparó el repositorio para que los agentes supieran qué hacer desde el primer minuto, de forma muy completa: la ingesta de todo el contexto del reto (el enunciado y el material oficial tal cual, el perfil de cada tabla con números medidos sobre los datos reales, 30 páginas de la documentación de RawTree y su skill oficial, el kit de inicio) y AGENTS.md como punto de entrada, con la misión, las fechas, las reglas y los comandos. Sin eso, cada sesión habría empezado redescubriendo el reto. Después estuvo encima de todas las decisiones y montó la revisión en paralelo: desde otra rama (hugo), sus agentes iban trayendo lo que Javier subía y revisaban cada decisión mientras se tomaba y se construía, evaluando el proceso (¿está bien medido?, ¿la conclusión sale de los datos?) y lo que se exploraba (¿qué queda sin probar?, ¿qué no merece más tiempo?). Además construyó un primer motor en modo sombra durante la mañana del sábado para contrastar ideas (no es el que sirve y no está en esta rama) y midió dónde está el oráculo a partir de la serie pública de puntuación (docs/challenge.md). La presentación la hicimos entre los dos. El porqué de trabajar así: quien construye tiende a creerse su propio resultado; una segunda mirada, con otra rama y otros agentes que no han escrito ese código, lo pone en duda antes de que llegue al servidor. Las decisiones (qué se prueba, qué entra en la final) las tomamos los dos, con reglas escritas antes de mirar los datos (docs/final-round.md). Qué agentes: Claude Code, de Anthropic, con el modelo Claude Fable 5.2, los dos; cada commit del recomendador lleva la firma del agente. Cómo lo usamos, que es lo interesante. Uno: AGENTS.md es el punto de entrada de cualquier sesión: la misión, las fechas, dónde está cada cosa, nueve reglas no negociables y una sección «estado del repositorio» que se reescribe en cada despliegue. Un agente empieza cada sesión sin memoria, así que la memoria es el repositorio. Dos: sesiones con un papel cada una. La del modelo construye, entrena y mide; las de la rama de Hugo revisan esas decisiones según llegan; la segunda, la vigía, lee la clasificación pública y nuestro scratch con SQL cada cuarto de hora, escribe un registro de cada prueba (realtime_analyisi_leaderboard/experiments.md) y da la alarma: ella vio a los 12 minutos el fallo del tercer modelo en una tendencia, y ella avisó de madrugada de que dos rivales nos habían alcanzado. Otra montó esta presentación, dirigida por los dos. Que una sesión revise a otra es lo que más errores evitó: la co-compra la habíamos anotado como hallazgo y la retiramos cuando se volvió a medir con un control mejor. Tres: todo queda escrito con su número y su fecha (docs/findings.md, 24 secciones), y cada despliegue es un commit con su model_version, así que el repositorio siempre coincide con lo que sirve. Cuatro: los límites. El agente propone y mide; no decide. Reglas: una sola respuesta por visita y un solo proceso; la clave no se imprime ni se sube; nada pesado en la máquina que sirve; y desde las 08:00 del domingo nada cambia en el servidor sin Javier o Hugo. Durante la final, la sesión que quedó abierta solo estaba autorizada a relanzar la misma versión si el servidor desaparecía. [siguiente] RawTree y los agentes: el repositorio lleva la skill oficial de RawTree (.claude/skills/rawtree), 30 páginas de su documentación (docs/rawtree/) y un script de SQL que es de solo lectura salvo que se le pida escribir (scripts/rt.py). Lo que aprendimos de la plataforma por el camino (todas las columnas son Dynamic, el tope de 30 s por consulta) está en docs/rawtree.md, para que la siguiente sesión no lo redescubra. Si preguntan qué habríais hecho sin agentes: menos pruebas y peor documentadas; unas cuarenta versiones medidas en un día no las hacen dos personas a mano. Si preguntan qué hubo que imponer: paciencia con el ruido. Un resultado de media hora parece una mejora y no lo es (dar 20 veces más peso a lo de hoy brilló una hora); por eso medimos el ruido y escribimos la regla antes. (AGENTS.md; realtime_analyisi_leaderboard/README.md; docs/final-round.md; el historial de commits)</aside>
-</section>
-
-<!-- 12 · Gracias -->
+<!-- 6 · Gracias -->
 <section class="slide" data-title="Gracias" data-t="5">
   <header class="furn"><span class="kick">Preguntas</span><span class="ticket">Skore Money</span></header>
   <div class="bye r">
     <div class="thanks"><span>Gracias.</span></div>
     <div class="meta"><div class="lockup"><img class="tb" src="assets/tinybird-logo-ink.svg" alt="Tinybird"><span class="bar"></span><span class="rt"><img src="assets/rawtree-symbol-ink.svg" alt="">RawTree</span></div><span><b>Skore Money</b>, equipo 69e5e</span><span><b>Hugo Juanola</b> y <b>Javier Aranda</b></span></div>
   </div>
-  <aside class="notes">Dar las gracias y abrir preguntas, sin resumen: el jurado no puntúa un cierre. No hay demo aparte: la presentación es la prueba. Si aun así piden ver algo funcionando, tener una terminal preparada: python3 scripts/rt.py -f queries/health.sql (quién sirvió cada visita en los últimos 10 minutos y con qué latencia: casi todo «team», p95 por debajo de 3.000 ms); python3 scripts/arms.py 09:00 11:00 (en UTC: nuestra versión en la final, con la métrica de los organizadores; con 00:50 05:30, la noche de las cuatro variantes); python -m reco.serve --dry (imprime en vez de insertar: la lista de una visita real con la razón de cada producto; tarda medio minuto en cargar). Si preguntan qué versión es la mejor: best_model.md, el registro de todas las que hemos servido. Si preguntan qué probamos: realtime_analyisi_leaderboard/experiments.md, una fila por prueba con lo que dio, lo que costó y el veredicto. Respuestas preparadas. ¿Qué hizo el agente y qué vosotros? El agente escribió casi todo el código y midió; nosotros elegimos qué probar, pusimos las reglas y decidimos qué servía la final. ¿Cómo sabéis que lo que hizo el agente está bien? Porque nada entra sin pasar los tres exámenes y porque una segunda sesión revisa a la primera. ¿Por qué LightGBM y no embeddings? Porque los datos son una tabla de números, cada variable se puede explicar y el modelo no puede esconderse tras un id. ¿Por qué tantas versiones empatadas? Porque medimos que dos variantes idénticas difieren 0,12 en media hora: con 3 visitas por segundo, distinguir un 3–4 % cuesta una noche entera. ¿Qué versión sirvió la final? skore_money_v31: la v9 del sábado por la tarde con el empujón de tendencias, sola desde las 06:34 del domingo (reco/serve.py: ARMS). ¿Por qué segundos? team_33 vendió 2,252 y nosotros 2,238: 0,014, menos que lo que separa a dos copias del mismo modelo en media hora. Nos ganaron en arranque en frío (2,67 frente a 2,62); nosotros a ellos con compradores conocidos (1,88 frente a 1,86) y en fiabilidad. Lo decimos sin excusas: fue un empate que cayó de su lado, y nuestra decisión de no tocar nada en la final, con lo que sabíamos, la volveríamos a tomar. ¿Y la fiabilidad? Tres redes: modelo, reglas y superventas en stock; una visita sin respuesta nunca es una opción. El sábado perdimos una de cada cuatro respuestas tres veces (el portátil ocupado en otra cosa) y cuatro minutos enteros porque alguien cerró la ventana del servidor: desde entonces no tiene ventana, un supervisor lo relanza y la versión nueva entra por relevo, sin hueco. Desde el sábado a las 21:00, el 99,92 % de 124.900 visitas respondidas; la única ráfaga de la noche, 34 respuestas a las 04:16, fueron doce segundos sin Wi-Fi: el servidor siguió solo y no hubo que reiniciar nada. A las 09:02 del domingo se perdió medio minuto de visitas, pero para todos los equipos a la vez (32 nuestras): fue la plataforma, y el servidor siguió solo. La final se sirvió por Wi-Fi porque el cable que había no dio enlace, y salió bien: 21.599 de 21.600 visitas respondidas a tiempo (99,995 %), sin tocar el servidor en las dos horas. ¿Qué haríais con más tiempo? Lo primero, los compradores conocidos: en la final la referencia vendió 2,09 y nosotros 1,88; son la mitad de las visitas y ningún equipo la ha alcanzado ahí. Igualarla valía unas +0,1: siete veces lo que nos separó del primero. Después, un servidor junto a RawTree (está en AWS us-east-1) en vez de un portátil con Wi-Fi, y la co-compra para compradores nuevos, la única señal colaborativa que añade algo a lo que el modelo ya predice. ¿Probasteis filtrado colaborativo? Sí: es la fila de la co-compra de «lo que no funcionó». ¿Usáis el calendario de la tienda? Solo para leer las pruebas; el recomendador no lo conoce. ¿Por qué quitasteis el tercer modelo si offline ganaba? Porque en vivo perdió, y la regla estaba escrita antes de mirar. (findings §8, §18, §23, §24; docs/final-round.md)</aside>
+  <aside class="notes">Dar las gracias y abrir preguntas, sin resumen: el jurado no puntúa un cierre. No hay demo aparte: la presentación es la prueba. Si aun así piden ver algo funcionando, tener una terminal preparada: python3 scripts/rt.py -f queries/health.sql (quién sirvió cada visita en los últimos 10 minutos y con qué latencia: casi todo «team», p95 por debajo de 3.000 ms); python3 scripts/arms.py 09:00 11:00 (en UTC: nuestra versión en la final, con la métrica de los organizadores; con 00:50 05:30, la noche de las cuatro variantes); python -m reco.serve --dry (imprime en vez de insertar: la lista de una visita real con la razón de cada producto; tarda medio minuto en cargar). Si preguntan qué versión es la mejor: best_model.md, el registro de todas las que hemos servido. Si preguntan qué probamos: realtime_analyisi_leaderboard/experiments.md, una fila por prueba con lo que dio, lo que costó y el veredicto. Respuestas preparadas. ¿Qué hizo el agente y qué vosotros? El agente escribió casi todo el código y midió; nosotros elegimos qué probar, pusimos las reglas y decidimos qué servía la final. ¿Cómo sabéis que lo que hizo el agente está bien? Porque nada entra sin pasar los tres exámenes y porque una segunda sesión revisa a la primera. ¿Por qué LightGBM y no embeddings? Porque los datos son una tabla de números, cada variable se puede explicar y el modelo no puede esconderse tras un id. ¿Por qué tantas versiones empatadas? Porque medimos que dos variantes idénticas difieren 0,12 en media hora: con 3 visitas por segundo, distinguir un 3–4 % cuesta una noche entera. ¿Qué versión sirvió la final? skore_money_v31: la v9 del sábado por la tarde con el empujón de tendencias, sola desde las 06:34 del domingo (reco/serve.py: ARMS). ¿Por qué segundos? team_33 vendió 2,252 y nosotros 2,238: 0,014, menos que lo que separa a dos copias del mismo modelo en media hora. Nos ganaron en arranque en frío (2,67 frente a 2,62); nosotros a ellos con compradores conocidos (1,88 frente a 1,86) y en fiabilidad. Lo decimos sin excusas: fue un empate que cayó de su lado, y nuestra decisión de no tocar nada en la final, con lo que sabíamos, la volveríamos a tomar. ¿Y la fiabilidad? Tres redes: modelo, reglas y superventas en stock; una visita sin respuesta nunca es una opción. El sábado perdimos una de cada cuatro respuestas tres veces (el portátil ocupado en otra cosa) y cuatro minutos enteros porque alguien cerró la ventana del servidor: desde entonces no tiene ventana, un supervisor lo relanza y la versión nueva entra por relevo, sin hueco. Desde el sábado a las 21:00, el 99,92 % de 124.900 visitas respondidas; la única ráfaga de la noche, 34 respuestas a las 04:16, fueron doce segundos sin Wi-Fi: el servidor siguió solo y no hubo que reiniciar nada. A las 09:02 del domingo se perdió medio minuto de visitas, pero para todos los equipos a la vez (32 nuestras): fue la plataforma, y el servidor siguió solo. La final se sirvió por Wi-Fi porque el cable que había no dio enlace, y salió bien: 21.599 de 21.600 visitas respondidas a tiempo (99,995 %), sin tocar el servidor en las dos horas. ¿Qué haríais con más tiempo? Lo primero, los compradores conocidos: en la final la referencia vendió 2,09 y nosotros 1,88; son la mitad de las visitas y ningún equipo la ha alcanzado ahí. Igualarla valía unas +0,1: siete veces lo que nos separó del primero. Después, un servidor junto a RawTree (está en AWS us-east-1) en vez de un portátil con Wi-Fi, y la co-compra para compradores nuevos, la única señal colaborativa que añade algo a lo que el modelo ya predice. ¿Probasteis filtrado colaborativo? Sí: la co-compra («quien compró esto compró aquello»); con lo que el modelo ya predice no añadía nada para compradores conocidos, solo un poco para los nuevos. ¿Usáis el calendario de la tienda? Solo para leer las pruebas; el recomendador no lo conoce. ¿Por qué quitasteis el tercer modelo si offline ganaba? Porque en vivo perdió, y la regla estaba escrita antes de mirar. (findings §8, §18, §23, §24; docs/final-round.md)</aside>
 </section>
 
 <div id="logo" class="rt"><img src="assets/rawtree-symbol-ink.svg" alt="">RawTree</div>
@@ -525,12 +352,6 @@ html.static #trend .line{stroke-dashoffset:0!important}
 const D = window.DECK_DATA || {mode: "practice", updated_at: 1794670735, rank: 1, teams: 42,
   team: {conversion: 2.0, cold_conversion: 2.7, on_time: 99.9}, rivals: [{conversion: 1.79}],
   reference: {conversion: 2.13, cold_conversion: 2.01}, baseline: {conversion: 0.75}, history: []};
-// the versions that mattered in the practice round (UTC), marked on the trend chart: the first learned ranker, the one that
-// serves the final, the trend lift on top of it, the night's four arms, and back to one
-const VERSIONS = [[Date.UTC(2026, 10, 14, 13, 57) / 1000, "v5"], [Date.UTC(2026, 10, 14, 15, 41) / 1000, "v9"],
-  [Date.UTC(2026, 10, 14, 20, 35) / 1000, "v31"], [Date.UTC(2026, 10, 15, 0, 46) / 1000, "v38–40"],
-  [Date.UTC(2026, 10, 15, 5, 34) / 1000, "v31 sola"]];
-
 const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const es = (x, d = 0) => x.toLocaleString("es-ES", {minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: "always"});
 const madrid = (t, o) => new Date(t * 1000).toLocaleString("es-ES", {timeZone: "Europe/Madrid", ...o});
@@ -546,45 +367,6 @@ if (STATIC) document.documentElement.classList.add("static");
   $("#conv-cap").textContent = "compras por cada 100 visitas" + (final ? " en la final" : "") +
     " (referencia: " + es(ref.conversion, 2) + " · superventas: " + es(base.conversion, 2) + ")";
   $("#times").textContent = "×" + es(team.conversion / base.conversion, 1);
-})();
-
-// ---- slide 8: our conversion on the public leaderboard through the practice round
-(function trend() {
-  const H = D.history, svg = $("#trend");
-  if (H.length < 2) { svg.parentElement.parentElement.style.display = "none"; return; }
-  const W = 900, Hh = 590, L = 60, R = 250, T = 46, B = 46;
-  const t0 = H[0][0], t1 = H[H.length - 1][0];
-  const lo = 0.5, hi = Math.max(2.3, ...H.map(h => Math.max(h[1], h[2]))) + 0.1;
-  const x = t => L + (W - L - R) * (t - t0) / (t1 - t0), y = v => Hh - B - (Hh - T - B) * (v - lo) / (hi - lo);
-  let out = "";
-  for (let v = 1; v < hi; v += 0.5)
-    out += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 14}" y="${y(v) + 7}" text-anchor="end">${es(v, 1)}</text>`;
-  const step = 3600 * Math.max(1, Math.ceil((t1 - t0) / 3600 / 6));      // at most six hour labels
-  for (let t = Math.ceil(t0 / step) * step; t <= t1; t += step)
-    out += `<text x="${x(t)}" y="${Hh - 8}" text-anchor="middle">${madrid(t, {hour: "2-digit", minute: "2-digit"})}</text>`;
-  for (const [t, label] of VERSIONS) if (t > t0 && t < t1)
-    out += `<line class="mark" x1="${x(t)}" x2="${x(t)}" y1="${T - 8}" y2="${Hh - B}"/><text x="${x(t)}" y="${T - 20}" text-anchor="middle">${label}</text>`;
-  if (D.final && D.final.end <= t1) {          // the final (10:00–12:00), one point at its close: shade its two hours
-    const a = x(Math.max(t0, D.final.start)), b = x(D.final.end);
-    out += `<rect class="band" x="${a}" y="${T - 8}" width="${b - a}" height="${Hh - B - T + 8}"/>` +
-      `<text class="band-t" x="${(a + b) / 2}" y="${T - 20}" text-anchor="middle">final</text>`;
-  }
-  const series = [[3, "var(--neutral-ink)", "Superventas"], [2, "var(--ref)", "Referencia"], [1, "var(--us-ink)", "Skore Money"]];
-  const ends = series.map(([k]) => y(H[H.length - 1][k]));
-  if (Math.abs(ends[2] - ends[1]) < 34) {                    // our label and the reference's would overlap: part them
-    const mid = (ends[1] + ends[2]) / 2, up = ends[2] <= ends[1] ? -1 : 1;
-    ends[2] = mid + 17 * up; ends[1] = mid - 17 * up;
-  }
-  series.forEach(([k, color, name], i) => {
-    const d = H.map((h, j) => (j ? "L" : "M") + x(h[0]).toFixed(1) + " " + y(h[k]).toFixed(1)).join(" ");
-    const last = H[H.length - 1];
-    out += `<path class="line" pathLength="1" stroke="${color}" d="${d}"><title>${name}</title></path>` +
-      `<circle class="dot" r="9" fill="${color}" cx="${x(last[0])}" cy="${y(last[k])}"/>` +
-      `<text class="end" x="${x(last[0]) + 22}" y="${ends[i] + 8}">${es(last[k], 2)} <tspan style="font-weight:400;fill:var(--ink-2)">${name}</tspan></text>`;
-  });
-  svg.innerHTML = out;
-  if (D.final && D.final.end <= t1) $("#trend-cap").innerHTML =
-    "Compras por 100 visitas · clasificación pública de la práctica y, sombreada, la final<br>cada marca, un cambio de versión en directo";
 })();
 
 // ---- cover: a pixel grid, after RawTree's pixel tree. Three pixels light up every second: one per shopper answered
@@ -618,7 +400,7 @@ if (STATIC) document.documentElement.classList.add("static");
 // ---- deck engine
 const stage = $("#stage"), slides = $$(".slide"), body = document.body;
 let cur = 0, step = 0, started = 0;
-// the plan: data-t seconds per slide, 4 min 40 s in all (the slot is 3 to 5 minutes, no demo); ?min=N rescales it
+// the plan: data-t seconds per slide, 3 min 50 s in all (the slot is 3 to 5 minutes, no demo); ?min=N rescales it
 const secs = i => +slides[i].dataset.t || 30;
 const scale = params.get("min") ? params.get("min") * 60 / slides.reduce((a, _, i) => a + secs(i), 0) : 1;
 const steps = s => Math.max(0, ...$$("[data-step]", s).map(e => +e.dataset.step));
