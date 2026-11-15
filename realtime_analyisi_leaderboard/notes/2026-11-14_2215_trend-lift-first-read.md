@@ -241,8 +241,8 @@ for the two organic arms of then).
 
 The teams that were already at our level rise inside a trend by 0.06 to 0.15: the shoppers who follow it
 arrive with trending products among their recent views, and any ranker that follows the session shows
-them. We rose by 0.19. team_14 rose by 0.51 and team_33 by 0.35 (1.85 to 2.20): a better version went in
-around the start of the trend. Our gap to the next team was +0.02 before and +0.06 inside (+0.07 on cold
+them. We rose by 0.19. team_33 rose by 0.35 (1.85 to 2.20); team_14's rise of 0.51 is not a trend effect (it
+answered half of the requests in the 45 minutes before: see the correction in the Sneakers section below). Our gap to the next team was +0.02 before and +0.06 inside (+0.07 on cold
 requests). Two teams over 45 minutes differ by 0.10 by chance, so this is neither clearly the +0.10 to
 +0.33 of Game Consoles and Vitamins nor clearly less; quarter-hour by quarter-hour it read +0.03 to +0.05
 where those two read +0.10 to +0.33. What it does say: the trend is no longer ours alone. team_14 and
@@ -296,3 +296,67 @@ share of the clicks inside a list, all arms together, clearly under the slots' p
 it on 300 lists or more. That is the case for lift ^0.5, one number in the arms (it ran as `v35` on
 Saturday), and it has to reach the model session before 08:00 CET. `trend_read.py` now prints that line
 for all arms together, with the ratio to the prediction.
+
+## Update, 15 Nov 05:25 CET — Sneakers (04:30-05:15 CET): the gap opens again, the lift is on the prediction, the organic order is below in a second trend
+
+**In one line**: the store sold fifteen times its usual share of Sneakers; inside the trend we read 2.36
+against 2.23 for the next team (+0.13, where the 45 minutes before gave +0.06); the trending products took
+exactly the share of the clicks their slots predict, so the lift needs no change; and the organic order
+read -0.15 inside it, after -0.11 in Leashes.
+
+**The store** (`trend_board.py`: `shop.events` per 5 minutes against the share over the 12 hours to 04:00
+CET): Sneakers went from 0.98 % of the views to 4.7 % (x4.8) and from 0.42 % of the purchases to 6.2 %
+(x14.8), flat over the 45 minutes (x12 to x17 per 5 minutes). A larger multiple than Leashes (x10.7) on a
+smaller subcategory. The server found it 57 seconds in.
+
+**The four arms on our carousel** (8,100 requests; the last column is the organisers' metric):
+
+| Arm | Requests | Trending products per list | Lists with one | Slot 1 is a trending product | Expected purchases per 100 |
+|---|---|---|---|---|---|
+| `v31`: v9 | 1,993 | 1.49 | 45.9 % | 20.1 % | 2.476 |
+| `v38`: v9, new x1.5 | 1,986 | 1.42 | 46.1 % | 19.9 % | 2.389 |
+| `v39`: organic order | 2,090 | 1.38 | 44.7 % | 17.3 % | 2.294 |
+| `v40`: organic order, new x1.5 | 2,031 | 1.50 | 48.9 % | 20.3 % | 2.272 |
+
+Before the trend: 0.04 to 0.06 per list, slot 1 in 0.2 to 0.5 % of the lists. The arms show it alike. The
+organic arms put a trending product first in 18.8 % of their lists against 20.0 % for v9's arms (-1.4 se;
+`v39` alone 17.3 % against 20.1 % for `v31`, -2.3 se; `v40` 20.3 % against 19.9 % for `v38`). Leashes read
+20.9 % against 21.9 %. Two trends on the same side, neither clear.
+
+**The share inside a list: the number the model session asked for.** Of the clicks made in lists that hold
+a trending product, 31.2 % went to it where the slots predict 31.0 % (224 lists, all arms): 1.01 of the
+prediction. Purchases: 32.1 % against 30.8 % (53 lists), 1.04. By arm, on clicks: 0.98, 0.98, 1.11, 0.96.
+With Leashes (1.04 on 239 lists) that is 1.03 of the prediction on 463 lists, and Vitamins read 0.93. Slot
+for slot the trending products do as well as the shopper's own best products, in three trends of three
+sizes: the lift at full strength is right and there is no case for a weaker one. Across lists the screen
+reads as in Leashes (17 purchases where the slots give 33; the first, second and later product of a list
+got 11, 5 and 1), which the share inside a list has already explained: it is which requests they are.
+
+**The organic order inside the trend** (03:30-04:15 UTC, reference 1.940): -0.150 (-1.0 se), cold requests
+-0.31 (-1.0 se), warm -0.03; 1.26 EUR per request against 1.37. `v39` against `v31` directly: -0.18. With
+Leashes (-0.107), the minutes of a trend now read -0.128 (-1.3 se) on 8,129 requests against 8,070: cold
+requests -0.44 (-2.0 se), warm +0.11 (+1.1 se). The rule for the final lets the organic order be up to one
+standard error below in the minutes of a trend: as it stands it is outside it, and it is below over the
+whole night as well (-0.07, -1.0 se). Vitamins, with the organic arms of then, read -0.9 and -1.3 se: three
+trends, three times below. A caution on the cold figure: `v31` and `v38` give a new shopper the same list
+and read 3.34 and 2.88 on cold requests in these minutes, so two arms that are the same there differ by
+0.47, and a difference of 0.44 between the two sides is within what cold requests do by themselves.
+
+**Against the other teams** (organisers' metric, the whole team, requests left unanswered included):
+
+| | Reference | Us | team_14 | team_03 | team_37 | team_33 | team_26 |
+|---|---|---|---|---|---|---|---|
+| The 45 minutes before (02:45-03:30 UTC) | 1.934 | 2.212 | 1.702 | 2.130 | 2.152 | 2.064 | 2.073 |
+| Inside the trend (03:30-04:15 UTC) | 1.940 | 2.357 | 2.228 | 2.201 | 2.189 | 2.143 | 2.134 |
+
+Our gap to the next team: +0.06 before, +0.13 inside (+0.09 and +0.19 on cold requests). The teams that
+answer every request rose by 0.04 to 0.08 inside the trend and we rose by 0.14; in Leashes they rose by
+0.06 to 0.15 and we by 0.19. Both trends say the same: while a trend runs, the lift is worth 0.08 to 0.09
+over what a ranker that only follows the session gets from it.
+
+A correction to the Leashes section above: team_14 did not put a better version in. Its versions read 2.1
+to 2.4 whenever they answer (`scripts/arms.py --all`: 2.26 and 2.19 inside this trend, 2.32 inside
+Leashes), but in the 45 minutes before each of the two trends it answered about half of the requests,
+between one version and the next (02:52-02:57 and 03:12-03:30 UTC unanswered this time). Its 1.70 and 1.77
+"before" are those gaps, and its rise of 0.5 inside a trend is not a trend effect. When it answers it is
+about at our level outside a trend and 0.1 to 0.2 under our arms inside one.
