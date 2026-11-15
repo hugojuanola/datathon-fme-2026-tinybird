@@ -975,9 +975,30 @@ se) and 0.00. Nothing either way yet. Two things to keep:
 - **The trend is no longer ours alone.** Inside it we read 2.340 against 2.285 and 2.280 for the next two
   teams (team_14, team_03; every request counted, the ones a team did not answer included): +0.055, against
   +0.017 in the 45 minutes before, where Game Consoles and Vitamins had given +0.10 to +0.33. Every team
-  rises inside a trend (a ranker that reads the recent views picks it up by itself), and team_14 put a
-  better version in as this one began. Two teams differ by 0.10 over 45 minutes by chance, so it is one
-  reading, but outside trends the nearest teams are level with us since about 01:00 UTC.
+  rises inside a trend (a ranker that reads the recent views picks it up by itself); we rise more.
+  (team_14 read 1.77 before this trend because it answered about half of the requests, between two
+  versions, not because its ranker was worse.) Two teams differ by 0.10 over 45 minutes by chance, so it
+  is one reading, but outside trends the nearest teams are level with us since about 01:00 UTC.
+
+**The third trend of the night (Sneakers, 03:30 to 04:15 UTC; read by the second session).** From 0.42 %
+to 6.24 % of the store's purchases (×14.8), found 57 seconds in.
+
+- **The dose, again on the prediction.** Inside the lists that hold a trending product it took 31.2 % of
+  the clicks where its slots predict 31.0 %: 1.01 (Leashes 1.04, Vitamins 0.93). The exponent stays at 1.
+- **What the lift is worth on the board: about 0.08 while a trend runs.** We rose by 0.14 inside the trend
+  (2.212 to 2.357) and the teams that answer every request by 0.04 to 0.08; in Leashes 0.19 against 0.06
+  to 0.15. The gap to the next team went from +0.06 before to +0.13 inside (Leashes: +0.02 to +0.055).
+- **The organic order in the minutes with a trend** (Leashes and Sneakers, 8,100 requests on each side):
+  −0.13 (−1.3 se), with cold −0.44 and warm +0.11; over the whole night to 04:15 UTC −0.07 (−1.0 se). As it
+  stands the rule gives v31. How much chance there is in a cold reading over 90 minutes: v31 and v38 give
+  a new shopper the very same list and read 3.34 and 2.88.
+- **The organic arms showed a trending product in slot 1 a little less often in both trends** (18.8 %
+  against 20.0 %, and 20.9 % against 21.9 %). It is not the code. The two rankers' carousel models are
+  the same files; a replay of 300 of the day's requests with a made-up Sneakers trend leaves every
+  trending product in its slot in 300 of 300 lists; and comparing lists that hold the same number of
+  trending products the difference over the two trends is −1.1 points (−1.3 se). The number of trending
+  products per list, which no ordering can change, differs as much between arms (1.39 to 1.50): it is who
+  fell in each arm.
 
 ## 24. Reliability, third look: twelve seconds without Wi-Fi (15 Nov, 03:16 UTC)
 

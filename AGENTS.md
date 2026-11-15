@@ -200,13 +200,16 @@ crossed, §24 twelve seconds without Wi-Fi and what the loop did). The store's c
 products) is in [`docs/data.md`](docs/data.md). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (Sunday 04:45 CET): first on the public board's last hour, 2.272 against 2.177 (team_37) and
-2.165 (team_03), +0.10; `on_time` 99.7 % in that hour for the 34 answers lost at 04:16 CET (findings §24),
-p95 1.8 s. On the four windows the second session reads (04:29 CET) first on all, by +0.003 and +0.017 on
-the 15- and 30-minute ones, which hold the lost minute, and by +0.06 on the 60- and 180-minute ones. Since
-about 02:00 CET the nearest teams (team_03, team_37, team_14) are level with us outside trends, and in the
-last complete trend (Leashes, 02:30 CET) the gap inside it was +0.055 where earlier trends gave +0.10 to
-+0.33: the lead is thin (findings §23). The second session logs it every 15 minutes.
+Where we stand (Sunday 05:19 CET): first on the four windows the second session reads, by +0.12, +0.14,
++0.13 and +0.09 over the next team (15 minutes to 180); p95 1.8 s; nothing lost since the 34 answers of
+04:16 CET (findings §24). The lead is made in the trends: the lift is worth about 0.08 on the board while
+one runs (Sneakers, 04:30 CET: +0.13 over the next team inside it against +0.06 before; Leashes +0.055
+against +0.02), and its dose sits on the prediction in three trends (findings §23). Outside trends the
+nearest teams (team_03, team_37, team_14) are level with us since about 02:00 CET. The two questions of
+the night at 05:15 CET, with half of it read: the organic order −0.07 (−1.0 se) over the night and −0.13
+(−1.3 se) in the minutes with a trend, new products x1.5 −0.09 (−1.2 se) and no longer able to reach its
+bar. **As it stands the rule gives v31**, the version that was already the one to beat. The arms run to
+08:30 CET so that the humans read the whole night. The second session logs it every 15 minutes.
 
 Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
 1. **Read the night**: the three commands in [`docs/final-round.md`](docs/final-round.md) (`scripts/arms.py
