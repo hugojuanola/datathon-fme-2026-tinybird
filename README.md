@@ -62,6 +62,7 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
 | More weight on today's feedback, routing by kind of request, more features: no | Three ideas that looked right offline or for an hour and did not hold on thousands of live requests; one ranker serves everybody | §17, §20 |
 | Ten more signals, each checked against what the ranker already predicts: one survives | Co-purchases, repetition, cart history, promotions, ids for brand and subcategory: all within a quarter of the ranker's own prediction. Holding only the slot equal would have "found" four of them. The one that left something: after a click a known shopper buys a product added during the event 37 % of the time, the ranker expected 26 % | §21 |
 | A model must not be asked about what it has never seen | The first trend with the organic model live: it filled a sixth of the slots with a trending subcategory nobody clicked (2 clicks in 2,936 impressions). Caught by the watch in 12 minutes, fixed in 21: on trending products the organic model has no say | §21 |
+| A neutral score is not a neutral rank | In the next trend the organic arms showed the trending product as often as v9 but lower (first slot in 16–19 % of lists against 22 %), where it drew 52 % of the clicks against the 38 % its slots predict: the products that come out first are the ones with the highest organic factor. A trending product now keeps the rank v9 and the lift give it; the organic factor orders the rest | §23 |
 | Price drops and new products are small next to that | A 19 % promotion sells about ×1.2; a new product takes its fair share from its first ten minutes | §16 |
 
 ## How we know: offline first, then live
@@ -88,10 +89,11 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
 | v5 | first learned ranker on top of the rules | 1.81 |
 | v7–v10 | + description attributes, new products, carts by subcategory | 2.3–2.4 |
 | reference | the organisers' recommender | 2.06 |
-| v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | being measured over the night (findings §20) |
-| v9 × organic | + what shoppers go on to buy in the store | being measured over the night |
-| v9 × organic, new products ×1.5 | + products added during the event lifted for known shoppers | being measured over the night (findings §21) |
-| v9 picks the ten, organic orders them | the same ten products as v9, ordered with what shoppers go on to buy | being measured over the night; +2.5 % to +4.7 % purchases on held-out lists, depending on the attention curve (findings §22) |
+| v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | 2.39 over 22:25–00:40 UTC on Saturday night; the version to beat (findings §20, §23) |
+| v9 × organic over the best 100 | + what shoppers go on to buy in the store, choosing among v9's best 100 candidates | 2.30 over the same hours: closed (never above v9 + lift, 20 ms more per answer) |
+| v9 × organic over the best 100, new products ×1.5 | + products added during the event lifted for known shoppers | 2.45 over the same hours: closed with the one above; the ×1.5 is now measured on its own (findings §21, §23) |
+| v9 picks the ten, organic orders them | the same ten products as v9, ordered with what shoppers go on to buy; a trending product keeps v9's slot | 2.35 over the same hours, before trending products kept their slot; being measured over the night; +2.5 % purchases on held-out lists (findings §22, §23) |
+| v9 + trend lift, new products ×1.5 | + products added during the event lifted for known shoppers, without the organic model | being measured over the night (findings §21, §23) |
 
 ## Learning from the stream
 

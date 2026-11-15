@@ -832,3 +832,81 @@ Left for a retrain, not for tonight: an abandoned cart carted once is worth a fi
 (§21). Scoring it ×0.8 would move the reciprocal rank of the purchase from 0.384 to 0.390, but the live
 state does not count carts per product, and a counter added to the state the night before the final is a
 risk the gain does not pay for.
+
+## 23. First read of the night: the organic order during a trend, and the arms as two questions crossed
+
+**The read, 22:25 to 00:40 UTC** (`scripts/arms.py`, the organisers' metric; standard errors as in §15):
+
+| Arm | Requests | Purchases / 100 requests | Cold | Warm | EUR / request |
+|---|---|---|---|---|---|
+| `v31` v9 + lift | 7,272 | 2.389 | 2.970 | 1.986 | 1.342 |
+| `v37` v9 × organic orders v9's ten | 4,843 | 2.345 | 3.029 | 1.906 | 1.174 |
+| `v32` v9 × organic over the best 100 | 7,229 | 2.301 | 3.015 | 1.824 | 1.122 |
+| `v36` v32 + new products ×1.5 | 4,937 | 2.446 | 3.096 | 2.011 | 1.258 |
+
+The three organic arms together read 2.356 against 2.389 for v31: level (−0.4 standard errors). Outside the
+trend they are level one by one (105 minutes: 2.268, 2.272, 2.243, 2.284 in the order of the table). Inside
+it they are not.
+
+**The Vitamins trend, 23:30 to 00:15 UTC** (read by the second session): the largest of the day, ×7.8 the
+subcategory's usual share and 11 % of all the store's purchases while it lasted (about 105 purchases per 5
+minutes against 13 usual); the detector was on it from 23:30:43 to 00:16:47 UTC. All four arms showed the same
+number of trending products (1.6 to 2.0 per list: the flaw of §21 is gone), but not in the same place:
+
+| Arm | Lists with a trending product in slot 1 | Its share of the clicks in the lists that hold one | The share its slots predict | Purchases / 100 requests in the trend |
+|---|---|---|---|---|
+| `v31` | 21.9 % | 50.6 % | 54.3 % (−0.7 se: placed right) | 2.702 |
+| `v37` | 18.5 % | 51.6 % | 37.9 % (+2.3 se) | 2.427 (−1.3 se against v31) |
+| `v32` | 15.6 % | 54.3 % | 44.1 % (+1.7 se) | 2.532 (−0.9 se) |
+| `v36` | 16.1 % | 50.9 % | 45.4 % | 2.880 (+0.9 se) |
+
+In the organic arms the trending product sat lower than the clicks it drew: on warm requests v32 read 0.41
+below v31 (−2.3 se) and v37 0.32 below (−1.6 se). One trend, so not a result by itself — but the cause is
+in the code, not in the noise. §21 had given a trending product a neutral organic factor (the median of
+the products ranked next to it), on the grounds that the organic model has never been asked about one. **A
+neutral factor is not a neutral rank**: the other products still move on their own factors, and the ones
+that come out first are the ones with the highest factor, so a product with a middling one loses the first
+slots to them. Replayed on 200 of the day's requests with a made-up trend of the same size:
+
+| Trending product in slot 1 | v9 + lift | Organic order, neutral factor (until 00:46 UTC) | Organic order, rank held (since) |
+|---|---|---|---|
+| organic factor orders the ten | 26.5 % of lists | 15.0 % | 26.5 % |
+| organic factor over the best 100 | 26.5 % | 13.0 % | 26.5 % |
+
+So the rule is now the one §21 meant (`hold_trending` in `reco/recommend.py`): **a trending product keeps
+the rank v9 and the lift give it, and the organic factor orders only the other products among the slots
+left.** v9 + lift places a trending product right (table above, and ×8.3 measured against ×8.6 estimated in
+§16), and that is all we know about it. In the replay every trending product is in v9's slot in 200 of 200
+lists; outside a trend nothing changes.
+
+**The money per request is not the organic factor preferring cheap products.** The three organic arms earned
+1.12 to 1.26 EUR per request against 1.34. From the per-answer log of the same hours, the product each arm
+put first cost 36.4 (v31), 38.0 (v37), 35.1 (v32) and 36.9 EUR (v36), ± 0.8 to 0.9, and the ten together 40.2,
+40.0, 38.2 and 39.2: the same shelf. Whatever the gap is, it is not the price of what is shown; it stays on
+the list of things to read in the morning, because money is the tie-breaker.
+
+**The arms since 00:46 UTC: two questions crossed**, 25 % of the traffic each.
+
+| | v9's order | v9 × organic orders v9's ten |
+|---|---|---|
+| **as it is** | `skore_money_v31` | `skore_money_v39` |
+| **products added during the event ×1.5 for known shoppers** | `skore_money_v38` | `skore_money_v40` |
+
+Each question is read on all the traffic, half on each side, instead of a fifth against a third: "the
+organic order" is (v39 + v40) against (v31 + v38), "new ×1.5" is (v38 + v40) against (v31 + v39). What was
+closed, and why:
+
+- **The organic factor choosing among the best 100** (v32, v36). In four hours it never read above v31
+  (2.301 against 2.389 since 22:25 UTC, −0.8 se), it costs 20 ms per answer, and it is the one variant
+  nothing offline can vouch for: the products it brings into a list were never shown. The order of v9's
+  ten is the part that was measured (§22), so that is the part that stays in the experiment.
+- **v36 as the only arm with the ×1.5.** v36 against v32 (+0.145, +1.2 se) is the one live sign for the
+  ×1.5 of §21, and it was tied to an arm we are closing. It now has two arms without the organic model.
+
+**What a night can tell.** From 00:46 to 07:30 UTC each side of a question gets about 36,000 requests: a
+standard error of 0.05 purchases per 100 requests on the difference, so 2 standard errors are 0.10, about
+4 % of what we sell. The offline estimates are below that (+2.5 % for the organic order; less for the ×1.5,
+which touches few lists). The night can therefore show harm, and it can show a gain larger than we expect;
+it cannot confirm a gain of 2.5 %. The rule for the final stays the one of the proven version: v31 serves
+it unless a side is 2 standard errors above over the whole night and not below in trend minutes
+([`docs/final-round.md`](final-round.md)).

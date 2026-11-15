@@ -165,7 +165,7 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sat 14 Nov 2026 23:30 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+As of Sun 15 Nov 2026 01:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
 answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 1. **Retrieve** — the rules (`score_rules`): popularity x measured lifts, 1,000 candidates.
@@ -180,34 +180,39 @@ answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
    carousel, the detector says x8.6).
 4. **Hard rules** — never a product the shopper already bought, never one out of stock.
 
-Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), one ranker for every request:
-`skore_money_v31` (30 %) v9 + full trend lift, the version to beat · `v32` (30 %) v9 x the organic model
-(`models/v9o`, `offline/organic.py`) over the best 100 candidates (300 until 23:41 CET: the same lists, slower), + lift — both live since 21:32 CET — ·
-`v37` (20 %, since 23:23 CET) v9 + lift picks the ten and v9 x organic only orders them: the same ten products
-as v31, and the one use of the organic model measured offline (+2.5 % to +4.7 % purchases, findings §22) · `v36` (20 %,
-since 22:32 CET) v32 with the score of a product added during the event x1.5 for known shoppers. No exploration.
-Since 22:51 CET, in the arms with the organic model a trending product takes the organic factor of its
-neighbours in v9's order; since 23:34 CET, in every arm, a product added during the event stays out of the
-lists for its first 20 minutes (it is not clicked before: findings §22).
+Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), one ranker for every request, 25 % of the traffic
+each since 01:46 CET on Sunday. Two questions crossed, so that each is read on all the traffic:
+`skore_money_v31` v9 + full trend lift, the version to beat · `v38` v31 with the score of a product added
+during the event x1.5 for known shoppers · `v39` v9 + lift picks the ten and v9 x the organic model
+(`models/v9o`, `offline/organic.py`) only orders them: the same ten products as v31, and the one use of the
+organic model measured offline (+2.5 % purchases, findings §22) · `v40` both. "The organic order" is
+(v39 + v40) against (v31 + v38); "new x1.5" is (v38 + v40) against (v31 + v39). No exploration.
+In the arms with the organic model a trending product keeps the rank v9 and the lift give it and the
+organic factor orders only the other products (findings §23: with a neutral factor it was losing the first
+slot); in every arm, a product added during the event stays out of the lists for its first 20 minutes (it
+is not clicked before: findings §22). Closed on the way: v32 and v36 (the organic factor choosing among
+v9's best 100: never above v31, slower), v33 to v35, v37 (v39 before the trending products kept their rank).
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
 versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
 organic model and the arms of the night, §21 ten signals checked against what v9 already predicts, the lift
-for new products and the organic factor during a trend, §22 the organic model as a second stage). The store's calendar (trends, promotions, new
+for new products and the organic factor during a trend, §22 the organic model as a second stage, §23 the first read of the night and the arms as two questions
+crossed). The store's calendar (trends, promotions, new
 products) is in [`docs/data.md`](docs/data.md). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (18:19 CET, last hour): first of the teams with 2.18 expected purchases per 100 requests;
-next team 1.83, organisers' reference 2.04. Cold requests 2.76 vs 1.73 for the reference. The weak number
-is `on_time`, 96.4 % (others 99.8 %): answers are lost in bursts of the home connection.
+Where we stand (Sunday 01:50 CET, last hour): first with 2.37 expected purchases per 100 requests; next
+teams 2.25 (team_17), 2.22 (team_03) and 2.18 (team_42); the organisers' reference about 2.0. Cold requests
+3.09 against 2.96 for the next team. `on_time` 99.9 %. The gap over the second team has been between 0.07
+and 0.17 all night; the second session logs it every 15 minutes.
 
 Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
-1. **Read the night**: `python scripts/arms.py 22:25 07:30` (UTC), or the table in `best_model.md`. v31 is
-   the version to beat: against it, v37 (the organic factor ordering v9's ten: the candidate with the
-   cleanest evidence), v32 (the organic factor also choosing among the best 300) and v36 (v32 plus the lift
-   for new products). Read the minutes with a trend apart (45 minutes
-   from :30 of every odd UTC hour). Before 21:52 UTC the organic arms had a flaw during a trend (they filled
-   lists with products of the trending subcategory, findings §21): fixed, and every arm should now show
-   about the same number of trending products per list (`tiers == "t"` in `served-*.jsonl`).
+1. **Read the night**: the three commands in [`docs/final-round.md`](docs/final-round.md) (`scripts/arms.py
+   00:47 07:30` UTC, piped into `pool_arms.py`), or the table in `best_model.md`. v31 is the version to
+   beat. A change goes into the final only if its side is 2 standard errors above the other over the whole
+   night and not below it in the minutes with a trend (45 minutes from :30 of every odd UTC hour); for the
+   organic order, look at the money per request too. One night can show harm or a gain above 4 %, not a
+   gain of 2.5 % (findings §23): if nothing passes, v31 serves the final. The first hours (22:25 to 00:46
+   UTC, arms v31, v32, v36, v37) are in findings §23.
    **If a reading shows us off first place before the final** (standing order from Javier, 15 Nov 00:15 CET:
    recover it as fast as possible, hold it, widen the gap). The second session reads the board every 15
    minutes and raises the alarm when we are not first on the 60-minute window (a 15-minute window is noise:
