@@ -7,7 +7,7 @@ no install.
 | File | What |
 |---|---|
 | [`index.html`](index.html) | The 12 slides, their speaker notes and the small engine that runs them |
-| [`data.js`](data.js) | Leaderboard snapshot shown on the "where we stand" and "learning" slides, and since when we lead the public board (`lead`). Written by code, not by hand |
+| [`data.js`](data.js) | Leaderboard snapshot shown on the "goal and result" and "learning" slides, plus our place, hourly scores and practice lead (`lead`), kept for the record. Written by code, not by hand |
 | [`update_data.py`](update_data.py) | Rewrites `data.js` from the public leaderboard and `realtime_analyisi_leaderboard/history.csv` (stdlib, read-only, no API key). For `lead` it rebuilds the board of the practice round every 5 minutes from the same API: about 290 small requests, one minute |
 | [`design.md`](design.md) | RawTree's visual identity (type, colours, shapes, logo), read from the organisers' deck and rawtree.com on 14 Nov, with the source of each value. The deck's CSS follows it |
 | `assets/` | RawTree's symbol and arcs and Tinybird's logo, as published by them |
@@ -15,8 +15,8 @@ no install.
 
 ## The slot (what the organisers told us on Sunday, 11:40 CET)
 
-- **3 to 5 minutes, and no separate demo**: the presentation is the test. The plan below is 4:30, half a
-  minute under the top of the range. Rehearse with the clock (`index.html?notas`) and know what to drop (the
+- **3 to 5 minutes, and no separate demo**: the presentation is the test. The plan below is 4:35, under the top
+  of the range. Rehearse with the clock (`index.html?notas`) and know what to drop (the
   cut list under the time plan).
 - **A big screen, in a room** (not Saturday's hall). The deck is one 1920 × 1080 sheet scaled to the window:
   put the browser in full screen (`F11`) and check that the whole slide is visible before starting.
@@ -57,10 +57,10 @@ server's `serve.log` on Javier's laptop. The notes of slide 9 say so.
 python3 presentation/update_data.py     # re-reads the public leaderboard; in final mode it shows the final
 ```
 
-Slide 2 says, under our place, the organisers' score against the winner's, since when we held second place to
-the close, and that we won the second hour; the notes add in how many hours we were first since Saturday. The practice-round lead (`lead`: "líderes desde el sábado a las 14:10, salvo
-1 h 25 min", measured 15 Nov 09:36 CET) is kept in `data.js` and quoted in the notes; the API no longer
-serves the practice windows, so it is not recomputed.
+Slide 2 states the goal (more purchases per 100 shoppers who enter the store) and the final's result against
+the best sellers and the organisers' reference only: no place, no other team (the team's decision, 15 Nov).
+The place, the hourly scores and the practice-round lead (`lead`, measured 15 Nov 09:36 CET; the API no
+longer serves the practice windows, so it is not recomputed) stay in `data.js` and in this README.
 
 Every other number on the slides is quoted from [`docs/findings.md`](../docs/findings.md); the speaker
 notes of each slide name the section (or [`best_model.md`](../best_model.md), the record of every version
@@ -73,7 +73,7 @@ What to read before presenting, slide by slide:
 
 | Slide | What |
 |---|---|
-| 2 | The result of the final (title, bars, place, score, hours, cold, on time) and, in the notes, why second: the gap, where team_33 beat us (cold) and where we beat them (warm, on time) |
+| 2 | The goal and the result of the final: 2.24 purchases per 100 visits against 2.14 for the reference and 0.75 for the best sellers, ×3.0, cold 2.62, on time 21,599 of 21,600. By the team's decision (15 Nov), no place and no other team on this slide; why second is a prepared answer in the notes of slide 12 |
 | 9 | Notes: the trend of the final is not measured here (see above); if Javier read it in `serve.log`, say it |
 | 11 | Who did what, and with which agents: Hugo first prepared the repository so that the agents knew what to do, Javier built and iterated, Hugo reviewed every decision in parallel from his own branch with his agents, and both decided and made this presentation. Written from the commit history and from Hugo's account. **Both of us should read it before presenting** |
 | 12 | Notes: the prepared answers, now with the final (on time on Wi-Fi, why second, what we would do with more time). The notes also list the commands to run if the jury asks to see the system working |
@@ -134,14 +134,14 @@ presenting. (A clicker that sends Page Down instead of the arrows will not move 
 | `index.html?min=6` | Rescales the time plan to 6 minutes |
 | `index.html?static` | Every slide in its final state, no animation (screenshots, PDF) |
 
-## Time plan: 4 minutes 30 seconds
+## Time plan: 4 minutes 35 seconds
 
 One version, 12 slides, no demo.
 
 | # | Slide | Jury criterion | Seconds |
 |---|---|---|---|
 | 1 | Cover | | 5 |
-| 2 | Where we stand | | 10 |
+| 2 | The goal (more purchases per 100 shoppers) and the result of the final against the best sellers and the reference | | 15 |
 | 3 | Measure before modelling, and why popularity × signals | Method | 25 |
 | 4 | The architecture, end to end: what we read, the server (state, rules, 52 features, two LightGBM models, trends, hard rules), what we write, the offline loop | Method, use of RawTree | 30 |
 | 5 | How the models are trained, decision by decision | Method | 35 |
@@ -152,7 +152,7 @@ One version, 12 slides, no demo.
 | 10 | RawTree | Use of RawTree | 20 |
 | 11 | Our agentic workflow: who did what, Claude Code and its limits | Communication, use of RawTree | 30 |
 | 12 | Thanks, and questions (no summary: the jury does not score one) | | 5 |
-| | | | **270** |
+| | | | **275** |
 
 **If the time runs short**, in this order: on slide 7 tell one row instead of two (the third model); on
 slide 8 skip exploration and prices; skip the three numbers under the trend on slide 9. Do not cut slides 5, 6
