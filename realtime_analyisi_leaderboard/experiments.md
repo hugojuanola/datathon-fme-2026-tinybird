@@ -17,73 +17,26 @@ but not worth or not possible to deploy · **FIXED** = a fault found and repaire
 ## 1. Where we stand now
 
 <!-- live:start -->
-_Refreshed 01:15 CET on 15 Nov 2026 (board to 01:15 CET). Expected purchases per 100 requests, the organisers' own number._
+_Refreshed 02:01 CET on 15 Nov 2026 (board to 02:00 CET). Expected purchases per 100 requests, the organisers' own number._
 
 ### The gap to the next team
 
 | Window | Place | Us | Next team | Gap | Gap on cold requests | Reference | Answered on time |
 |---|---|---|---|---|---|---|---|
-| 15 min | 1 | 2.662 | team_14 2.560 | +0.102 | +0.159 | 2.136 | 100.0 % |
-| 30 min | 1 | 2.629 | team_14 2.485 | +0.144 | +0.185 | 2.100 | 100.0 % |
-| 60 min | 1 | 2.512 | team_14 2.375 | +0.137 | +0.204 | 2.100 | 100.0 % |
-| 180 min | 1 | 2.322 | team_03 2.195 | +0.127 | +0.128 | 2.009 | 99.9 % |
+| 15 min | 1 | 2.017 | team_37 1.999 | +0.017 | +0.017 | 1.757 | 99.8 % |
+| 30 min | 1 | 2.088 | team_17 2.073 | +0.015 | -0.009 | 1.834 | 99.9 % |
+| 60 min | 1 | 2.286 | team_17 2.193 | +0.094 | +0.080 | 1.926 | 99.9 % |
+| 180 min | 1 | 2.311 | team_03 2.186 | +0.124 | +0.133 | 1.984 | 99.9 % |
 
-Official hourly score, hour in progress (previous full hour): team_06 66.0 (64.7), team_14 62.9 (58.6), team_17 61.6 (53.9), team_03 60.0 (57.8), team_40 55.9 (45.0).
+Official hourly score, hour in progress (previous full hour): team_14 69.5 (54.5), team_03 68.3 (59.5), team_06 67.8 (63.2), team_42 65.0 (57.5), team_17 64.9 (59.8).
 
-### The arms now serving, over the same minutes (since 23:25 CET, when the last one started)
+### The arms now serving, over the same minutes (since 01:50 CET, when the last one started)
 
-**All minutes** — reference 2.051 (cold 1.896, warm 2.154)
+**All minutes**: nothing yet (a piece needs 15 minutes).
 
-| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
-|---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 5,881 | 2.451 | +0.400 | 2.991 | 2.083 |  |
-| `v32` | v9 x organic factor | 5,875 | 2.351 | +0.300 | 3.048 | 1.883 | -0.10 (-0.8), +0.06 (+0.2), -0.20 (-1.8) |
-| `v36` | v9 x organic, new products x1.5 for known shoppers | 4,039 | 2.506 | +0.455 | 3.125 | 2.098 | +0.05 (+0.4), +0.13 (+0.5), +0.01 (+0.1) |
-| `v37` | v9 picks the ten, the organic factor only orders them | 3,986 | 2.336 | +0.285 | 3.054 | 1.880 | -0.12 (-0.9), +0.06 (+0.2), -0.20 (-1.6) |
+**Minutes without a trend**: nothing yet (a piece needs 15 minutes).
 
-**Minutes without a trend** — reference 1.988 (cold 1.861, warm 2.074)
-
-| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
-|---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 3,506 | 2.282 | +0.294 | 2.829 | 1.893 |  |
-| `v32` | v9 x organic factor | 3,476 | 2.226 | +0.238 | 2.793 | 1.842 | -0.06 (-0.4), -0.04 (-0.1), -0.05 (-0.3) |
-| `v36` | v9 x organic, new products x1.5 for known shoppers | 2,375 | 2.244 | +0.256 | 2.760 | 1.902 | -0.04 (-0.2), -0.07 (-0.2), +0.01 (+0.1) |
-| `v37` | v9 picks the ten, the organic factor only orders them | 2,325 | 2.271 | +0.283 | 3.072 | 1.768 | -0.01 (-0.1), +0.24 (+0.6), -0.12 (-0.8) |
-
-**Minutes of a trend** — reference 2.142 (cold 1.949, warm 2.268)
-
-| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
-|---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 2,375 | 2.702 | +0.560 | 3.246 | 2.353 |  |
-| `v32` | v9 x organic factor | 2,399 | 2.532 | +0.390 | 3.423 | 1.943 | -0.17 (-0.9), +0.18 (+0.4), -0.41 (-2.3) |
-| `v36` | v9 x organic, new products x1.5 for known shoppers | 1,664 | 2.880 | +0.738 | 3.652 | 2.376 | +0.18 (+0.9), +0.41 (+0.9), +0.02 (+0.1) |
-| `v37` | v9 picks the ten, the organic factor only orders them | 1,661 | 2.427 | +0.284 | 3.030 | 2.037 | -0.28 (-1.3), -0.22 (-0.5), -0.32 (-1.6) |
-
-### The same for the arms that were already serving at 22:55 CET, since then
-
-**All minutes** — reference 2.020 (cold 1.883, warm 2.110)
-
-| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
-|---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 7,502 | 2.380 | +0.360 | 2.932 | 2.007 |  |
-| `v32` | v9 x organic factor | 7,452 | 2.308 | +0.288 | 2.982 | 1.855 | -0.07 (-0.7), +0.05 (+0.2), -0.15 (-1.5) |
-| `v36` | v9 x organic, new products x1.5 for known shoppers | 5,111 | 2.432 | +0.412 | 3.072 | 2.022 | +0.05 (+0.4), +0.14 (+0.5), +0.01 (+0.1) |
-
-**Minutes without a trend** — reference 1.977 (cold 1.901, warm 2.028)
-
-| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
-|---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 4,075 | 2.277 | +0.299 | 2.918 | 1.820 |  |
-| `v32` | v9 x organic factor | 3,996 | 2.190 | +0.213 | 2.749 | 1.813 | -0.09 (-0.6), -0.17 (-0.6), -0.01 (-0.1) |
-| `v36` | v9 x organic, new products x1.5 for known shoppers | 2,715 | 2.259 | +0.282 | 2.869 | 1.855 | -0.02 (-0.1), -0.05 (-0.1), +0.03 (+0.2) |
-
-**Minutes of a trend** — reference 2.069 (cold 1.862, warm 2.203)
-
-| Arm | What it is | Requests | Overall | Over the reference | Cold | Warm | Against `v31`: overall, cold, warm (standard errors) |
-|---|---|---|---|---|---|---|---|
-| `v31` | v9 + trend lift (the proven one) | 3,427 | 2.503 | +0.433 | 2.950 | 2.220 |  |
-| `v32` | v9 x organic factor | 3,456 | 2.445 | +0.376 | 3.252 | 1.903 | -0.06 (-0.4), +0.30 (+0.9), -0.32 (-2.2) |
-| `v36` | v9 x organic, new products x1.5 for known shoppers | 2,396 | 2.627 | +0.557 | 3.312 | 2.205 | +0.12 (+0.7), +0.36 (+1.0), -0.01 (-0.1) |
+**Minutes of a trend**: nothing yet (a piece needs 15 minutes).
 
 A difference counts from two standard errors and 0.15; a quarter of an hour of a small arm is a lottery.
 <!-- live:end -->
@@ -161,6 +114,10 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
 - Six ideas were closed tonight with v9's own prediction as the control (co-purchase, spreading a list,
   recency, waiting, price, region for known shoppers): for a given shopper and list, v9 has taken what these
   signals give.
-- What can still move it: the organic factor (`v32`, `v37`), the new-product lift (`v36`), and how well a
-  large trend is followed. The four nearest teams are within 0.05 to 0.08 of us outside a large trend.
+- What can still move it: the organic order (`v39`, `v40`), the new-product lift (`v38`, `v40`), and how
+  well a large trend is followed. By 02:00 CET on 15 Nov the nearest teams (team_17, team_14, team_03,
+  team_42, team_37) have reached us outside a trend: the quarter-hour gap to the best of them was +0.03 to
+  +0.13 until midnight, +0.10 to +0.21 inside the Vitamins trend, and -0.02 to +0.02 in the half hour after
+  it. Their rankers read like ours (cold 3.1 to 3.2, warm 1.8 to 2.0). What we still have over them is the
+  trend, 45 minutes in every 120.
 - What can lose it: answers. Four minutes without answering cost as much as the whole of today's gap.
