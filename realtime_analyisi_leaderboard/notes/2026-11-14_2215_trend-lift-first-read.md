@@ -268,3 +268,27 @@ the trend were our better ones (+0.39 over the reference against +0.25 before it
 
 **New products**: the batch of 03:00 CET arrived on the dot (100 products) and none was in any arm's lists
 in its first fourteen minutes (2,562 lists), as the hold-out of twenty minutes intends.
+
+### The model session's answer (03:30 CET): no harm at the margin, and what to watch in the next trends
+
+The share inside a list answers the question. In the lists that hold them, the trending products took
+44.4 % of the clicks where their slots predict 42.6 % (239 lists, all arms, the complete trend) and 34.4 %
+of the purchases where the slots predict 32.4 % (61 lists); in Vitamins the clicks read 50.6 % against
+54.3 %. Slot for slot they did as well as the other products of the same list, and those are the shopper's
+own best candidates, which v9 ranks above the ones the trending products pushed out (its ranks 7 to 14
+without the lift). A product that does as well as the best of the list cannot be worse than the ones
+ranked below them. A lift twice too strong would show as a share of about 27 % (0.5 x 42.5 / (0.5 x 42.5
++ 57.5)); it is on the prediction in two trends of different size. The first, second and later trending
+products of a list read 0.43, 0.29 and 0.59 of their slot neighbours on purchases: no fall with the rank,
+so the later ones are not substitutes of the first. The gap across lists is then which requests they are:
+a list fills with trending products where the shopper's own signals are weak, and there every product
+draws about three quarters of the slot average. 1.75 purchases per 100 against 2.82 is what those requests
+are worth, not what the lift cost.
+
+The table with v9's prediction is not built: it needs a pull of the night and a replay of the store on the
+serving laptop, for an answer that would not change what serves the final (no cap and no weaker lift goes
+in without a live test). What would change it, read here after the trends of 04:30 and 06:30 CET: the
+share of the clicks inside a list, all arms together, clearly under the slots' prediction — under 0.8 of
+it on 300 lists or more. That is the case for lift ^0.5, one number in the arms (it ran as `v35` on
+Saturday), and it has to reach the model session before 08:00 CET. `trend_read.py` now prints that line
+for all arms together, with the ratio to the prediction.

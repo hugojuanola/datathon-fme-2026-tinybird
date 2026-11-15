@@ -106,12 +106,15 @@ def main() -> None:
     # The table compares products across requests. This stays inside each list: of the clicks (purchases)
     # made in lists that hold a trend product, the share that went to it, against what the slots alone
     # predict. Above the prediction = the trend products sit too low in those lists; below = too high.
+    # The line for all arms together is the one to watch: slot for slot, a trend product that takes its
+    # share does as well as the shopper's own best products, so the lift is not too strong; clearly under
+    # the prediction (0.8 of it on 300 lists or more) is the case for a weaker lift.
     print("\ninside a list that holds a trend product, during the trend: share of the clicks / purchases that went to it, against the slots' prediction")
     live = imp[imp.during]
     for flag, name in (("click", "clicks"), ("buy", "purchases")):
         weight = live.groupby("slot")[flag].mean()
-        for label in labels:
-            d = live[live.group == label]
+        for label in labels + ["all arms together"]:
+            d = live[live.group.isin(labels)] if label == "all arms together" else live[live.group == label]
             d = d[d.groupby("rid").trend.transform("any") & d.rid.isin(d.loc[d[flag] == 1, "rid"])].copy()
             n = d.rid.nunique()
             if n < 15:
@@ -122,7 +125,7 @@ def main() -> None:
             actual = float(d.loc[d[flag] == 1, "trend"].mean())
             se = (expected * (1 - expected) / n) ** 0.5
             print(f"   {name + ', ' + label:<34} {n:>5} lists: actual {100 * actual:5.1f}%  by slot {100 * expected:5.1f}%  "
-                  f"({(actual - expected) / max(se, 1e-9):+.1f} se)")
+                  f"({(actual - expected) / max(se, 1e-9):+.1f} se; {actual / max(expected, 1e-9):.2f} of the prediction)")
 
     # Does a list fill up with trend products for nothing? The first trend product of a list (by slot), the
     # second, and the rest, against the other products at the same slots (per 1,000 impressions, slots alike).
