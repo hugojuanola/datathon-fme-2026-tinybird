@@ -37,6 +37,11 @@ no install.
 | Warm (the rest, `scripts/arms.py`) | **1.876** | 1.861 | 1.848 | 2.085 | 0.348 |
 | On time | **99.995 %** (21,599 of 21,600) | 99.977 % | 99.926 % | 100 % | 100 % |
 
+Our place in the organisers' anonymised view of the final, every 5 minutes (`final` in `data.js`): 5th at
+10:05, 2nd at 10:10, 3rd at 10:15, then 2nd at every checkpoint from 10:20 to the close; team_33 was first at
+every one. Top five: team_33 58.3, team_06 57.7, team_03 56.2, team_17 54.3, team_37 53.7. Slide 8's chart adds
+the final as one shaded point at its close (the API serves the final's two hours only as a whole).
+
 `skore_money_v31` served all of it (`python scripts/arms.py 09:00 11:00`: one version, 09:00:00–10:59:59
 UTC). By the hour (the organisers' hourly score, `hours` in `data.js`): team_33 won the first hour (52.3
 against 50.6), we won the second (53.3 against 52.7). From Saturday 13:00 CET to the end we were first in
@@ -52,8 +57,8 @@ server's `serve.log` on Javier's laptop. The notes of slide 9 say so.
 python3 presentation/update_data.py     # re-reads the public leaderboard; in final mode it shows the final
 ```
 
-Slide 2 says, under our place, the organisers' score against the winner's, that we won the second hour, and
-in how many hours we were first. The practice-round lead (`lead`: "líderes desde el sábado a las 14:10, salvo
+Slide 2 says, under our place, the organisers' score against the winner's, since when we held second place to
+the close, and that we won the second hour; the notes add in how many hours we were first since Saturday. The practice-round lead (`lead`: "líderes desde el sábado a las 14:10, salvo
 1 h 25 min", measured 15 Nov 09:36 CET) is kept in `data.js` and quoted in the notes; the API no longer
 serves the practice windows, so it is not recomputed.
 

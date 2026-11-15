@@ -40,7 +40,8 @@ def row(team: dict) -> dict:
 
 
 def trend() -> list[list[float]]:
-    """[unix seconds, our conversion, reference, baseline] per tick of the practice round, oldest first."""
+    """[unix seconds, our conversion, reference, baseline] per tick of the practice round, oldest first
+    (in final mode main() adds the final as one more point, at its close)."""
     points: dict[int, list[float]] = {}
     if HISTORY.exists():
         with open(HISTORY, newline="", encoding="utf-8") as f:
@@ -62,6 +63,21 @@ def hours(state: dict) -> list[list]:
         if place:
             out.append([int(t), progress[TEAM][t], place, board[0][0], board[0][1]])
     return out
+
+
+def final_progress(state: dict, place: int) -> dict | None:
+    """Our place in the final every 5 minutes (the organisers' anonymised view), and the gap to the first."""
+    try:
+        view = fetch("?view=progress")
+    except (OSError, ValueError):
+        return None
+    teams = view.get("teams") or []
+    ours = next((t for t in teams if t.get("team") == TEAM), None) or \
+        next((t for t in teams if t.get("ranks") and t["ranks"][-1] == place), None)
+    if not ours:
+        return None
+    return {"checkpoints": [int(c) for c in view["checkpoints"]], "ranks": ours["ranks"],
+            "gap_leader": ours.get("gap_leader"), "start": int(state["final_start"]), "end": int(state["final_end"])}
 
 
 def fetch(query: str = "") -> dict:
@@ -124,6 +140,9 @@ def main() -> None:
     if state["mode"] == "practice":     # the tick of this very minute, so the chart ends where the slide does
         history.append([int(state["updated_at"]), teams[rank]["conversion"],
                         state["reference"]["conversion"], state["baseline"]["conversion"]])
+    if state["mode"] == "final":        # the final's two hours, as one point at its close
+        history.append([int(state["final_end"]), teams[rank]["conversion"],
+                        state["reference"]["conversion"], state["baseline"]["conversion"]])
     data = {
         "mode": state["mode"],
         "updated_at": int(state["updated_at"]),
@@ -136,6 +155,8 @@ def main() -> None:
         "history": history,
         "hours": hours(state),
     }
+    if state["mode"] == "final":
+        data["final"] = final_progress(state, rank + 1)
     try:
         data["lead"] = lead(state)
     except (OSError, ValueError, KeyError) as e:      # e.g. after the final, if the API no longer serves the practice
