@@ -1046,6 +1046,9 @@ fraction of a purchase in a final, the gain averaged over the ten trends is abou
 and it is a change to the detector three hours before the final. If the final brings small trends, it is
 one constant and a dozen lines in `reco/features.py`. A swap in the middle of this trend lost nothing: the
 new server had found Watches from the journal before it took over.
+Read when it ended (second session): 37 purchases in the 45 minutes, the detector on and off 19 times, a
+Watches product in 1.0 % of our lists (98 impressions, no click), and the board the same inside as before
+for every team. A trend moves the board in proportion to its share of the store's purchases.
 
 **Where the headroom is: requests from known shoppers.** On cold requests we have been far above the
 organisers' reference all along (2.6 to 3.2 against 1.6 to 2.0). On warm ones (a known shopper, no new

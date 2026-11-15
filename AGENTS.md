@@ -203,20 +203,23 @@ The store's calendar (trends, promotions, new products) is in [`docs/data.md`](d
 session writes a live read of the board and of our version in
 [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (Sunday 06:45 CET): level with team_03 and team_14 on the short boards (15, 30 and 60
-minutes: within 0.002 to 0.013 of each other, read while those windows still held our four arms) and first
-by +0.07 on the 180-minute one. The best version of each of the three nearest teams reads 2.26 to 2.33
-outside trends, which is what v31 reads (2.30 over the night): outside trends the leaders are level. Our
-lead is made in the trends: the lift is worth about 0.08 on the board while a trend of ordinary size runs
-(inside Sneakers the gap was +0.13 against +0.06 before it) and its dose sat on the prediction in three
-trends. A trend on a tiny subcategory (Watches, 06:30 CET: 0.07 % of the store's views) is at the edge of
-the detector, which drops it at every minute mark; it is worth little there and the detector is unchanged
-(findings §23). On the public board's last hour at 06:47 CET we are second, 2.146 against 2.158 for team_03 (team_14 2.144):
-that hour still holds 46 minutes of the four arms. Where nobody has caught the organisers' reference is
-on requests from known shoppers (2.05 to 2.19 against our 1.84 to 1.98, and 1.84 to 1.94 for the nearest
-teams): the headroom we did not find (findings §23).
-Answers on time: 100 % except the 34 of 04:16 CET (findings §24) and the 6 of each swap.
-The second session logs the board every 15 minutes; from 08:00 CET its alarms go to Javier.
+Where we stand (Sunday 07:22 CET, v31 alone for 47 minutes of each window): first on the 15- and
+30-minute boards by 0.015, second on the 60-minute one by 0.006 (team_03 2.189), first on the 180-minute
+one by 0.049. On the organisers' hourly score we led by 2 to 4 points from 03:00 to 06:00 CET (62.5 to
+63.9) and in the hour to 07:00 CET it read team_03 63.6, team_14 62.8, us 62.7. **The three leaders are
+level.** Outside trends the best version of each of the nearest teams reads like v31 or a little above
+(2.27 to 2.38 against 2.12 to 2.22 in the last three half hours, within one standard error each time and
+on the same side each time); their team numbers are held down by a second version each, which they may
+drop for the final. Our lead is made in the trends: the lift is worth about 0.08 on the board while a
+trend of ordinary size runs (inside Sneakers the gap was +0.13 against +0.06 before it), and its dose sat
+on the prediction in three trends. A trend moves the board in proportion to its share of the store's
+purchases: the one on a tiny subcategory (Watches, 06:30 CET: 37 purchases in 45 minutes) is at the edge
+of the detector, which went on and off 19 times, and moved nothing for anybody; the detector is unchanged
+(findings §23). Where nobody has caught the organisers' reference is on requests from known shoppers
+(2.05 to 2.19 against our 1.84 to 1.98, and 1.84 to 1.94 for the nearest teams): the headroom we did not
+find (findings §23). Answers on time: 100 % except the 34 of 04:16 CET (findings §24) and the 6 of each
+swap. The second session logs the board every 15 minutes, reports to Javier from 08:00 CET and stops at
+09:30 CET, so that no assistant session is open during the final.
 
 For the final (Javier or Hugo, before 09:30 CET):
 1. **The version is already running**: v31 alone since 06:34 CET. To serve another one, its line is in
