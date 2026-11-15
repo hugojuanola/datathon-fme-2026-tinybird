@@ -39,27 +39,24 @@ from reco.state import State
 #  the organic factor may reorder, "fresh": multiplier, "price": elasticity}, see recommend —, % of the
 #  traffic). A ranker "A|B" routes by kind of request: A answers the cold ones, B the rest.
 #
-# The night of 14 to 15 Nov. One ranker for every request (weighting live feedback x20 for cold requests did
-# not help on any of three measurements). v9 is the best proven; a trending product sells x8.3 in our
-# carousel, which is what the detector estimates, so the lift is applied in full (exponent 1).
-# Two questions are left for the final, and since 00:46 UTC each is read on all the traffic (two by two):
-#   new x1.5  a product added during the event has its score x1.5 for known shoppers (findings §21)
-#   order     v9 + lift picks the ten and v9 x organic orders them (offline/organic.py, findings §22): the same
-#             ten products, and a trending product keeps the slot v9 + lift gives it (findings §23)
-#                      v9's order    organic order
-#     as it is         v31           v39
-#     new x1.5         v38           v40
-# v31 is the version to beat. "new x1.5" is (v38 + v40) against (v31 + v39), "order" is (v39 + v40) against
-# (v31 + v38): half the traffic on each side instead of a fifth.
-# Closed at 00:46 UTC: v32 (the organic factor choosing among v9's best 100: in four hours never above v31,
-# 2.30 against 2.39 since 22:25 UTC, EUR 1.12 per request against 1.34, and 20 ms more per answer), v36 (v32 with
-# new x1.5: 2.45, which is why the x1.5 now has arms of its own) and v37 (v39 before the trending products
-# kept their slots). Earlier: v33 (v9b, v9 retrained on all of Saturday: level with v9), v34 (no lift) and
-# v35 (lift ^ 0.5): the dose of the lift was settled per impression (x8.3 measured, x8.6 estimated).
-ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 25),
-        ("skore_money_v38", "model", "v9", {"trend": 1.0, "fresh": 1.5}, 25),
-        ("skore_money_v39", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10}, 25),
-        ("skore_money_v40", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10, "fresh": 1.5}, 25))
+# One arm since about 05:35 UTC on 15 Nov, and for the final: v9 with the trend lift in full. One ranker for
+# every request (weighting live feedback x20 for cold requests did not help on any of three measurements);
+# a trending product sells x8.3 in our carousel, which is what the detector estimates, and in three trends
+# of the night it took the share of clicks its slots predict (0.93, 1.04, 1.01): exponent 1.
+# Nothing measured against it came out above. The night's two questions ran crossed, 25 % of the traffic
+# each, from 00:46 to 05:35 UTC, 25,500 requests on each side (findings §23):
+#   v38  a product added during the event x1.5 for known shoppers (findings §21):                 -0.06 (-1.0 se)
+#   v39  v9 + lift picks the ten and v9 x organic orders them (offline/organic.py, findings §22): -0.10 (-1.7 se)
+#   v40  both
+# They were stopped when neither could reach its bar by the morning any more and two rivals had drawn level
+# with us on the 30-minute board with half of our traffic on the lower side. Their lines, to run one again:
+#   ("skore_money_v38", "model", "v9", {"trend": 1.0, "fresh": 1.5}, 25)
+#   ("skore_money_v39", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10}, 25)
+#   ("skore_money_v40", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10, "fresh": 1.5}, 25)
+# Closed before: v32 and v36 (the organic factor choosing among v9's best 100: never above v31, 20 ms more
+# per answer), v37 (v39 before the trending products kept their slots), v33 (v9b, v9 retrained on all of
+# Saturday: level with v9), v34 (no lift) and v35 (lift ^ 0.5).
+ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 100),)
 POLLERS = 4
 POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
 SENDERS = 4
