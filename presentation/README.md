@@ -72,12 +72,12 @@ What to read before presenting, slide by slide:
 | Slide | What |
 |---|---|
 | 2 | The organisers' published curve (`assets/curva-organizadores.png`, cropped from their slide "The learning curve"), large. Title: "Nuestra solución". Say "casi siempre" aloud, not "siempre": the top line is the best team of each hour, which was us in 19 of the 21 practice hours from Sat 13:00 CET (API `progress`), and not in the final's shaded stretch (team_33). Below: the goal and the final's 2.24 against 2.14 and 0.75, ×3.0. No place on the slide (the team's decision); the notes say what to answer if asked |
-| 3 | The agentic workflow as two roles in a loop: the iterating agent (proposes, trains on the replayed store, validates on the held-out week, serves a new `model_version`) and the analysing agent (reads the board and the feedback per version with SQL, against the measured noise and a rule written beforehand, keeps `experiments.md`). Hugo and Javier decide. Who did what is in the notes. **Both of us should read them before presenting** |
-| 4 | The exploratory analysis in plain words: what makes a click (favourite category ×19, seen recently ×7.1, first position ×6.6, already bought ×0.5) and what makes a purchase (regular customer ×12, in the cart ×10, seen recently ×10, same category ×5); the notes name each feature in `reco/features.py`. Click numbers from `avanced_data_analysis/` (figure 10), purchase rates from findings §1, §4, §5 |
+| 3 | The exploratory analysis in plain words: what makes a click (favourite category ×19, seen recently ×7.1, first position ×6.6, already bought ×0.5) and what makes a purchase (regular customer ×12, in the cart ×10, seen recently ×10, same category ×5); the notes name each feature in `reco/features.py`. Click numbers from `avanced_data_analysis/` (figure 10), purchase rates from findings §1, §4, §5 |
+| 4 | The agentic workflow as two roles in a loop: the iterating agent (proposes, trains on the replayed store, validates on the held-out week, serves a new `model_version`) and the analysing agent (reads the board and the feedback per version with SQL, against the measured noise and a rule written beforehand, keeps `experiments.md`). Hugo and Javier decide. Who did what is in the notes. **Both of us should read them before presenting** |
 | 5 | The final architecture, drawn like the Transformer figure (Vaswani et al., 2017): the live state on the left (shopper, product, store and its trend detector), one request on the right (retrieval 5,200 → 1,000, 52 features, two LightGBM multiplied, × trend, hard rules), the feedback loop dashed. On the right: P(clic) × P(compra \| clic) = P(compra), and why not one model for the purchase (only a clicked product can be bought; 3× more clicks than purchases to learn from; live, one direct model v9d sold 2.12 against 2.37, findings §15), then the offline training |
 | 6 | Notes: the prepared answers (on time on Wi-Fi, why second, what we would do with more time), and the commands to run if the jury asks to see the system working |
 
-When the system changes again, these places need a look too: the bars of slide 4, and the numbers in the
+When the system changes again, these places need a look too: the bars of slide 3, and the numbers in the
 boxes of slide 5 (feature count, number of trees — the serving ranker's: `models/v9/*.txt`, not
 `len(FEATURES)` —, ranking and answer times from `realtime_analyisi_leaderboard/latency_history.csv`, cadences
 from `reco/serve.py` and `reco/state.py`).
@@ -96,16 +96,16 @@ explain the challenge (the jury wrote it):
 
 | What they asked | Slide |
 |---|---|
-| Why you did something | 4 (what the data says makes a click and a purchase, and the recipe that follows from it) · 5 (each stage of the model) |
-| How you trained the models | 5 (offline, the replayed store with the same code, validated on a week the model did not see) · 3 (how each change was tested before it served) |
-| What coding agents you used | 3 (Claude Code, as two agents in a loop, and what they may not do) |
-| What every team member did | 3 (notes) |
+| Why you did something | 3 (what the data says makes a click and a purchase, and the recipe that follows from it) · 5 (each stage of the model) |
+| How you trained the models | 5 (offline, the replayed store with the same code, validated on a week the model did not see) · 4 (how each change was tested before it served) |
+| What coding agents you used | 4 (Claude Code, as two agents in a loop, and what they may not do) |
+| What every team member did | 4 (notes) |
 
 | Criterion (points) | Slides |
 |---|---|
 | Method (10): sound, justified, validated offline | 3, 4, 5 |
 | Learning from the stream (10): feedback, trends, cold start | 5 (the live state, the trend detector, the feedback loop) · 2 (the curve) |
-| Use of RawTree (5) | 4 (the analysis in SQL inside RawTree) · 3 (versions and feedback through RawTree) · 5 (what is read and written) |
+| Use of RawTree (5) | 3 (the analysis in SQL inside RawTree) · 4 (versions and feedback through RawTree) · 5 (what is read and written) |
 | Communication (5) | all |
 
 "Anything a team cannot explain in the presentation may be penalised": both of us should be able to take
@@ -113,7 +113,7 @@ any slide. The notes (`index.html?notas`) carry the numbers and the answers to t
 
 ## Keys
 
-Only the arrows: `→` (or `↓`) goes forward, `←` (or `↑`) goes back. Slide 4 reveals its last line on an
+Only the arrows: `→` (or `↓`) goes forward, `←` (or `↑`) goes back. Slide 3 reveals its last line on an
 extra press. No other key and no click does anything, so nothing can be triggered by mistake while
 presenting. (A clicker that sends Page Down instead of the arrows will not move the deck: try it beforehand.)
 
@@ -130,13 +130,13 @@ presenting. (A clicker that sends Page Down instead of the arrows will not move 
 |---|---|---|
 | 1 | Cover | 5 |
 | 2 | Nuestra solución: the goal, the organisers' curve, the final's 2.24 | 40 |
-| 3 | Our agentic workflow: the iterating agent and the analysing agent | 65 |
-| 4 | The exploratory analysis: what makes a click and a purchase | 55 |
+| 3 | The exploratory analysis: what makes a click and a purchase | 55 |
+| 4 | Our agentic workflow: the iterating agent and the analysing agent | 65 |
 | 5 | The final architecture, in one figure | 60 |
 | 6 | Thanks, and questions | 5 |
 | | | **230** |
 
-**If the time runs short**: on slide 4 tell one column per side's top two bars; on slide 5 skip the offline
+**If the time runs short**: on slide 3 tell one column per side's top two bars; on slide 5 skip the offline
 note on the right.
 
 `index.html?static` shows every slide in its final state without animation; printing that page to PDF
