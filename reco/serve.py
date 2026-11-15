@@ -42,21 +42,24 @@ from reco.state import State
 # The night of 14 to 15 Nov. One ranker for every request (weighting live feedback x20 for cold requests did
 # not help on any of three measurements). v9 is the best proven; a trending product sells x8.3 in our
 # carousel, which is what the detector estimates, so the lift is applied in full (exponent 1).
-#   v31  v9 + lift                      the version to beat
-#   v32  v9 x organic + lift            + what shoppers go on to buy in the store (offline/organic.py)
-#   v37  v9 + lift picks the ten, v9 x organic orders them: the same ten products as v31, in another order. No
-#        product enters a list on the organic model's word, and it is exactly what the held-out lists
-#        measured (+2.5 % to +4.7 % purchases, findings §22). v37 against v31 is the order alone; v32 against v37 is
-#        what the organic factor brings into the list from outside
-#   v36  v9 x organic + lift, and products added during the event x1.5 for known shoppers (findings §21)
-# v31 and v32 answer the same requests as before (same hash buckets), so their series go on. v37 took the
-# place of v33 (v9b, v9's features retrained on all of Saturday: level with v9 over its first hour, as it
-# was offline), v36 that of v34 (no lift) and v35 (lift ^ 0.5): the dose of the lift was settled per
-# impression (x8.3 measured, x8.6 estimated), which two arms of 10 % could not have told apart in a night.
-ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 30),
-        ("skore_money_v32", "model", "v9o", {"trend": 1.0, "organic": 1.0}, 30),
-        ("skore_money_v37", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10}, 20),
-        ("skore_money_v36", "model", "v9o", {"trend": 1.0, "organic": 1.0, "fresh": 1.5}, 20))
+# Two questions are left for the final, and since 00:46 UTC each is read on all the traffic (two by two):
+#   new x1.5  a product added during the event has its score x1.5 for known shoppers (findings §21)
+#   order     v9 + lift picks the ten and v9 x organic orders them (offline/organic.py, findings §22): the same
+#             ten products, and a trending product keeps the slot v9 + lift gives it (findings §23)
+#                      v9's order    organic order
+#     as it is         v31           v39
+#     new x1.5         v38           v40
+# v31 is the version to beat. "new x1.5" is (v38 + v40) against (v31 + v39), "order" is (v39 + v40) against
+# (v31 + v38): half the traffic on each side instead of a fifth.
+# Closed at 00:46 UTC: v32 (the organic factor choosing among v9's best 100: in four hours never above v31,
+# 2.30 against 2.39 since 22:25 UTC, EUR 1.12 per request against 1.34, and 20 ms more per answer), v36 (v32 with
+# new x1.5: 2.45, which is why the x1.5 now has arms of its own) and v37 (v39 before the trending products
+# kept their slots). Earlier: v33 (v9b, v9 retrained on all of Saturday: level with v9), v34 (no lift) and
+# v35 (lift ^ 0.5): the dose of the lift was settled per impression (x8.3 measured, x8.6 estimated).
+ARMS = (("skore_money_v31", "model", "v9", {"trend": 1.0}, 25),
+        ("skore_money_v38", "model", "v9", {"trend": 1.0, "fresh": 1.5}, 25),
+        ("skore_money_v39", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10}, 25),
+        ("skore_money_v40", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10, "fresh": 1.5}, 25))
 POLLERS = 4
 POLL_EVERY = 0.15       # seconds between polls of shop.requests, all pollers together
 SENDERS = 4
