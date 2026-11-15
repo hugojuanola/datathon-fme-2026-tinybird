@@ -162,3 +162,38 @@ count from 21:55 UTC.
 | 21:55-22:20 | all minutes since the fix | 2.088 on 1,340 | 2.209 on 1,315 (+0.5 se) | 2.176 on 908 | 2.069 on 935 | 1.908 |
 
 Nothing to read yet after the fix: 25 minutes. The organic arms together are +0.12 over `v31` (+0.6 se).
+
+## Update, 01:35 CET — Vitamins (00:30-01:15 CET): a large trend, read whole
+
+**The store.** Vitamins purchases per five minutes from 23:30 to 00:15 UTC: 103, 97, 101, 110, 101, 124, 108,
+84, 116, against 13.4 on an ordinary five minutes of the day (1,932 in the twelve hours before): x7.8, and
+11.0 % of all purchases against 1.5 % usually. Views about 1,000 against 250 (x4), carts about 200 against
+22. It started and stopped on the minute; the detector had it 43 seconds in and let go at 00:16:47 UTC.
+
+**Our carousel, per arm** (8,099 requests; all arms carry the lift at full strength):
+
+| Arm | Requests | Vitamins products per list | Lists with one | Lists with one in slot 1 | Purchases per 1,000 impressions, slots alike: Vitamins / others | Expected purchases per 100 (organisers) |
+|---|---|---|---|---|---|---|
+| `v31` v9 | 2,374 | 1.87 | 48.7 % | 21.9 % | 4.48 / 2.85 | 2.702 |
+| `v37` v9 picks the ten, organic orders them | 1,662 | 2.01 | 50.2 % | 18.5 % | 3.66 / 2.33 | 2.427 (-1.3 se) |
+| `v32` v9 x organic | 2,399 | 1.65 | 45.0 % | 15.6 % | 3.12 / 2.15 | 2.532 (-0.9 se) |
+| `v36` organic, new products x1.5 | 1,664 | 1.60 | 45.1 % | 16.1 % | 4.34 / 2.72 | 2.880 (+0.9 se) |
+
+Reference 2.142. The arms show the trend alike (within a factor of 1.3): no repeat of the Face Cream flaw.
+
+**Do the later trend products of a list still sell?** Yes. The first Vitamins product of a list (mean slot
+3.3) sold 7.6 per 1,000 against 5.4 for the other products at those slots; the second (slot 4.3) 4.0
+against 2.4; the third and later (slot 6.7) 2.2 against 1.3. A list that takes several does not waste them.
+
+**Is the trend product in the right place?** In v9's lists, yes: of the clicks made in lists that hold
+one, 50.6 % went to it where its slots predict 54.3 % (-0.7 se), and 65.6 % of the purchases against
+67.9 %. In the organic arms it gets more than its slots predict: clicks 51.6 % against 37.9 % for `v37`
+(+2.3 se) and 54.3 % against 44.1 % for `v32` (+1.7 se), and they put it first less often (15.6 to 18.5 %
+of the lists against 21.9 %). The organic factor lets other products pass a trending one that v9 x lift
+had placed right. Inside the trend `v37` and `v32` read 0.28 and 0.17 under `v31` (1.3 and 0.9 se);
+outside it, over the 105 minutes without a trend since 23:25 CET, the four arms are level (2.27, 2.24, 2.28,
+2.27). One trend: a question with a mechanism behind it, not a finding.
+
+**Our gap to the next team inside the trend**: +0.19, +0.17 and +0.17 on the 15-, 30- and 60-minute boards
+at 00:59 CET; +0.10, +0.14 and +0.14 at 01:15; +0.06 to +0.09 in the hours without a trend. Three large
+trends so far (Game Consoles, Vitamins, and before them the afternoon's): each is where the gap is made.
