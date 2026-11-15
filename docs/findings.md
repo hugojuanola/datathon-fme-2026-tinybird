@@ -955,3 +955,25 @@ above zero. With a night worth ± 2.1 % on each question, that reads:
 A reading "at or above" is a weak test — with no effect at all it comes out half of the time — so it is
 never the evidence: the held-out lists are, and the night is asked only whether it contradicts them. If
 the humans prefer the proven version whatever the reading, that is v31, and nothing is lost that we had.
+
+**The next trend, with the rank held (Leashes, 01:30 to 02:15 UTC; read by the second session).** As large
+as the largest of Saturday: the subcategory went from 1.1 % to 11.4 % of the store's purchases (×10.3). The
+organic arms now place the trending product where v9 does: in slot 1 in 20.9 % of their lists against
+21.9 % (in Vitamins 18.5 % against 21.9 %). Inside the trend the organic order read −0.11 (−0.7 se) and new
+×1.5 +0.15 (+1.0 se); over the night so far (00:50 to 02:15 UTC, 7,600 requests on each side) −0.07 (−0.7
+se) and 0.00. Nothing either way yet. Two things to keep:
+
+- **The dose of the lift is right at the margin.** Half of the lists held a trending product, 4.3 of them
+  on average, and those lists sold less than the others (1.75 purchases per 100 against 2.82 in v31). That
+  is which requests they are, not what the lift did to them. Inside those lists the trending products took
+  44.1 % of the clicks where their slots predict 42.5 % (Vitamins: 50.6 % against 54.3 %): slot for slot
+  they did as well as the shopper's own best candidates, which v9 ranks above the ones the trending
+  products pushed out. Were the lift twice too strong, they would take about 27 %. The lists that fill
+  with trending products are the ones of shoppers with weak signals of their own, where every product
+  draws three quarters of the clicks its slot usually gets. What would reopen it: that share falling
+  clearly under the slot prediction in another trend (the case for lift ^ 0.5, which ran as v35).
+- **The trend is no longer ours alone.** Inside it we read 2.342 against 2.305, 2.294 and 2.221 for the
+  next three teams: +0.04, where Game Consoles and Vitamins had given +0.10 to +0.33. Every team rose by
+  0.10 to 0.16 inside the trend (a ranker that reads the recent views picks a trend up by itself); we rose
+  by 0.19. Two teams differ by 0.10 over 45 minutes by chance, so it is one reading, but outside trends the
+  nearest teams are level with us since about 01:00 UTC.

@@ -200,10 +200,11 @@ crossed). The store's calendar (trends, promotions, new
 products) is in [`docs/data.md`](docs/data.md). A second session writes a live read of the board and
 of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (Sunday 01:50 CET, last hour): first with 2.37 expected purchases per 100 requests; next
-teams 2.25 (team_17), 2.22 (team_03) and 2.18 (team_42); the organisers' reference about 2.0. Cold requests
-3.09 against 2.96 for the next team. `on_time` 99.9 %. The gap over the second team has been between 0.07
-and 0.17 all night; the second session logs it every 15 minutes.
+Where we stand (Sunday 03:10 CET): first on the four windows the second session reads (15 minutes to the
+longest: +0.03, +0.06, +0.05 and +0.11 over the next team), `on_time` 100 %, p95 1.9 s. Since about 02:00 CET
+the nearest teams (team_03, team_17, team_14) are level with us outside trends, and in the last trend
+(Leashes, 02:30 CET) the gap inside it was +0.04 where earlier trends gave +0.10 to +0.33: the lead is thin
+(findings §23). The second session logs it every 15 minutes.
 
 Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
 1. **Read the night**: the three commands in [`docs/final-round.md`](docs/final-round.md) (`scripts/arms.py
