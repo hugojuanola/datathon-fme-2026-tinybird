@@ -5,8 +5,9 @@
 
 Reads the public leaderboard (https://datathon.rawtree.dev/api/state) and the trend kept by the watch
 session (realtime_analyisi_leaderboard/history.csv), and writes them as one JavaScript object that
-index.html loads. Run it once the final ranking is published (Sun 12:00 CET) and the "where we stand"
-slide shows the final round instead of the practice round.
+index.html loads. Run after the final (Sun 15 Nov, 12:00 CET), it writes the final ranking, and the "where
+we stand" slide shows the final round instead of the practice round. It also keeps the organisers' score of
+every hour (`hours`: ours, our place and the leader's), from the public `progress` series.
 
 It also rebuilds the public board of the practice round every 5 minutes (the API serves any window: about
 290 small requests, a minute) to say since when we lead it and for how long we did not: `lead` in data.js.
@@ -29,7 +30,8 @@ URL = "https://datathon.rawtree.dev/api/state"
 HERE = Path(__file__).resolve().parent
 HISTORY = HERE.parent / "realtime_analyisi_leaderboard" / "history.csv"
 TEAM = os.environ.get("TEAM_ID", "team_06")
-KEEP = ("conversion", "cold_conversion", "on_time", "revenue_per_request", "model_version")
+KEEP = ("conversion", "cold_conversion", "on_time", "revenue_per_request", "model_version",
+        "requests", "score", "conversion_score", "cold_score")
 BOARD_WINDOW = 3600     # the public board ranks on the last hour
 
 
@@ -48,6 +50,18 @@ def trend() -> list[list[float]]:
                 t = int(datetime.strptime(r["utc"], "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).timestamp())
                 points[t] = [t, float(r["conv"]), float(r["ref_conv"]), float(r["base_conv"])]
     return [points[t] for t in sorted(points)]
+
+
+def hours(state: dict) -> list[list]:
+    """[hour start (unix s), our score, our place, the leader's score, the leader] per hour, from `progress`."""
+    progress = {team: dict(map(tuple, points)) for team, points in (state.get("progress") or {}).items()}
+    out = []
+    for t in sorted({t for points in progress.values() for t in points}):
+        board = sorted(((points.get(t, 0), team) for team, points in progress.items()), reverse=True)
+        place = next((i + 1 for i, (_, team) in enumerate(board) if team == TEAM), None)
+        if place:
+            out.append([int(t), progress[TEAM][t], place, board[0][0], board[0][1]])
+    return out
 
 
 def fetch(query: str = "") -> dict:
@@ -120,6 +134,7 @@ def main() -> None:
         "reference": row(state["reference"]),
         "baseline": row(state["baseline"]),
         "history": history,
+        "hours": hours(state),
     }
     try:
         data["lead"] = lead(state)

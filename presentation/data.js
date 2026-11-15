@@ -1,45 +1,65 @@
 // Written by update_data.py from the public leaderboard. Do not edit by hand.
 window.DECK_DATA = {
- "mode": "practice",
- "updated_at": 1794731772,
- "rank": 1,
+ "mode": "final",
+ "updated_at": 1794741444,
+ "rank": 2,
  "teams": 42,
  "team": {
-  "conversion": 2.2286665805814283,
-  "cold_conversion": 2.7736650504142677,
-  "on_time": 99.70326409495549,
-  "revenue_per_request": 1.150123914617961,
-  "model_version": "skore_money_v31"
+  "conversion": 2.2376670587511827,
+  "cold_conversion": 2.622039927807884,
+  "on_time": 99.99537037037037,
+  "revenue_per_request": 1.07956016800861,
+  "model_version": "skore_money_v31",
+  "requests": 21600,
+  "score": 57.72828694905839,
+  "conversion_score": 52.011753171397515,
+  "cold_score": 44.0438724160508
  },
  "rivals": [
   {
-   "conversion": 2.2033329385164,
-   "cold_conversion": 2.7167322068536595,
-   "on_time": 98.96142433234421,
-   "revenue_per_request": 1.2027792172090535,
-   "model_version": "transformada-neta-v8"
+   "conversion": 2.251960074195908,
+   "cold_conversion": 2.6677852636442343,
+   "on_time": 99.97685185185185,
+   "revenue_per_request": 1.0153527103456985,
+   "model_version": "md363d5",
+   "requests": 21600,
+   "score": 58.28179931817401,
+   "conversion_score": 52.51148152574013,
+   "cold_score": 45.43833574666556
   },
   {
-   "conversion": 2.15852842538399,
-   "cold_conversion": 2.6606731523475005,
-   "on_time": 99.45289317507418,
-   "revenue_per_request": 1.098280516477884,
-   "model_version": "fz-v10-nocorr"
+   "conversion": 2.1891981161980216,
+   "cold_conversion": 2.5533537101806645,
+   "on_time": 99.92592592592592,
+   "revenue_per_request": 1.1464007644142966,
+   "model_version": "transformada-neta-v8",
+   "requests": 21600,
+   "score": 56.208809081087146,
+   "conversion_score": 50.31712791947026,
+   "cold_score": 41.950098044332826
   }
  ],
  "reference": {
-  "conversion": 1.8536681345567647,
-  "cold_conversion": 1.7097519565641541,
+  "conversion": 2.140538752701375,
+  "cold_conversion": 2.1989946341836313,
   "on_time": 100,
-  "revenue_per_request": 0.8660408529656739,
-  "model_version": ""
+  "revenue_per_request": 0.8831854347646394,
+  "model_version": "",
+  "requests": 21600,
+  "score": null,
+  "conversion_score": null,
+  "cold_score": null
  },
  "baseline": {
-  "conversion": 0.4718681860448124,
-  "cold_conversion": 0.6510991163339469,
+  "conversion": 0.7500492661527078,
+  "cold_conversion": 1.1771817583805257,
   "on_time": 100,
-  "revenue_per_request": 0.07235908534256874,
-  "model_version": ""
+  "revenue_per_request": 0.12736474711796578,
+  "model_version": "",
+  "requests": 21600,
+  "score": null,
+  "conversion_score": null,
+  "cold_score": null
  },
  "history": [
   [
@@ -215,12 +235,183 @@ window.DECK_DATA = {
    2.2193,
    1.9095,
    0.5141
+  ]
+ ],
+ "hours": [
+  [
+   1794650400,
+   1.8672,
+   14,
+   3.9095,
+   "team_22"
   ],
   [
-   1794731772,
-   2.2286665805814283,
-   1.8536681345567647,
-   0.4718681860448124
+   1794654000,
+   0.2429,
+   29,
+   4.8557,
+   "team_24"
+  ],
+  [
+   1794657600,
+   16.3628,
+   1,
+   16.3628,
+   "team_06"
+  ],
+  [
+   1794661200,
+   30.8103,
+   1,
+   30.8103,
+   "team_06"
+  ],
+  [
+   1794664800,
+   32.1575,
+   1,
+   32.1575,
+   "team_06"
+  ],
+  [
+   1794668400,
+   51.6293,
+   1,
+   51.6293,
+   "team_06"
+  ],
+  [
+   1794672000,
+   57.9492,
+   1,
+   57.9492,
+   "team_06"
+  ],
+  [
+   1794675600,
+   59.3947,
+   1,
+   59.3947,
+   "team_06"
+  ],
+  [
+   1794679200,
+   56.83,
+   1,
+   56.83,
+   "team_06"
+  ],
+  [
+   1794682800,
+   60.468,
+   1,
+   60.468,
+   "team_06"
+  ],
+  [
+   1794686400,
+   60.63,
+   1,
+   60.63,
+   "team_06"
+  ],
+  [
+   1794690000,
+   62.4865,
+   1,
+   62.4865,
+   "team_06"
+  ],
+  [
+   1794693600,
+   62.963,
+   1,
+   62.963,
+   "team_06"
+  ],
+  [
+   1794697200,
+   64.7304,
+   1,
+   64.7304,
+   "team_06"
+  ],
+  [
+   1794700800,
+   63.1992,
+   1,
+   63.1992,
+   "team_06"
+  ],
+  [
+   1794704400,
+   63.7172,
+   1,
+   63.7172,
+   "team_06"
+  ],
+  [
+   1794708000,
+   62.4599,
+   1,
+   62.4599,
+   "team_06"
+  ],
+  [
+   1794711600,
+   63.941,
+   1,
+   63.941,
+   "team_06"
+  ],
+  [
+   1794715200,
+   63.5102,
+   1,
+   63.5102,
+   "team_06"
+  ],
+  [
+   1794718800,
+   62.6695,
+   3,
+   63.5999,
+   "team_03"
+  ],
+  [
+   1794722400,
+   63.5488,
+   1,
+   63.5488,
+   "team_06"
+  ],
+  [
+   1794726000,
+   64.7841,
+   1,
+   64.7841,
+   "team_06"
+  ],
+  [
+   1794729600,
+   65.0387,
+   2,
+   65.1379,
+   "team_03"
+  ],
+  [
+   1794733200,
+   50.6255,
+   2,
+   52.326,
+   "team_33"
+  ],
+  [
+   1794736800,
+   53.3277,
+   1,
+   53.3277,
+   "team_06"
   ]
  ],
  "lead": {

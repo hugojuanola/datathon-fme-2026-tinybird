@@ -6,7 +6,7 @@ no install.
 
 | File | What |
 |---|---|
-| [`index.html`](index.html) | The 13 slides, their speaker notes and the small engine that runs them |
+| [`index.html`](index.html) | The 12 slides, their speaker notes and the small engine that runs them |
 | [`data.js`](data.js) | Leaderboard snapshot shown on the "where we stand" and "learning" slides, and since when we lead the public board (`lead`). Written by code, not by hand |
 | [`update_data.py`](update_data.py) | Rewrites `data.js` from the public leaderboard and `realtime_analyisi_leaderboard/history.csv` (stdlib, read-only, no API key). For `lead` it rebuilds the board of the practice round every 5 minutes from the same API: about 290 small requests, one minute |
 | [`design.md`](design.md) | RawTree's visual identity (type, colours, shapes, logo), read from the organisers' deck and rawtree.com on 14 Nov, with the source of each value. The deck's CSS follows it |
@@ -15,46 +15,63 @@ no install.
 
 ## The slot (what the organisers told us on Sunday, 11:40 CET)
 
-- **3 to 5 minutes.** The plan below is 5:00 with the demo inside, the very top of the range: there is no
-  margin, so rehearse with the clock (`index.html?notas`) and know what to drop (the cut list under the time
-  plan).
+- **3 to 5 minutes, and no separate demo**: the presentation is the test. The plan below is 4:30, half a
+  minute under the top of the range. Rehearse with the clock (`index.html?notas`) and know what to drop (the
+  cut list under the time plan).
 - **A big screen, in a room** (not Saturday's hall). The deck is one 1920 × 1080 sheet scaled to the window:
   put the browser in full screen (`F11`) and check that the whole slide is visible before starting.
 - **The repository** goes to the organisers through their platform, or by email. The default branch of the
-  GitHub repository is `main`, which holds only the first two commits: before sending the link, the work
-  (branches `javier` and `hugo`) has to be on the default branch, or the link has to name the branch.
+  GitHub repository, `main`, holds the whole work (branches `javier` and `hugo` merged) and this deck.
 
-## Before presenting
+## The final, as the deck tells it
+
+`data.js` holds the official result of the final (Sun 15 Nov, 10:00–12:00 CET), written by
+`update_data.py` at 12:15 CET:
+
+| | Skore Money | team_33 (1st) | team_03 (3rd) | Reference | Best sellers |
+|---|---|---|---|---|---|
+| Place | **2nd of 42** | 1st | 3rd | | |
+| Organisers' score (of 100) | **57.7** | 58.3 | 56.2 | | |
+| Expected purchases / 100 requests | **2.238** | 2.252 | 2.189 | 2.141 | 0.750 |
+| Cold (new shopper or new product) | **2.622** | 2.668 | 2.554 | 2.199 | 1.177 |
+| Warm (the rest, `scripts/arms.py`) | **1.876** | 1.861 | 1.848 | 2.085 | 0.348 |
+| On time | **99.995 %** (21,599 of 21,600) | 99.977 % | 99.926 % | 100 % | 100 % |
+
+`skore_money_v31` served all of it (`python scripts/arms.py 09:00 11:00`: one version, 09:00:00–10:59:59
+UTC). By the hour (the organisers' hourly score, `hours` in `data.js`): team_33 won the first hour (52.3
+against 50.6), we won the second (53.3 against 52.7). From Saturday 13:00 CET to the end we were first in
+20 of the 23 hours. The gap to the winner, 0.014 purchases per 100 requests, is smaller than the 0.12 that
+separates two copies of the same model over half an hour. On the organisers' scale (best sellers 0, oracle
+100) the oracle of the final sells about 3.6; the reference sits at 49 % of the way, we at 52 %.
+
+What we could not measure after the close: the trend of the final. The RawTree key stopped working when the
+challenge ended (HTTP 401), so `offline/store_moves.py` no longer runs; the detector's own record is in the
+server's `serve.log` on Javier's laptop. The notes of slide 9 say so.
 
 ```bash
-python3 presentation/update_data.py     # after the final ranking is published (Sun 12:00 CET)
+python3 presentation/update_data.py     # re-reads the public leaderboard; in final mode it shows the final
 ```
 
-The "where we stand" slide then shows the final round instead of the practice round. While the final is
-running the leaderboard hides the metrics and the script leaves `data.js` as it was.
-
-Slide 2 also says, under our place, since when we lead the public board of the practice round and for how
-long we did not ("líderes desde el sábado a las 14:10, salvo 1 h 25 min", measured 15 Nov 09:36 CET, twenty-four
-minutes before the practice round ended). After the final it is recomputed if the API still serves the
-practice windows, and kept as it was if not.
+Slide 2 says, under our place, the organisers' score against the winner's, that we won the second hour, and
+in how many hours we were first. The practice-round lead (`lead`: "líderes desde el sábado a las 14:10, salvo
+1 h 25 min", measured 15 Nov 09:36 CET) is kept in `data.js` and quoted in the notes; the API no longer
+serves the practice windows, so it is not recomputed.
 
 Every other number on the slides is quoted from [`docs/findings.md`](../docs/findings.md); the speaker
 notes of each slide name the section (or [`best_model.md`](../best_model.md), the record of every version
 served). The deck was last brought up to date with branch `javier` at commit `6930c62` (15 Nov, 09:32 CET:
 findings §23–§24, `skore_money_v31` alone for the final (`ARMS` in `reco/serve.py`), the night's two questions
-closed, the trends of the night and the small one of Sunday morning, the organisers' message before the final).
+closed, the trends of the night and the small one of Sunday morning, the organisers' message before the final),
+and with the official result of the final at 12:15 CET.
 
-**Still to fill in on Sunday**, once the final is over; the notes of these slides say "decir aquí…" where
-the spoken sentence depends on it:
+What to read before presenting, slide by slide:
 
-| Slide | What depends on the final |
+| Slide | What |
 |---|---|
-| 2 | The whole slide: run `update_data.py` after 12:00. If we are first in the final, the title says so by itself |
-| 7 | The last line says the final was served by Saturday afternoon's model plus the trend lift (`skore_money_v31`). It was the only arm at 09:32 CET; check that nothing was changed after that |
-| 9 | How the trend of the final went (notes) |
+| 2 | The result of the final (title, bars, place, score, hours, cold, on time) and, in the notes, why second: the gap, where team_33 beat us (cold) and where we beat them (warm, on time) |
+| 9 | Notes: the trend of the final is not measured here (see above); if Javier read it in `serve.log`, say it |
 | 11 | Who did what, and with which agents: Hugo first prepared the repository so that the agents knew what to do, Javier built and iterated, Hugo reviewed every decision in parallel from his own branch with his agents, and both decided and made this presentation. Written from the commit history and from Hugo's account. **Both of us should read it before presenting** |
-| 12 | The demo runs commands 01 and 02; 03 and 04 are for the questions. Whether the store still sends requests at 14:00. If it does not, run the same commands on the window of the final (`python scripts/arms.py 09:00 11:00`, UTC) and change the title, which says "it is answering right now" |
-| 13 | The share of answers on time during the final, on Wi-Fi (notes: the prepared answer on reliability) |
+| 12 | Notes: the prepared answers, now with the final (on time on Wi-Fi, why second, what we would do with more time). The notes also list the commands to run if the jury asks to see the system working |
 
 When the system changes again, these places need a look too: the bars of slide 3 and the two rates next to
 each (findings §1, §4, §5), the diagram of slide 4 (feature count, number of trees — the serving ranker's:
@@ -91,13 +108,13 @@ And the 30 points are four criteria ([`docs/challenge.md`](../docs/challenge.md)
 |---|---|---|---|
 | Method (10) | Sound, well justified, validated offline before going live | 3–7 | measured lifts, with the two rates behind each (3) · the architecture end to end, from the tables we read to the ones we write (4) · how the two LightGBM models are trained (5) · offline, the next-purchase judge and live arms, with the noise measured and the decision rule written before reading the data (6) · six ideas that did not pass; the last one won offline and lost live (7) |
 | Learning from the stream (10) | Feedback and live events: exploration, trends, price changes, cold start | 8–9 | one row per word of the rubric (8) · a trend seen in 41 s and measured in our carousel, where the gap to the next team is made, the dose of the lift checked in four more trends, and the detector replayed on the ten trends the store has had (9) |
-| Use of RawTree (5) | Features in SQL, embeddings, how the pipeline reads and writes | 4, 10, 11, 12 | every table we read and write, with its cadence (4) · an aggregation in SQL on screen, reads and writes, `scratch`, and why no embeddings, with the measurement behind it (10) · how the agents reach RawTree (11) · the demo runs SQL (12) |
+| Use of RawTree (5) | Features in SQL, embeddings, how the pipeline reads and writes | 4, 10, 11 | every table we read and write, with its cadence (4) · an aggregation in SQL on screen, reads and writes, `scratch`, and why no embeddings, with the measurement behind it (10) · how the agents reach RawTree (11) |
 | Communication (5) | Could a product manager understand what it does and why it works? | all | plain words on the slides, the technical terms in the speaker notes; slide 4 is the whole system in one picture |
 
 "Anything a team cannot explain in the presentation may be penalised": both of us should be able to take
 any slide. The notes (`index.html?notas`) carry the numbers and the answers to the likely questions, the
 ones about what the deck leaves out included (the attributes behind the model on slide 5, satiation on
-slide 8, reliability on slide 13).
+slide 8, reliability on slide 12).
 
 ## Keys
 
@@ -112,9 +129,9 @@ presenting. (A clicker that sends Page Down instead of the arrows will not move 
 | `index.html?min=6` | Rescales the time plan to 6 minutes |
 | `index.html?static` | Every slide in its final state, no animation (screenshots, PDF) |
 
-## Time plan: 5 minutes, demo included
+## Time plan: 4 minutes 30 seconds
 
-One version, 13 slides.
+One version, 12 slides, no demo.
 
 | # | Slide | Jury criterion | Seconds |
 |---|---|---|---|
@@ -122,20 +139,19 @@ One version, 13 slides.
 | 2 | Where we stand | | 10 |
 | 3 | Measure before modelling, and why popularity × signals | Method | 25 |
 | 4 | The architecture, end to end: what we read, the server (state, rules, 52 features, two LightGBM models, trends, hard rules), what we write, the offline loop | Method, use of RawTree | 30 |
-| 5 | How the models are trained, decision by decision | Method | 30 |
+| 5 | How the models are trained, decision by decision | Method | 35 |
 | 6 | Three exams: offline, the next-purchase judge, live arms | Method (validated offline) | 30 |
 | 7 | What did not work, and how we know | Method | 20 |
-| 8 | Feedback, exploration, trends, price changes, cold start | Learning from the stream | 30 |
+| 8 | Feedback, exploration, trends, price changes, cold start | Learning from the stream | 35 |
 | 9 | A trend, measured live, and the night's | Learning from the stream | 25 |
 | 10 | RawTree | Use of RawTree | 20 |
-| 11 | How we worked: who did what, Claude Code and its limits | Communication, use of RawTree | 25 |
-| 12 | Demo: two commands (`health.sql`, `arms.py`) | Use of RawTree, communication | 45 |
-| 13 | Thanks, and questions (no summary: the jury does not score one) | | 5 |
-| | | | **300** |
+| 11 | Our agentic workflow: who did what, Claude Code and its limits | Communication, use of RawTree | 30 |
+| 12 | Thanks, and questions (no summary: the jury does not score one) | | 5 |
+| | | | **270** |
 
 **If the time runs short**, in this order: on slide 7 tell one row instead of two (the third model); on
-slide 8 skip exploration and prices; skip the three numbers under the trend on slide 9; run one command in
-the demo instead of two. Do not cut slides 5, 6 and 11: they are what the jury asked for by name.
+slide 8 skip exploration and prices; skip the three numbers under the trend on slide 9. Do not cut slides 5, 6
+and 11: they are what the jury asked for by name.
 
 `index.html?static` shows every slide in its final state without animation; printing that page to PDF
-(landscape, no margins, background graphics on) gives a 13-page backup.
+(landscape, no margins, background graphics on) gives a 12-page backup.
