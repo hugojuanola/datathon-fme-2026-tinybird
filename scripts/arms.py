@@ -99,6 +99,8 @@ def main() -> None:
     ref, base = Sum(), Sum()
     lo = hi = None
     pieces = [(a, min(a + PIECE, end)) for a in range(start, end, PIECE)]
+    if not pieces:     # the window begins after the last complete five minutes
+        sys.exit(f"nothing to read yet: asked from {hhmm(start)}, the board is complete up to {hhmm(end)} UTC")
     while pieces:
         a, b = pieces.pop(0)
         state = fetch(a, b)

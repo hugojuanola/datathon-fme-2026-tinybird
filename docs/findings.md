@@ -1047,6 +1047,16 @@ and it is a change to the detector three hours before the final. If the final br
 one constant and a dozen lines in `reco/features.py`. A swap in the middle of this trend lost nothing: the
 new server had found Watches from the journal before it took over.
 
+**Where the headroom is: requests from known shoppers.** On cold requests we have been far above the
+organisers' reference all along (2.6 to 3.2 against 1.6 to 2.0). On warm ones (a known shopper, no new
+product among the recent views) the reference has read 2.05 to 2.19 in every two hours since Saturday
+midday, and our best arm 1.84 to 1.98 since the evening (v9 read 2.11 ± 0.12 in its first two hours); the
+best versions of the two nearest teams read 1.84 and 1.94. Warm requests are 58 % of the traffic, so
+matching the reference there would be worth about +0.12 overall, four times what the trend lift gives
+averaged over a day. We did not find what the reference knows about a known shopper that we do not:
+co-purchases between shoppers add nothing to v9 for them (§21, §23), and weighting our live feedback more
+makes warm requests worse (§15). With more time it is the first thing to look at.
+
 ## 24. Reliability, third look: twelve seconds without Wi-Fi (15 Nov, 03:16 UTC)
 
 The one burst of lost answers of the night: 34 requests in a row (ts 03:16:41.8 to 03:16:52.7; a feedback

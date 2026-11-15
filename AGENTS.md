@@ -211,7 +211,11 @@ lead is made in the trends: the lift is worth about 0.08 on the board while a tr
 (inside Sneakers the gap was +0.13 against +0.06 before it) and its dose sat on the prediction in three
 trends. A trend on a tiny subcategory (Watches, 06:30 CET: 0.07 % of the store's views) is at the edge of
 the detector, which drops it at every minute mark; it is worth little there and the detector is unchanged
-(findings §23). Answers on time: 100 % except the 34 of 04:16 CET (findings §24) and the 6 of each swap.
+(findings §23). On the public board's last hour at 06:47 CET we are second, 2.146 against 2.158 for team_03 (team_14 2.144):
+that hour still holds 46 minutes of the four arms. Where nobody has caught the organisers' reference is
+on requests from known shoppers (2.05 to 2.19 against our 1.84 to 1.98, and 1.84 to 1.94 for the nearest
+teams): the headroom we did not find (findings §23).
+Answers on time: 100 % except the 34 of 04:16 CET (findings §24) and the 6 of each swap.
 The second session logs the board every 15 minutes; from 08:00 CET its alarms go to Javier.
 
 For the final (Javier or Hugo, before 09:30 CET):
