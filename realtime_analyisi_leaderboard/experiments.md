@@ -200,3 +200,8 @@ minutes and its margin) and `docs/findings.md` (§9 to §22).
   made then could not have been measured before 10:00: Javier confirmed `v31` for the final at 08:33.
   What to expect: level with team_03 on conversion, with our edge on cold start and inside a large trend
   (`v31` read 2.37 and 2.48 inside the night's two, where their best versions read 2.19 to 2.32).
+  The last read, 09:31 CET: team_03 put `transformada-neta-v8` on all its traffic at 09:13 (2.303 on 4,131
+  requests from 09:00 to 09:30 against 2.222 for `v31`, +0.6 se); we were first on the 30-, 60- and
+  180-minute boards by 0.02, 0.03 and 0.01 and second on 15 minutes by 0.01, with the organisers' hour
+  in progress at 66.1 against 65.5; p95 of our answers 1.67 s and nothing unanswered since the
+  platform's half minute of 09:02.
