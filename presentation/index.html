@@ -153,7 +153,8 @@ p b,li b{color:var(--ink);font-weight:500}
 .archd .nx{font-size:24px;font-weight:600;fill:var(--ink);text-anchor:end}
 .archd .ar{fill:none;stroke:var(--ink);stroke-width:1.8;marker-end:url(#ak)}
 .archd .fb{font-size:18px;font-style:italic;fill:var(--muted)}
-.archd .ot{font-size:20px;fill:var(--muted)}
+.archd .ot{font-size:20px;fill:var(--muted);white-space:pre}
+.archd .pf{font-size:24px;font-weight:600;fill:var(--accent)}
 /* ---------- closing ---------- */
 .bye{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto}
 .bye .thanks{font-size:220px;font-weight:600;letter-spacing:-.05em;line-height:1.02;margin-left:-6px}
@@ -286,7 +287,7 @@ html.static .fill{transform:none!important} html.static .val{opacity:1!important
     <rect x="720" y="72" width="560" height="58" rx="10" fill="#e2d5ee" class="blk"/><text x="1000.0" y="97.0" class="bt">Reglas fijas</text><text x="1000.0" y="122.0" class="bs">en stock · nunca lo ya comprado · 10 distintos</text>
     <path d="M1000 166 V132" class="ar"/>
     <rect x="696" y="166" width="608" height="398" rx="16" class="cont"/>
-    <text x="1324" y="482" class="nx" text-anchor="start" style="text-anchor:start">×1.000 <tspan font-weight="400" fill="var(--muted)" font-size="20">candidatos</tspan></text>
+    <text x="1290" y="594" class="nx">×1.000 <tspan font-weight="400" fill="var(--muted)" font-size="20">candidatos</tspan></text>
     <rect x="720" y="186" width="560" height="58" rx="10" fill="#d6ecca" class="blk"/><text x="1000.0" y="211.0" class="bt">× Tendencia</text><text x="1000.0" y="236.0" class="bs">el lift de la subcategoría que se dispara</text>
     <circle cx="1000" cy="276" r="15" class="blk" fill="#fff"/><path d="M989 265L1011 287M1011 265L989 287" stroke="var(--ink)" stroke-width="2"/>
     <path d="M1000 261 V246" class="ar"/>
@@ -319,15 +320,21 @@ html.static .fill{transform:none!important} html.static .val{opacity:1!important
     <text x="545" y="52" class="fb" text-anchor="middle">el simulador: clic y compra → feedback, cada 2 s</text>
     <!-- offline -->
     <path d="M1300 306 h16 v62 h-16" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
-    <text x="1336" y="318" class="ot" font-weight="600" fill="var(--ink)">Entrenados offline</text>
-    <text x="1336" y="346" class="ot">la tienda reproducida evento a</text>
-    <text x="1336" y="372" class="ot">evento, con el mismo código:</text>
-    <text x="1336" y="398" class="ot">3,3 M filas; validados en una</text>
-    <text x="1336" y="424" class="ot">semana que no vieron</text>
-    <text x="1336" y="540" class="ot" fill="var(--accent)">75 ms por visita</text>
-    <text x="1336" y="566" class="ot">respuesta en ≈ 1 s</text>
+    <text x="1336" y="300" class="pf">P(clic) × P(compra | clic)</text>
+    <text x="1336" y="330" class="pf">= P(compra)</text>
+    <text x="1336" y="374" class="ot" font-weight="600" fill="var(--ink)">¿Por qué no P(compra) directamente?</text>
+    <text x="1336" y="402" class="ot">· solo se compra lo que se pulsa</text>
+    <text x="1336" y="428" class="ot">· hay 3 veces más clics que compras:</text>
+    <text x="1336" y="452" class="ot">  el primer modelo aprende de más</text>
+    <text x="1336" y="478" class="ot">· en vivo, un solo modelo vendió</text>
+    <text x="1336" y="502" class="ot">  menos: 2,12 frente a 2,37</text>
+    <text x="1336" y="560" class="ot" font-weight="600" fill="var(--ink)">Entrenados offline</text>
+    <text x="1336" y="586" class="ot">la tienda reproducida, 3,3 M filas;</text>
+    <text x="1336" y="610" class="ot">validados en una semana no vista</text>
+    <text x="1336" y="668" class="ot" fill="var(--accent)">75 ms por visita</text>
+    <text x="1336" y="692" class="ot">respuesta en ≈ 1 s</text>
   </svg>
-  <aside class="notes">Unos 60 segundos, de abajo arriba, como el dibujo del Transformer. Dos columnas. La de la izquierda es el estado en vivo: cada evento de la tienda (vistas, carritos, compras, cambios de precio y de stock) se aplica uno a uno sobre los 60 días de histórico, así que en todo momento sabemos, para cada comprador, qué ha visto, qué tiene en el carrito y qué ha comprado; para cada producto, su popularidad, precio y stock; y para la tienda, qué subcategoría se está disparando (el detector de tendencias, cada segundo). La de la derecha es lo que pasa con cada visita, tres por segundo. Entra la visita: quién es, en qué página está y qué acaba de ver. Recuperación: popularidad por las señales medidas en el análisis exploratorio, y nos quedamos con 1.000 de los 5.200 productos. Para cada uno de esos 1.000 candidatos (el ×1.000 es el «N×» del dibujo original) se calculan 52 variables con el estado de la izquierda: recuentos, tasas y coincidencias, nunca un identificador, y por eso funciona con clientes y productos nuevos. El corazón: dos modelos LightGBM, conjuntos de árboles de decisión; uno estima la probabilidad de clic y el otro la de compra una vez pulsado, y se multiplican: es la probabilidad de compra, que es lo que puntúa. Encima, si el detector ve una subcategoría disparada, sus productos se multiplican por lo que está midiendo (una tendencia vendía ×8 en nuestro carrusel). Arriba, las reglas fijas: en stock, nunca lo ya comprado, diez distintos. Y salen los diez productos a RawTree. La línea discontinua cierra el bucle: el simulador decide clic y compra, eso vuelve como feedback cada dos segundos y actualiza el estado. A la derecha, de dónde salen los modelos: se entrenan offline reproduciendo la tienda evento a evento con el mismo código que sirve, 3,3 millones de filas, y se validan en una semana que no vieron. Todo esto ordena una visita en unos 75 ms y responde en un segundo de los tres. Es exactamente lo que sirvió la final, la versión skore_money_v31. (reco/serve.py, reco/state.py, reco/features.py, reco/recommend.py; offline/build_dataset.py, offline/train.py; findings §9, §14, §16)</aside>
+  <aside class="notes">Unos 60 segundos, de abajo arriba, como el dibujo del Transformer. Dos columnas. La de la izquierda es el estado en vivo: cada evento de la tienda (vistas, carritos, compras, cambios de precio y de stock) se aplica uno a uno sobre los 60 días de histórico, así que en todo momento sabemos, para cada comprador, qué ha visto, qué tiene en el carrito y qué ha comprado; para cada producto, su popularidad, precio y stock; y para la tienda, qué subcategoría se está disparando (el detector de tendencias, cada segundo). La de la derecha es lo que pasa con cada visita, tres por segundo. Entra la visita: quién es, en qué página está y qué acaba de ver. Recuperación: popularidad por las señales medidas en el análisis exploratorio, y nos quedamos con 1.000 de los 5.200 productos. Para cada uno de esos 1.000 candidatos (el ×1.000 es el «N×» del dibujo original) se calculan 52 variables con el estado de la izquierda: recuentos, tasas y coincidencias, nunca un identificador, y por eso funciona con clientes y productos nuevos. El corazón: dos modelos LightGBM, conjuntos de árboles de decisión; uno estima la probabilidad de clic y el otro la de compra una vez pulsado, y se multiplican: P(clic) × P(compra | clic) = P(compra), que es lo que puntúa. ¿Por qué no un solo modelo que prediga la compra directamente? Tres razones, a la derecha de la diapositiva. Una, el simulador solo deja comprar lo que se ha pulsado, así que la compra es exactamente clic y después compra. Dos, los datos: hay tres veces más clics que compras, y las compras son una por cada cien visitas; el modelo de clic tiene mucho más de lo que aprender, carga con la posición en la lista, y el segundo solo tiene que decir cuáles de los productos pulsados acaban en la cesta. Tres, lo medimos: una versión con un solo modelo de compra (v9d) vendió 2,12 en vivo frente a 2,37 de los dos modelos en las mismas horas. (findings §15, la tabla de versiones; offline/train.py) Encima, si el detector ve una subcategoría disparada, sus productos se multiplican por lo que está midiendo (una tendencia vendía ×8 en nuestro carrusel). Arriba, las reglas fijas: en stock, nunca lo ya comprado, diez distintos. Y salen los diez productos a RawTree. La línea discontinua cierra el bucle: el simulador decide clic y compra, eso vuelve como feedback cada dos segundos y actualiza el estado. A la derecha, de dónde salen los modelos: se entrenan offline reproduciendo la tienda evento a evento con el mismo código que sirve, 3,3 millones de filas, y se validan en una semana que no vieron. Todo esto ordena una visita en unos 75 ms y responde en un segundo de los tres. Es exactamente lo que sirvió la final, la versión skore_money_v31. (reco/serve.py, reco/state.py, reco/features.py, reco/recommend.py; offline/build_dataset.py, offline/train.py; findings §9, §14, §16)</aside>
 </section>
 
 <!-- 6 · Gracias -->
