@@ -1000,6 +1000,53 @@ to 6.24 % of the store's purchases (×14.8), found 57 seconds in.
   products per list, which no ordering can change, differs as much between arms (1.39 to 1.50): it is who
   fell in each arm.
 
+**How the two questions ended (05:33 UTC).** On the window in which the four arms ran side by side
+(00:45 to 05:30 UTC), the organisers' metric:
+
+| Arm | Requests | Purchases per 100 | Cold | Warm | EUR per request | Against v31 |
+|---|---|---|---|---|---|---|
+| v31: v9 + trend lift | 12,742 | 2.299 | 2.915 | 1.851 | 1.121 | |
+| v38: new products ×1.5 | 12,937 | 2.238 | 2.733 | 1.874 | 1.108 | −0.06 (−0.8 se) |
+| v39: the organic order | 12,718 | 2.199 | 2.701 | 1.837 | 1.154 | −0.10 (−1.2 se) |
+| v40: both | 12,729 | 2.144 | 2.622 | 1.810 | 1.055 | −0.15 (−1.9 se) |
+
+As two questions, half of the traffic on each side: the organic order −0.10 (−1.7 se; cold −0.16, warm
+−0.04) on 25,447 requests against 25,679; new products ×1.5 −0.06 (−1.0 se; cold −0.13, warm 0.00) on
+25,666 against 25,460. Neither could reach its bar by the morning any more: to be level over the night the
+organic order would have had to read +0.21 over the two hours left (+2.5 se: under 1 % if it does nothing,
+about 3 % if it is worth the +2.5 % of the held-out lists), and new ×1.5 needed +2 se by itself. At
+05:25 UTC the second session raised the alarm agreed with Javier beforehand: twice running we were not first
+on the 30-minute board (team_03 2.240, team_14 2.235, us 2.226). The best version of each of the three
+nearest teams read 2.26 to 2.33, which is what v31 reads, and half of our traffic was on the side that read
+2.06 in that half hour. The answer was the one written down in advance: the traffic to our best arm by the
+longest clean window. No arm was kept for a comparison, because no question was left that the remaining
+hours could answer. **v31 alone since 05:33:51 UTC**; six answers were lost in the handover. It is also the
+version for the final.
+
+**What the night says about the held-out estimate.** The organic order was worth +2.5 % ± 1.1 on held-out
+lists (§22) and read −4.3 % ± 2.5 live: 2.5 standard errors apart. Judging a new order on lists that were
+logged under another one assumes that a product keeps its appeal whatever sits around it, and that the
+attention curve of our click model is the simulator's; the live arms test the thing itself. The estimate
+was good for choosing what to try and wrong about the size, and when the two disagree the live arms
+decide, as they did for v16 against v9 (§15). It is why the night was only asked whether it contradicted
+the held-out lists. It did.
+
+**A trend too small for the detector (Watches, 05:30 UTC).** The subcategory was 0.07 % of the store's views
+and 0.03 % of its purchases, six products that sell; inside the trend 0.54 % and 0.74 % (views ×7.4,
+purchases ×31 to ×40). That is about 19 views a minute, and the detector asks for 40 in its view window,
+which is two whole minutes plus the one in progress. Right after each minute mark the window is back to two
+minutes, holds fewer than 40, and the trend goes off until the new minute fills: 37 s, 3 s and 33 s in its
+first six minutes. Replayed second by second on the whole stream (4.5 million views and purchases, the ten
+trends the store has had): the detector stayed on 100 % of the time after finding the trend in six of them,
+98 to 99 % in two, 93.7 % in Cutting Boards and 57 % in the first twelve minutes of Watches. It found the
+six larger ones 50 to 61 s in and the four smaller ones 121 to 143 s in. Holding a trend for 60 s after the
+last second it passed the gates would give 100 % in nine and 87.5 % in Watches, and would keep the lift on
+a minute longer after every trend ends. Not deployed: a trend on 0.7 % of the store's purchases moves a
+fraction of a purchase in a final, the gain averaged over the ten trends is about 4 % of a trend's lift,
+and it is a change to the detector three hours before the final. If the final brings small trends, it is
+one constant and a dozen lines in `reco/features.py`. A swap in the middle of this trend lost nothing: the
+new server had found Watches from the journal before it took over.
+
 ## 24. Reliability, third look: twelve seconds without Wi-Fi (15 Nov, 03:16 UTC)
 
 The one burst of lost answers of the night: 34 requests in a row (ts 03:16:41.8 to 03:16:52.7; a feedback

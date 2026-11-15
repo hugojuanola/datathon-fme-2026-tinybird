@@ -165,7 +165,7 @@ Full detail and the queries behind these numbers: [`docs/data.md`](docs/data.md)
 
 ## State of the repo
 
-As of Sun 15 Nov 2026 01:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
+As of Sun 15 Nov 2026 06:50 CET (branch `javier`): **`reco/serve.py` is running live** from Javier's laptop,
 answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
 
 1. **Retrieve** — the rules (`score_rules`): popularity x measured lifts, 1,000 candidates.
@@ -180,65 +180,57 @@ answering in about 1.0 s (p95 1.5-2.2 s). What a request goes through:
    carousel, the detector says x8.6).
 4. **Hard rules** — never a product the shopper already bought, never one out of stock.
 
-Arms (`ARMS` in `reco/serve.py`, tagged in `model_version`), one ranker for every request, 25 % of the traffic
-each since 01:46 CET on Sunday. Two questions crossed, so that each is read on all the traffic:
-`skore_money_v31` v9 + full trend lift, the version to beat · `v38` v31 with the score of a product added
-during the event x1.5 for known shoppers · `v39` v9 + lift picks the ten and v9 x the organic model
-(`models/v9o`, `offline/organic.py`) only orders them: the same ten products as v31, and the one use of the
-organic model measured offline (+2.5 % purchases, findings §22) · `v40` both. "The organic order" is
-(v39 + v40) against (v31 + v38); "new x1.5" is (v38 + v40) against (v31 + v39). No exploration.
-In the arms with the organic model a trending product keeps the rank v9 and the lift give it and the
-organic factor orders only the other products (findings §23: with a neutral factor it was losing the first
-slot); in every arm, a product added during the event stays out of the lists for its first 20 minutes (it
-is not clicked before: findings §22). Closed on the way: v32 and v36 (the organic factor choosing among
-v9's best 100: never above v31, slower), v33 to v35, v37 (v39 before the trending products kept their rank).
+**One arm since 06:34 CET on Sunday (05:33:51 UTC), and for the final: `skore_money_v31`**, v9 with the trend
+lift in full, for every request (`ARMS` in `reco/serve.py`). It is the best proven version and nothing
+measured against it came out above. The night's two questions ran crossed, 25 % of the traffic each, from
+01:46 to 06:33 CET, 25,500 requests on each side: a product added during the event x1.5 for known shoppers
+(`v38`) read -0.06 (-1.0 se), and v9 + lift picking the ten with v9 x the organic model (`models/v9o`,
+`offline/organic.py`) ordering them (`v39`; `v40` was both) read -0.10 (-1.7 se), where held-out lists had
+given +2.5 % ± 1.1. They were stopped when neither could reach its bar by the morning any more and two
+rivals had drawn level with us on the 30-minute board with half of our traffic on the lower side: Javier's
+standing order (the traffic to our best arm), without an arm kept for a comparison because no question was
+left that the remaining hours could answer (findings §23). Their lines are in the comment above `ARMS`.
+No exploration. A product added during the event stays out of the lists for its first 20 minutes (it is
+not clicked before: findings §22). Closed earlier: v32 and v36 (the organic factor choosing among v9's
+best 100: never above v31, slower), v33 to v35, v37 (v39 before the trending products kept their rank).
 Evidence for every piece: [`docs/findings.md`](docs/findings.md) (§15 how an A/B is judged and what the
 versions scored, §16 trends / prices / new products, §18 reliability, §19 a faster offline judge, §20 the
 organic model and the arms of the night, §21 ten signals checked against what v9 already predicts, the lift
-for new products and the organic factor during a trend, §22 the organic model as a second stage, §23 the first read of the night and the arms as two questions
-crossed, §24 twelve seconds without Wi-Fi and what the loop did). The store's calendar (trends, promotions, new
-products) is in [`docs/data.md`](docs/data.md). A second session writes a live read of the board and
-of each arm in [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
+for new products and the organic factor during a trend, §22 the organic model as a second stage, §23 the
+night's two questions crossed, how they ended and what they say about the held-out estimate, the trends of
+the night and a trend too small for the detector, §24 twelve seconds without Wi-Fi and what the loop did).
+The store's calendar (trends, promotions, new products) is in [`docs/data.md`](docs/data.md). A second
+session writes a live read of the board and of our version in
+[`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md).
 
-Where we stand (Sunday 05:19 CET): first on the four windows the second session reads, by +0.12, +0.14,
-+0.13 and +0.09 over the next team (15 minutes to 180); p95 1.8 s; nothing lost since the 34 answers of
-04:16 CET (findings §24). The lead is made in the trends: the lift is worth about 0.08 on the board while
-one runs (Sneakers, 04:30 CET: +0.13 over the next team inside it against +0.06 before; Leashes +0.055
-against +0.02), and its dose sits on the prediction in three trends (findings §23). Outside trends the
-nearest teams (team_03, team_37, team_14) are level with us since about 02:00 CET. The two questions of
-the night at 05:15 CET, with half of it read: the organic order −0.07 (−1.0 se) over the night and −0.13
-(−1.3 se) in the minutes with a trend, new products x1.5 −0.09 (−1.2 se) and no longer able to reach its
-bar. **As it stands the rule gives v31**, the version that was already the one to beat. The arms run to
-08:30 CET so that the humans read the whole night. The second session logs it every 15 minutes.
+Where we stand (Sunday 06:45 CET): level with team_03 and team_14 on the short boards (15, 30 and 60
+minutes: within 0.002 to 0.013 of each other, read while those windows still held our four arms) and first
+by +0.07 on the 180-minute one. The best version of each of the three nearest teams reads 2.26 to 2.33
+outside trends, which is what v31 reads (2.30 over the night): outside trends the leaders are level. Our
+lead is made in the trends: the lift is worth about 0.08 on the board while a trend of ordinary size runs
+(inside Sneakers the gap was +0.13 against +0.06 before it) and its dose sat on the prediction in three
+trends. A trend on a tiny subcategory (Watches, 06:30 CET: 0.07 % of the store's views) is at the edge of
+the detector, which drops it at every minute mark; it is worth little there and the detector is unchanged
+(findings §23). Answers on time: 100 % except the 34 of 04:16 CET (findings §24) and the 6 of each swap.
+The second session logs the board every 15 minutes; from 08:00 CET its alarms go to Javier.
 
-Open for the final (the humans decide, before Sunday 09:30 CET; findings §20 has the design):
-1. **Read the night**: the three commands in [`docs/final-round.md`](docs/final-round.md) (`scripts/arms.py
-   00:47 07:30` UTC, piped into `pool_arms.py`), or the table in `best_model.md`. v31 is the version to
-   beat. The organic order (v39) goes into the final if its side is not below the other over the whole
-   night, nor more than a standard error below in the minutes with a trend (45 minutes from :30 of every
-   odd UTC hour): the held-out lists give it +2.5 % ± 1.1 and one night can show harm but not confirm a
-   gain that size, so the night is only asked whether it contradicts them. New products x1.5 (v38) only
-   if its side is 2 standard errors above: the held-out lists give it +0.6 % ± 0.5. Otherwise, or if in
-   doubt, v31 (findings §23). The first hours (22:25 to 00:46 UTC, arms v31, v32, v36, v37) are in §23 too.
-   **If a reading shows us off first place before the final** (standing order from Javier, 15 Nov 00:15 CET:
-   recover it as fast as possible, hold it, widen the gap). The second session reads the board every 15
-   minutes and raises the alarm when we are not first on the 60-minute window (a 15-minute window is noise:
-   three arms running the same code read 1.92, 2.40 and 2.59 in one). The answer, in this order:
-   reliability first (`queries/health.sql`: lost or late answers are the fastest points to lose and to win
-   back); then an arm 2 standard errors below the others over a clean window is taken out; then, if a rival
-   has simply improved, the traffic goes to our best arm by the longest clean window, with 20 % kept for
-   the comparison. From 08:00 CET on, nothing changes on the server without Javier or Hugo (rule 7).
-2. **A single arm** for the final with the winner (`scripts/swap_server.ps1` after editing `ARMS`):
-   [`docs/final-round.md`](docs/final-round.md). If nobody chooses, what is running is a sound mix: every
-   arm is v9 or a step or two from it, and all the traffic has the lift.
-3. **The connection.** A network cable to the router, nothing else using the line, no assistant session
-   open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi from the rest.
-   On Sunday at 03:16 UTC nothing crossed the Wi-Fi for 12 s and 34 requests went unanswered, the only
-   burst of the night; the server resumed by itself and only about three of them were within reach of a
-   different loop, so the loop is unchanged (findings §24). The laptop has a wired port, unused. **The
-   cable goes in before the swap that sets the final's version** (a running server keeps the connections
-   it has, on the Wi-Fi), the Wi-Fi stays on as the spare, and `scripts\link.ps1` confirms which link the
-   server uses. Never restart the server because of a network drop.
+For the final (Javier or Hugo, before 09:30 CET):
+1. **The version is already running**: v31 alone since 06:34 CET. To serve another one, its line is in
+   [`docs/final-round.md`](docs/final-round.md), but nothing measured supports it. Javier's standing order
+   (15 Nov 00:15 CET: if a reading shows us off first place, recover it as fast as possible, hold it, widen
+   the gap) has been applied as far as it goes: reliability first, then the traffic to our best arm. There
+   is no better arm of ours left to move to; what holds the place from here is answering every request.
+   From 08:00 CET on, nothing changes on the server without Javier or Hugo (rule 7).
+2. **One swap is still owed, for the cable.** Network cable from the laptop to the router (the laptop has a
+   wired port, unused), then `scripts\swap_server.ps1` (same code, same version), then `scripts\link.ps1`
+   must say Ethernet. A running server keeps the connections it has, on the Wi-Fi: only a server started
+   after the cable is in uses it. The Wi-Fi stays on as the spare.
+3. **The connection.** Nothing else using the line (OneDrive paused, Steam and browsers closed), no
+   assistant session open on the laptop during the two hours. `scripts/netmon.py` is logging to tell Wi-Fi
+   from the rest. On Sunday at 03:16 UTC nothing crossed the Wi-Fi for 12 s and 34 requests went
+   unanswered, the only burst of the night; the server resumed by itself and only about three of them were
+   within reach of a different loop, so the loop is unchanged (findings §24). Never restart the server
+   because of a network drop.
 
 Local setup of this laptop: `SKORE_DATA_DIR` / `SKORE_LOGS_DIR` point to `C:/Users/javil/skore_money/`
 (outside OneDrive) and the Python environment is `C:/Users/javil/skore_money/venv` (not `.venv` in the repo:

@@ -81,49 +81,45 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 
 ## Which version serves the final
 
-- Exploration **off**: no `explore` arm in `ARMS` (reco/serve.py). It is a practice-round tool.
-- One arm, the best version by `scripts/arms.py` over a long same-minutes window in practice. No A/B in
-  the final: every request should get the best list we have. Reading the night and setting the arm:
+**`skore_money_v31` alone: v9 with the trend lift in full. It has been running by itself since Sunday
+06:34 CET (05:33:51 UTC).** `ARMS` in `reco/serve.py` holds that one line. The only swap still owed is the
+one after the network cable goes in (step 2): same code, same version.
+
+- Exploration **off** and no A/B in the final: every request gets the best list we have.
+- Why v31. It is the best proven version, and the night's two questions were stopped with neither above
+  it. They ran crossed, 25 % of the traffic each, from 00:46 to 05:33 UTC (findings §23):
+
+  | | Requests | Purchases per 100 | Cold | Warm | EUR per request |
+  |---|---|---|---|---|---|
+  | **v31**: v9 + trend lift | 12,742 | 2.299 | 2.915 | 1.851 | 1.121 |
+  | v38: products added during the event x1.5 (known shoppers) | 12,937 | 2.238 | 2.733 | 1.874 | 1.108 |
+  | v39: v9 x organic orders the ten | 12,718 | 2.199 | 2.701 | 1.837 | 1.154 |
+  | v40: both | 12,729 | 2.144 | 2.622 | 1.810 | 1.055 |
+
+  Side against side, 25,500 requests on each: the organic order -0.10 (-1.7 se), new x1.5 -0.06 (-1.0 se).
+  The rule set before the night: the organic order only if its side was not below the other over the
+  night nor more than one standard error below in the minutes with a trend (it was below on both counts);
+  new x1.5 only if two standard errors above. To read it again (only these minutes compare the arms:
+  after them v31 runs alone):
 
   ```bash
-  python scripts/arms.py 00:47 07:30 | python realtime_analyisi_leaderboard/pool_arms.py "v9's order=31,38" "organic order=39,40"
-  python scripts/arms.py 00:47 07:30 | python realtime_analyisi_leaderboard/pool_arms.py "as it is=31,39" "new x1.5=38,40"
-  python scripts/arms.py 00:47 07:30 | python realtime_analyisi_leaderboard/pool_arms.py "v31=31" "new x1.5=38" "organic order=39" "both=40"
+  python scripts/arms.py 00:47 05:33 | python realtime_analyisi_leaderboard/pool_arms.py "v31=31" "new x1.5=38" "organic order=39" "both=40"
+  python scripts/arms.py 00:47 05:33 | python realtime_analyisi_leaderboard/pool_arms.py "v9's order=31,38" "organic order=39,40"
+  python scripts/arms.py 00:47 05:33 | python realtime_analyisi_leaderboard/pool_arms.py "as it is=31,39" "new x1.5=38,40"
   ```
 
-  (UTC: Sunday 01:47 to 08:30 CET; the last column is each group against the first, in standard errors.)
-  Since 00:46 UTC the four arms are two questions crossed, 25 % of the traffic each, so that each question
-  is read on all of it, half on each side:
+- If Javier or Hugo want another version whatever the reading, it is one line in `ARMS`, a commit with the
+  version in the message, and step 2:
 
-  | | v9's order | v9 x organic orders the ten |
-  |---|---|---|
-  | **as it is** | v31, the version to beat | v39 |
-  | **products added during the event x1.5** (known shoppers) | v38 | v40 |
-
-  The rule, one question at a time (findings §23 has the reasoning). Each change has two estimates of
-  what it adds: the held-out lists and the night, side against side.
-  - **The organic order** (held-out lists: +2.5 % ± 1.1): it goes into the final **if its side is not below
-    the other over the whole night, nor more than one standard error below in the minutes with a trend**
-    (45 minutes from :30 of every odd UTC hour: `arms.py 01:30 02:15`, `03:30 04:15`, `05:30 06:15`). Look
-    at the money per request too (the tie-breaker, `EUR/req` in `arms.py`).
-  - **New products x1.5** (held-out lists: +0.6 % ± 0.5, too little to carry it): only if its side is 2
-    standard errors above the other over the night.
-  - If in doubt, or if the humans prefer the proven version whatever the reading: v31.
-  Then leave a single line in `ARMS` (`reco/serve.py`) at 100 %, commit it, and replace the running server
-  as in step 2 (`scripts\swap_server.ps1`):
-
-  | What passed | `ARMS = (…,)` |
+  | Version | `ARMS = (…,)` |
   |---|---|
-  | nothing | `("skore_money_v31", "model", "v9", {"trend": 1.0}, 100)` |
+  | v31 (running) | `("skore_money_v31", "model", "v9", {"trend": 1.0}, 100)` |
   | new x1.5 | `("skore_money_v38", "model", "v9", {"trend": 1.0, "fresh": 1.5}, 100)` |
   | the organic order | `("skore_money_v39", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10}, 100)` |
   | both | `("skore_money_v40", "model", "v9o", {"trend": 1.0, "organic": 1.0, "pool": 10, "fresh": 1.5}, 100)` |
 
-  What one night can tell: with 36,000 requests on each side the standard error of a difference is 0.05
-  purchases per 100 requests, about 2 % of what we sell, so it can show harm but not confirm a gain of
-  2.5 %. That is why the night is only asked whether it contradicts the held-out lists. None of the four
-  arms costs time (the organic model is asked about ten products: 2 ms more than v31 per answer); p95 of
-  the answers must stay under 2,000 ms (`queries/health.sql`).
+  Keep the comma after a single line's closing parenthesis: `ARMS = ((…),)`.
+- p95 of the answers must stay under 2,000 ms (`queries/health.sql`); v31 ranks a request in about 80 ms.
   The best proven version and the line that puts it back are in [`best_model.md`](../best_model.md).
 - The model must not depend on having seen the shopper before: the final brings new shoppers, products
   and trends. What carries over, by construction: features are counts, shares and matches (never ids);

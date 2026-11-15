@@ -80,7 +80,7 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
   ([`scripts/arms.py`](scripts/arms.py)). We measured how noisy that is — three arms doing exactly the same
   read 1.92, 2.40 and 2.59 in one quarter of an hour — and only act on hours of traffic or on effects well
   beyond the noise (findings §15). When the offline judges and the live arms disagreed (v16 against v9 on
-  known shoppers), the live arms decided.
+  known shoppers; the organic order, +2.5 % on held-out lists and −4.3 % live), the live arms decided.
 
 | Version | What changed | Expected purchases per 100 requests |
 |---|---|---|
@@ -89,11 +89,11 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
 | v5 | first learned ranker on top of the rules | 1.81 |
 | v7–v10 | + description attributes, new products, carts by subcategory | 2.3–2.4 |
 | reference | the organisers' recommender | 2.06 |
-| v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | 2.39 over 22:25–00:40 UTC on Saturday night; the version to beat (findings §20, §23) |
+| v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | 2.39 over 22:25–00:40 UTC on Saturday night and 2.30 over 00:45–05:30 UTC on Sunday, the best of the four arms of the night. **Alone since 05:34 UTC on Sunday: the version for the final** (findings §20, §23) |
 | v9 × organic over the best 100 | + what shoppers go on to buy in the store, choosing among v9's best 100 candidates | 2.30 over the same hours: closed (never above v9 + lift, 20 ms more per answer) |
-| v9 × organic over the best 100, new products ×1.5 | + products added during the event lifted for known shoppers | 2.45 over the same hours: closed with the one above; the ×1.5 is now measured on its own (findings §21, §23) |
-| v9 picks the ten, organic orders them | the same ten products as v9, ordered with what shoppers go on to buy; a trending product keeps v9's slot | 2.35 over the same hours, before trending products kept their slot; being measured over the night; +2.5 % purchases on held-out lists (findings §22, §23) |
-| v9 + trend lift, new products ×1.5 | + products added during the event lifted for known shoppers, without the organic model | being measured over the night (findings §21, §23) |
+| v9 × organic over the best 100, new products ×1.5 | + products added during the event lifted for known shoppers | 2.45 over the same hours: closed with the one above; the ×1.5 then got arms of its own (findings §21, §23) |
+| v9 picks the ten, organic orders them | the same ten products as v9, ordered with what shoppers go on to buy; a trending product keeps v9's slot | 2.20 against 2.30 for v9 + trend lift over 00:45–05:30 UTC (12,700 requests each); as a question on half of the traffic −0.10 (−1.7 se), where held-out lists had given +2.5 % ± 1.1. Closed: the live arms decide (findings §22, §23) |
+| v9 + trend lift, new products ×1.5 | + products added during the event lifted for known shoppers, without the organic model | 2.24 against 2.30 over the same hours; as a question on half of the traffic −0.06 (−1.0 se). Closed (findings §21, §23) |
 
 ## Learning from the stream
 
