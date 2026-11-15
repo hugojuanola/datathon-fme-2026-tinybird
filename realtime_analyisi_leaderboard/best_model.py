@@ -69,12 +69,12 @@ RANKER = {  # the ranker spec each version uses in `reco/serve.py` ("a|b" = a fo
     "skore_money_v21": "v9", "skore_money_v22": "v9", "skore_money_v23": "v9w|v9", "skore_money_v24": "v9w|v9",
     "skore_money_v25": "v16", "skore_money_v26": "v16", "skore_money_v27": "v16w|v16", "skore_money_v28": "v16w|v16",
 }
-TONIGHT = ("**Being measured against the record** (all on the v9 ranker, trend lift at full strength; live since 00:46 UTC on 15 Nov, "
+TONIGHT = ("**Serving now**: `skore_money_v31` alone, on all the traffic since 05:34 UTC on 15 Nov: the version for the final. **What the night measured against it** (all on the v9 ranker, trend lift at full strength; 00:50–05:30 UTC on 15 Nov,"
            "25 % each): `skore_money_v31` v9 itself; `v38` v9 with products added during the event × 1.5 for known shoppers; `v39` v9 "
            "picks the ten and the organic factor orders them, a trending product keeping the slot v9 gave it; `v40` = `v39` with the "
-           "× 1.5. Two questions crossed, each read on all the traffic: `python scripts/arms.py 00:50 07:30 | python "
+           "× 1.5. Two questions crossed, each read on all the traffic, 280 minutes and 12,500 requests an arm: `v31` 2.296, `v38` 2.250, `v39` 2.210, `v40` 2.134; the organic order −0.100 (−1.7 standard errors; −0.128 in the minutes of a trend), the × 1.5 −0.060 (−1.0). Neither went into the final. To reproduce: `python scripts/arms.py 00:50 05:30 | python"
            "realtime_analyisi_leaderboard/pool_arms.py \"v9's order=31,38\" 'organic order=39,40'` and the same with 'as it is=31,39' "
-           "'new x1.5=38,40', on Sunday morning; every test of the day, with what it gave and what it cost, is in "
+           "'new x1.5=38,40'; every test of the day, with what it gave and what it cost, is in "
            "`realtime_analyisi_leaderboard/experiments.md`. Earlier: `v32` (v9 × organic choosing among the best 100), `v36` (`v32` "
            "with the × 1.5) and `v37` (the organic order before the trend fix) ran 22:25–00:46 UTC and never read above v9; `v33` (v9 retrained on "
            "all of Saturday) was level with v9 and left at 22:23 UTC; `v34` (no trend lift) and `v35` (lift ^0.5) ran 20:35–21:33 "

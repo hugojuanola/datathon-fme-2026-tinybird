@@ -29,13 +29,14 @@ import arms as board  # noqa: E402  (scripts/arms.py: the per-version reader of 
 URL = "https://datathon.rawtree.dev/api/state"
 ME = "team_06"
 # (version suffix, what it is, the UTC minute it counts from)
-ARMS = [("31", "v9 + trend lift (the proven one)", "2026-11-15 00:50"),
-        ("38", "v9 with products added during the event x1.5 for known shoppers", "2026-11-15 00:50"),
-        ("39", "v9 picks the ten, the organic factor orders them (a trending product keeps v9's slot)", "2026-11-15 00:50"),
-        ("40", "v39 with new products x1.5 for known shoppers", "2026-11-15 00:50")]
-# two questions crossed over the four arms, so each is read on all the traffic: (name, the arms with it, the arms without)
-CONTRASTS = [("the organic order (v39 + v40) against v9's order (v31 + v38)", ("39", "40"), ("31", "38")),
-             ("new products x1.5 (v38 + v40) against none (v31 + v39)", ("38", "40"), ("31", "39"))]
+ARMS = [("31", "v9 + trend lift, alone on all the traffic: the version for the final", "2026-11-15 05:35")]
+# the questions the arms are crossed on, each read on all the traffic: (name, the arms with it, the arms without).
+# None while one arm serves alone. The night of 15 Nov (00:50-05:30 UTC) ran four arms with
+#   ARMS suffixes 31, 38, 39, 40 and
+#   ("the organic order (v39 + v40) against v9's order (v31 + v38)", ("39", "40"), ("31", "38")),
+#   ("new products x1.5 (v38 + v40) against none (v31 + v39)", ("38", "40"), ("31", "39"));
+# its whole read is written out in experiments.md, section 2.
+CONTRASTS: list[tuple[str, tuple[str, ...], tuple[str, ...]]] = []
 SPREAD = {"all": 6.5, "cold": 8.8, "warm": 4.75}     # per request, between arms running the same code (14 Nov)
 START, END = "<!-- live:start -->", "<!-- live:end -->"
 
