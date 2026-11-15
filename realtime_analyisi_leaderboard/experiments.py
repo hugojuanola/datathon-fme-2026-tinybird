@@ -29,10 +29,13 @@ import arms as board  # noqa: E402  (scripts/arms.py: the per-version reader of 
 URL = "https://datathon.rawtree.dev/api/state"
 ME = "team_06"
 # (version suffix, what it is, the UTC minute it counts from)
-ARMS = [("31", "v9 + trend lift (the proven one)", "2026-11-14 20:35"),
-        ("32", "v9 x organic factor", "2026-11-14 21:55"),
-        ("36", "v9 x organic, new products x1.5 for known shoppers", "2026-11-14 21:55"),
-        ("37", "v9 picks the ten, the organic factor only orders them", "2026-11-14 22:25")]
+ARMS = [("31", "v9 + trend lift (the proven one)", "2026-11-15 00:50"),
+        ("38", "v9 with products added during the event x1.5 for known shoppers", "2026-11-15 00:50"),
+        ("39", "v9 picks the ten, the organic factor orders them (a trending product keeps v9's slot)", "2026-11-15 00:50"),
+        ("40", "v39 with new products x1.5 for known shoppers", "2026-11-15 00:50")]
+# two questions crossed over the four arms, so each is read on all the traffic: (name, the arms with it, the arms without)
+CONTRASTS = [("the organic order (v39 + v40) against v9's order (v31 + v38)", ("39", "40"), ("31", "38")),
+             ("new products x1.5 (v38 + v40) against none (v31 + v39)", ("38", "40"), ("31", "39"))]
 SPREAD = {"all": 6.5, "cold": 8.8, "warm": 4.75}     # per request, between arms running the same code (14 Nov)
 START, END = "<!-- live:start -->", "<!-- live:end -->"
 
@@ -81,8 +84,30 @@ def read(start: int, end: int) -> dict:
 
 def values(s: "board.Sum") -> tuple[dict, dict]:
     n, c = max(s.requests, 1), s.cold_requests
-    value = {"all": s.buys / n, "cold": s.cold_buys / max(c, 1), "warm": (s.buys - s.cold_buys) / max(n - c, 1)}
+    value = {"all": s.buys / n, "cold": s.cold_buys / max(c, 1), "warm": (s.buys - s.cold_buys) / max(n - c, 1), "eur": s.revenue / n}
     return value, {"all": s.requests, "cold": c, "warm": s.requests - c}
+
+
+def pooled(rows: dict, suffixes: tuple) -> tuple[dict, dict] | None:
+    total = board.Sum()
+    for s in suffixes:
+        if s in rows:
+            for field in ("requests", "cold_requests", "buys", "cold_buys", "revenue"):
+                setattr(total, field, getattr(total, field) + getattr(rows[s], field))
+    return values(total) if total.requests else None
+
+
+def contrast_lines(rows: dict) -> list[str]:
+    """The crossed questions on one regime's rows: the difference, its standard errors, the revenue per request."""
+    out = []
+    for title, with_it, without in CONTRASTS:
+        a, b = pooled(rows, with_it), pooled(rows, without)
+        if a and b:
+            (va, na), (vb, nb) = a, b
+            out.append(title + ": " + ", ".join(
+                f"{k} {va[k] - vb[k]:+.3f} ({(va[k] - vb[k]) / (SPREAD[k] * (1 / max(na[k], 1) + 1 / max(nb[k], 1)) ** 0.5):+.1f} se)"
+                for k in ("all", "cold", "warm")) + f"; EUR per request {va['eur']:.3f} against {vb['eur']:.3f}; {na['all']:,} against {nb['all']:,} requests")
+    return out
 
 
 def arms_table(since: int, end: int, suffixes: list[str]) -> list[str]:
@@ -108,6 +133,7 @@ def arms_table(since: int, end: int, suffixes: list[str]) -> list[str]:
                 for k in ("all", "cold", "warm"))
             lines.append(f"| `v{s}` | {what.get(s, '')} | {n['all']:,} | {v['all']:.3f} | {v['all'] - ref['all']:+.3f} | {v['cold']:.3f} | {v['warm']:.3f} | {against} |")
         lines.append("")
+        lines += [f"- Pooled, {c}." for c in contrast_lines(rows)] + [""]
     return lines
 
 

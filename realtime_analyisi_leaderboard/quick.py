@@ -96,7 +96,10 @@ def main() -> None:
             against = "" if s == suffixes[0] else "  vs v" + suffixes[0] + ": " + ", ".join(
                 f"{k} {v[k] - first[0][k]:+.2f} ({(v[k] - first[0][k]) / (experiments.SPREAD[k] * (1 / max(n[k], 1) + 1 / max(first[1][k], 1)) ** 0.5):+.1f} se)"
                 for k in ("all", "cold", "warm"))
-            print(f"     v{s}  requests {n['all']:>6,}  overall {v['all']:.3f} ({v['all'] - ref['all']:+.3f})  cold {v['cold']:.3f}  warm {v['warm']:.3f}{against}")
+            print(f"     v{s}  requests {n['all']:>6,}  overall {v['all']:.3f} ({v['all'] - ref['all']:+.3f})  cold {v['cold']:.3f}  warm {v['warm']:.3f}  "
+                  f"eur {v['eur']:.2f}{against}")
+        for line in experiments.contrast_lines(rows_):
+            print(f"     > {line}")
 
     print("\n4) SERVER")
     print(f"   last start at log line {started}; last trend line: {trend or 'none'}")

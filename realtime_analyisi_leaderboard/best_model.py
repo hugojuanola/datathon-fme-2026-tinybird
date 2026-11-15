@@ -59,6 +59,9 @@ WHAT = {  # what each version is, in one line (details: docs/findings.md)
     "skore_money_v35": "v9 everywhere, trend lift ^0.5 (dose)",
     "skore_money_v36": "v32 (v9 × organic, trend lift ^1.0) with products added during the event × 1.5 for known shoppers",
     "skore_money_v37": "v9 + trend lift picks the ten, v9 × organic only orders them",
+    "skore_money_v38": "v9 + trend lift, products added during the event × 1.5 for known shoppers (no organic model)",
+    "skore_money_v39": "v9 + trend lift picks the ten, v9 × organic orders them; a trending product keeps v9's slot",
+    "skore_money_v40": "v39 with products added during the event × 1.5 for known shoppers",
 }
 RANKER = {  # the ranker spec each version uses in `reco/serve.py` ("a|b" = a for cold requests, b for the rest)
     "skore_money_v5": "v5", "skore_money_v8": "v8", "skore_money_v9": "v9", "skore_money_v9w": "v9w",
@@ -66,13 +69,14 @@ RANKER = {  # the ranker spec each version uses in `reco/serve.py` ("a|b" = a fo
     "skore_money_v21": "v9", "skore_money_v22": "v9", "skore_money_v23": "v9w|v9", "skore_money_v24": "v9w|v9",
     "skore_money_v25": "v16", "skore_money_v26": "v16", "skore_money_v27": "v16w|v16", "skore_money_v28": "v16w|v16",
 }
-TONIGHT = ("**Being measured against the record** (all on the v9 ranker, trend lift at full strength; live since 22:23 UTC on 14 Nov): "
-           "`skore_money_v31` (30 %) v9 itself, `v32` (30 %) v9 × a third model of what shoppers go on to buy in the store, `v37` (20 %) "
-           "v9 picks the ten and the organic factor only orders them, `v36` (20 %) `v32` with products added during the event × 1.5 for "
-           "known shoppers. `v32` and `v36` count from 21:55 UTC (before that the organic factor flooded lists during a trend), `v37` "
-           "from 22:25. Read the night with `python scripts/arms.py 22:25 07:30 | python realtime_analyisi_leaderboard/pool_arms.py "
-           "'v9=31' \"organic orders v9's ten=37\" 'v9 x organic=32' 'organic, new x1.5=36'` on Sunday morning; every test of the day, "
-           "with what it gave and what it cost, is in `realtime_analyisi_leaderboard/experiments.md`. Earlier: `v33` (v9 retrained on "
+TONIGHT = ("**Being measured against the record** (all on the v9 ranker, trend lift at full strength; live since 00:46 UTC on 15 Nov, "
+           "25 % each): `skore_money_v31` v9 itself; `v38` v9 with products added during the event × 1.5 for known shoppers; `v39` v9 "
+           "picks the ten and the organic factor orders them, a trending product keeping the slot v9 gave it; `v40` = `v39` with the "
+           "× 1.5. Two questions crossed, each read on all the traffic: `python scripts/arms.py 00:50 07:30 | python "
+           "realtime_analyisi_leaderboard/pool_arms.py \"v9's order=31,38\" 'organic order=39,40'` and the same with 'as it is=31,39' "
+           "'new x1.5=38,40', on Sunday morning; every test of the day, with what it gave and what it cost, is in "
+           "`realtime_analyisi_leaderboard/experiments.md`. Earlier: `v32` (v9 × organic choosing among the best 100), `v36` (`v32` "
+           "with the × 1.5) and `v37` (the organic order before the trend fix) ran 22:25–00:46 UTC and never read above v9; `v33` (v9 retrained on "
            "all of Saturday) was level with v9 and left at 22:23 UTC; `v34` (no trend lift) and `v35` (lift ^0.5) ran 20:35–21:33 "
            "without a trend to measure. Before them, 17:45–20:30 UTC, `v21`–`v28` compared v9, v9w cold + "
            "v9 warm, v16 and v16w cold + v16 warm, each with the trend lift off and at ^0.75: v9 everywhere led (+0.38 over the reference "
