@@ -28,8 +28,9 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 
 ## Sunday, 09:00 CET — one hour before
 
-1. Close everything that talks to the internet: OneDrive (pause syncing), Discord, browsers, Spotify,
-   and any assistant session working in this repo (each of its steps uploads megabytes).
+1. Close everything that talks to the internet: OneDrive (pause syncing), Steam (it downloads updates by
+   itself; it was running on the night of the 15th), Discord, browsers, Spotify, and any assistant session
+   working in this repo (each of its steps uploads megabytes).
 2. Network cable in (see above). Then start the server — or replace the one that is running, without a
    gap — as a process of its own:
 
@@ -63,9 +64,15 @@ connection being busy with something else (docs/findings.md §8). So the checkli
 ## 10:00–12:00
 
 - **Do not touch it.** No deploys, no retraining, no experiments (AGENTS.md rule 7).
-- Look at the log or run `queries/health.sql` every 15 minutes or so. Only two things justify acting:
+- Look at the log or run `queries/health.sql` every 15 minutes or so, and once at 10:02: at 10:00 the
+  stream switches to new data. Only three things justify acting:
   - the laptop restarted, or no `python` process with `reco.serve` is left → start it again (step 2);
-  - `failed_polls` / `failed_inserts` climbing fast → something is using the connection: find it and close it.
+  - `failed_polls` / `failed_inserts` climbing fast → something is using the connection: find it and close it;
+  - `queries/health.sql` shows rows `fallback / invalid`, or our light on the board turns red while the log
+    looks healthy → the server is recommending products the store no longer has. It reads the catalogue
+    once when it starts and follows `shop.catalog_updates` from then on (new products, prices, stock: all
+    of practice came through there); a catalogue replaced without an update would not reach it. Replace
+    the server (step 2): the new one reads the catalogue again. It has never happened.
 - **A drop of the connection is not one of them.** It shows as `no poll came back for 2 s` and timeouts in
   the log, and some seconds of answers missing. Do not restart the server: it goes on by itself two seconds
   after the link is back (measured, findings §24), and a restart takes longer than the drop.
