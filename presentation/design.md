@@ -36,7 +36,7 @@ Type scale of the template at 1920 px (**S** `:root`, "only these sizes"): 128 /
 | Subtitle | 40 px, line-height 1.35, tracking −0.01em, warm grey `#777169` (`.sub`) | `.lead` |
 | Kicker (top left) | Geist Mono 24 px, line-height 1.3, **sentence case**, `--accent` (`.kicker`) | `.kick` |
 | Ticket (top right) | Geist Mono 24 px, `--muted` (`header.furniture .ticket`) | `.ticket`: "Skore Money · team_06" |
-| Column number `01 02 03` | Geist Mono **300**, 80 px, `--accent` (`.no`) | closing slide, demo list |
+| Column number `01 02 03` | Geist Mono **300**, 80 px, `--accent` (`.no`) | demo list |
 | Big figure | Geist Mono **300**, 128 px, `--accent`, slashed zero (`.cols--stat .stat`) | `.big` (112–240 px) |
 | Secondary figure | Geist 400, 80 px, tracking −0.045em, `--accent` (`.stat`) | `.trio b` at 64 px |
 | Name + text | 32 px / 500 / 1.25, then 24 px / 1.35 in `--muted` (`.sheet--tpl .name`, `.text`) | cards, lists, columns |
@@ -82,7 +82,7 @@ Every bar and line end carries its value as text, so no series depends on colour
 | **Blue edge** | an 11.5 px (`0.6cqw`) `--accent` bar down the left edge of every white sheet (`.sheet::after`) | `#stage::after` |
 | **Arcs** | the logo's arcs, enormous, in ink at **3.5 % opacity** behind the content (`.sheet::before`) | `#stage::before`, `assets/rawtree-arcs.png` |
 | Furniture | header: kicker left, ticket right; footer: logo left, counter right | `.furn`, `#logo`, `#count` |
-| Columns | `border-left: 3px solid var(--rule)` between columns, none before the first; text 34 px from the rule (`.cols > li`) | three stats, the `trio`, the closing ideas |
+| Columns | `border-left: 3px solid var(--rule)` between columns, none before the first; text 34 px from the rule (`.cols > li`) | three stats, the `trio` |
 | Tag | pill: radius 99 px, 0.5 px border in the text colour, Geist Mono 14 px; neutral `#eef0f5` / `--muted`, team `--tint` / `--accent`, live `#e8faeb` / `--ok` (`.tag`) | `.chip` (team variant, 1 px border at our size) |
 | Card | white, 1 px `--line`, radius 11.5 px, no shadow | `.card`, `.stage`, `.node` (radius 12 px) |
 | Terminal | `--code`, radius 15 px (`0.8cqw`), shadow `0 27px 61px -19px rgb(16 18 40 / 40%)`, three 15 px dots in `#3b3c46`, file name centred in mono grey, body Geist Mono 24 px / 1.65 (`.term`) | `.term`, `.cmd` |

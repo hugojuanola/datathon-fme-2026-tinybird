@@ -127,6 +127,50 @@ sellers in stock. What costs answers is the home connection, not the code: findi
 the final the Wi-Fi went silent for 12 seconds: 34 requests unanswered, of which about three were within
 reach of any loop, and the server went on by itself two seconds after the link came back (findings §24).
 
+## How we worked: two people and a coding agent
+
+**Who did what.** Javier Aranda built and iterated the live system: the recommender ([`reco/`](reco/)), the
+training and validation ([`offline/`](offline/)), every live experiment, and the server that answered the
+practice round, the night and the final from his laptop. Hugo Juanola did two things. First, on Saturday at
+noon, he prepared the repository so that an agent knew what to do from its first minute: the whole context
+of the challenge ingested (the brief and the official material verbatim, a profile of every table with
+numbers measured on the real data, the vendored RawTree docs and its official skill, the starter kit) and
+[`AGENTS.md`](AGENTS.md) as the entry point, with the mission, the deadlines, the rules and the commands.
+Then he was on every decision and ran the review in parallel: from another branch (`hugo`), his agents pulled what Javier pushed and reviewed each
+decision while it was being made and built, assessing the process (is it measured well? does the conclusion
+follow from the data?) and what was being explored (what is left untested, what is not worth more time). He
+also built a first engine in shadow mode on Saturday morning to cross-check ideas (not the one that serves;
+it is not in this branch) and worked out where the oracle is from the public score series
+([`docs/challenge.md`](docs/challenge.md)). The jury presentation ([`presentation/`](presentation/README.md))
+is by both of us. Every decision on what to test and what serves the final was
+ours, both of us, with the rule written before reading the data ([`docs/final-round.md`](docs/final-round.md)).
+Why this split: whoever builds tends to believe their own result; a second look, from another branch and
+with agents that did not write that code, questions it before it reaches the server.
+
+**Which agent.** Claude Code (Anthropic), model Claude Fable 5.2, for both of us; the commits of the
+recommender carry its signature. It wrote almost all the code and ran the measurements. How we used it:
+
+- **[`AGENTS.md`](AGENTS.md) is the contract of every session**: mission, deadlines, where everything is,
+  nine non-negotiable rules, and a "state of the repo" section rewritten at every deployment. A session
+  starts with no memory, so the repository is the memory.
+- **One role per session.** One builds, trains and measures the recommender. The ones on Hugo's branch review
+  those decisions as they arrive. Another one only watches: it
+  reads the public board and our `team_06.scratch` with SQL every quarter of an hour, keeps a ledger of every
+  test ([`realtime_analyisi_leaderboard/experiments.md`](realtime_analyisi_leaderboard/experiments.md)) and
+  raises the alarm. It saw a fault of the third model during a trend twelve minutes in, and told us at dawn
+  that two rivals had drawn level. Another one put the presentation together, directed by both of us.
+- **Everything measured is written down**, with its number and its date
+  ([`docs/findings.md`](docs/findings.md)), what did not work included; every deployment is a commit with
+  its `model_version`, so the repository always matches what is serving.
+- **What an agent may not do.** Answer a request twice or from two processes, print or commit the key, run
+  anything heavy on the serving machine, or change the live server without one of us from Sunday 08:00 on.
+  During the final the one session left open was allowed a single action: relaunch the same version if the
+  server was gone.
+- **RawTree from an agent.** The official RawTree skill ([`.claude/skills/rawtree/`](.claude/skills/rawtree/SKILL.md)),
+  its docs vendored in [`docs/rawtree/`](docs/rawtree/), and [`scripts/rt.py`](scripts/rt.py), which is
+  read-only unless asked to write. What we learned about the platform on the way is in
+  [`docs/rawtree.md`](docs/rawtree.md), so the next session does not rediscover it.
+
 ## Repository map
 
 | Path | What |

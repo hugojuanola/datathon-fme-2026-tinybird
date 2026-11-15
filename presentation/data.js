@@ -1,44 +1,44 @@
 // Written by update_data.py from the public leaderboard. Do not edit by hand.
 window.DECK_DATA = {
  "mode": "practice",
- "updated_at": 1794698356,
+ "updated_at": 1794731772,
  "rank": 1,
  "teams": 42,
  "team": {
-  "conversion": 2.242388481495022,
-  "cold_conversion": 2.8433792715825614,
-  "on_time": 99.79605080189117,
-  "revenue_per_request": 1.213077351842145,
-  "model_version": "skore_money_v36"
+  "conversion": 2.2286665805814283,
+  "cold_conversion": 2.7736650504142677,
+  "on_time": 99.70326409495549,
+  "revenue_per_request": 1.150123914617961,
+  "model_version": "skore_money_v31"
  },
  "rivals": [
   {
-   "conversion": 2.132864451507414,
-   "cold_conversion": 2.723137590888824,
-   "on_time": 98.22007972559562,
-   "revenue_per_request": 1.2471401673859774,
-   "model_version": "transformada-neta-trend"
+   "conversion": 2.2033329385164,
+   "cold_conversion": 2.7167322068536595,
+   "on_time": 98.96142433234421,
+   "revenue_per_request": 1.2027792172090535,
+   "model_version": "transformada-neta-v8"
   },
   {
-   "conversion": 2.0392767804619396,
-   "cold_conversion": 2.6010076847886037,
-   "on_time": 99.91656623713729,
-   "revenue_per_request": 1.0494409894902437,
-   "model_version": "v3r5g-buy-nb"
+   "conversion": 2.15852842538399,
+   "cold_conversion": 2.6606731523475005,
+   "on_time": 99.45289317507418,
+   "revenue_per_request": 1.098280516477884,
+   "model_version": "fz-v10-nocorr"
   }
  ],
  "reference": {
-  "conversion": 1.9644672096223077,
-  "cold_conversion": 1.84994347403169,
+  "conversion": 1.8536681345567647,
+  "cold_conversion": 1.7097519565641541,
   "on_time": 100,
-  "revenue_per_request": 0.975763601302393,
+  "revenue_per_request": 0.8660408529656739,
   "model_version": ""
  },
  "baseline": {
-  "conversion": 0.5320804759098988,
-  "cold_conversion": 0.8334062762085666,
+  "conversion": 0.4718681860448124,
+  "cold_conversion": 0.6510991163339469,
   "on_time": 100,
-  "revenue_per_request": 0.09834837323905171,
+  "revenue_per_request": 0.07235908534256874,
   "model_version": ""
  },
  "history": [
@@ -175,16 +175,58 @@ window.DECK_DATA = {
    0.5929
   ],
   [
-   1794698356,
-   2.242388481495022,
-   1.9644672096223077,
-   0.5320804759098988
+   1794708600,
+   2.313,
+   1.9786,
+   0.5366
+  ],
+  [
+   1794712320,
+   2.1702,
+   1.9146,
+   0.5196
+  ],
+  [
+   1794715380,
+   2.2974,
+   1.9243,
+   0.4766
+  ],
+  [
+   1794719640,
+   2.1326,
+   1.7641,
+   0.4852
+  ],
+  [
+   1794722940,
+   2.1948,
+   1.8351,
+   0.5155
+  ],
+  [
+   1794726840,
+   2.2373,
+   1.9577,
+   0.568
+  ],
+  [
+   1794729600,
+   2.2193,
+   1.9095,
+   0.5141
+  ],
+  [
+   1794731772,
+   2.2286665805814283,
+   1.8536681345567647,
+   0.4718681860448124
   ]
  ],
  "lead": {
   "since": 1794661800,
-  "until": 1794698400,
-  "minutes_not_first": 20,
+  "until": 1794731700,
+  "minutes_not_first": 85,
   "minutes_off_podium": 0
  }
 };
