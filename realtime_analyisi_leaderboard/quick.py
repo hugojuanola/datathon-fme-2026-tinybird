@@ -100,6 +100,18 @@ def main() -> None:
                   f"eur {v['eur']:.2f}{against}")
         for line in experiments.contrast_lines(rows_):
             print(f"     > {line}")
+        present = [s for s in suffixes if s in rows_]
+        if regime == "all" and len(present) > 2:      # an arm two standard errors below the others is taken out
+            lowest = None
+            for s in present:
+                v, n = experiments.values(rows_[s])
+                rest_v, rest_n = experiments.pooled(rows_, tuple(o for o in present if o != s))
+                diff = v["all"] - rest_v["all"]
+                se = experiments.SPREAD["all"] * (1 / max(n["all"], 1) + 1 / max(rest_n["all"], 1)) ** 0.5
+                if lowest is None or diff / se < lowest[1] / lowest[2]:
+                    lowest = (s, diff, se)
+            print(f"     > the lowest arm against the others pooled: v{lowest[0]} {lowest[1]:+.3f} ({lowest[1] / lowest[2]:+.1f} se); "
+                  f"an arm is taken out at -2 se over a clean window")
 
     print("\n4) SERVER")
     print(f"   last start at log line {started}; last trend line: {trend or 'none'}")
