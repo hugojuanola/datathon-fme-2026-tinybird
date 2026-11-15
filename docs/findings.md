@@ -832,3 +832,296 @@ Left for a retrain, not for tonight: an abandoned cart carted once is worth a fi
 (§21). Scoring it ×0.8 would move the reciprocal rank of the purchase from 0.384 to 0.390, but the live
 state does not count carts per product, and a counter added to the state the night before the final is a
 risk the gain does not pay for.
+
+## 23. First read of the night: the organic order during a trend, and the arms as two questions crossed
+
+**The read, 22:25 to 00:40 UTC** (`scripts/arms.py`, the organisers' metric; standard errors as in §15):
+
+| Arm | Requests | Purchases / 100 requests | Cold | Warm | EUR / request |
+|---|---|---|---|---|---|
+| `v31` v9 + lift | 7,272 | 2.389 | 2.970 | 1.986 | 1.342 |
+| `v37` v9 × organic orders v9's ten | 4,843 | 2.345 | 3.029 | 1.906 | 1.174 |
+| `v32` v9 × organic over the best 100 | 7,229 | 2.301 | 3.015 | 1.824 | 1.122 |
+| `v36` v32 + new products ×1.5 | 4,937 | 2.446 | 3.096 | 2.011 | 1.258 |
+
+The three organic arms together read 2.356 against 2.389 for v31: level (−0.4 standard errors). Outside the
+trend they are level one by one (105 minutes: 2.268, 2.272, 2.243, 2.284 in the order of the table). Inside
+it they are not.
+
+**The Vitamins trend, 23:30 to 00:15 UTC** (read by the second session): the largest of the day, ×7.8 the
+subcategory's usual share and 11 % of all the store's purchases while it lasted (about 105 purchases per 5
+minutes against 13 usual); the detector was on it from 23:30:43 to 00:16:47 UTC. All four arms showed the same
+number of trending products (1.6 to 2.0 per list: the flaw of §21 is gone), but not in the same place:
+
+| Arm | Lists with a trending product in slot 1 | Its share of the clicks in the lists that hold one | The share its slots predict | Purchases / 100 requests in the trend |
+|---|---|---|---|---|
+| `v31` | 21.9 % | 50.6 % | 54.3 % (−0.7 se: placed right) | 2.702 |
+| `v37` | 18.5 % | 51.6 % | 37.9 % (+2.3 se) | 2.427 (−1.3 se against v31) |
+| `v32` | 15.6 % | 54.3 % | 44.1 % (+1.7 se) | 2.532 (−0.9 se) |
+| `v36` | 16.1 % | 50.9 % | 45.4 % | 2.880 (+0.9 se) |
+
+In the organic arms the trending product sat lower than the clicks it drew: on warm requests v32 read 0.41
+below v31 (−2.3 se) and v37 0.32 below (−1.6 se). One trend, so not a result by itself — but the cause is
+in the code, not in the noise. §21 had given a trending product a neutral organic factor (the median of
+the products ranked next to it), on the grounds that the organic model has never been asked about one. **A
+neutral factor is not a neutral rank**: the other products still move on their own factors, and the ones
+that come out first are the ones with the highest factor, so a product with a middling one loses the first
+slots to them. Replayed on 200 of the day's requests with a made-up trend of the same size:
+
+| Trending product in slot 1 | v9 + lift | Organic order, neutral factor (until 00:46 UTC) | Organic order, rank held (since) |
+|---|---|---|---|
+| organic factor orders the ten | 26.5 % of lists | 15.0 % | 26.5 % |
+| organic factor over the best 100 | 26.5 % | 13.0 % | 26.5 % |
+
+So the rule is now the one §21 meant (`hold_trending` in `reco/recommend.py`): **a trending product keeps
+the rank v9 and the lift give it, and the organic factor orders only the other products among the slots
+left.** v9 + lift places a trending product right (table above, and ×8.3 measured against ×8.6 estimated in
+§16), and that is all we know about it. In the replay every trending product is in v9's slot in 200 of 200
+lists; outside a trend nothing changes.
+
+**The money per request is not the organic factor preferring cheap products.** The three organic arms earned
+1.12 to 1.26 EUR per request against 1.34. From the per-answer log of the same hours, the product each arm
+put first cost 36.4 (v31), 38.0 (v37), 35.1 (v32) and 36.9 EUR (v36), ± 0.8 to 0.9, and the ten together 40.2,
+40.0, 38.2 and 39.2: the same shelf. Whatever the gap is, it is not the price of what is shown; it stays on
+the list of things to read in the morning, because money is the tie-breaker.
+
+**The arms since 00:46 UTC: two questions crossed**, 25 % of the traffic each.
+
+| | v9's order | v9 × organic orders v9's ten |
+|---|---|---|
+| **as it is** | `skore_money_v31` | `skore_money_v39` |
+| **products added during the event ×1.5 for known shoppers** | `skore_money_v38` | `skore_money_v40` |
+
+Each question is read on all the traffic, half on each side, instead of a fifth against a third: "the
+organic order" is (v39 + v40) against (v31 + v38), "new ×1.5" is (v38 + v40) against (v31 + v39). What was
+closed, and why:
+
+- **The organic factor choosing among the best 100** (v32, v36). In four hours it never read above v31
+  (2.301 against 2.389 since 22:25 UTC, −0.8 se), it costs 20 ms per answer, and it is the one variant
+  nothing offline can vouch for: the products it brings into a list were never shown. The order of v9's
+  ten is the part that was measured (§22), so that is the part that stays in the experiment.
+- **v36 as the only arm with the ×1.5.** v36 against v32 (+0.145, +1.2 se) is the one live sign for the
+  ×1.5 of §21, and it was tied to an arm we are closing. It now has two arms without the organic model.
+
+**What a night can tell.** From 00:46 to 07:30 UTC each side of a question gets about 36,000 requests: a
+standard error of 0.05 purchases per 100 requests on the difference, so 2 standard errors are 0.10, about
+4 % of what we sell. The offline estimates are below that (+2.5 % for the organic order; less for the ×1.5,
+which touches few lists). The night can therefore show harm, and it can show a gain larger than we expect;
+it cannot confirm a gain of 2.5 %. The rule for the final stays the one of the proven version: v31 serves
+it unless a side is 2 standard errors above over the whole night and not below in trend minutes
+([`docs/final-round.md`](final-round.md)).
+
+**What each change is worth, on the same scale.** The three candidates that passed the control of §21 (v9's
+own prediction held equal), sized the same way: v9 picks the ten, the candidate orders them, purchases
+counted with the position-based estimate of §22 under the attention curve v9 implies (in brackets, under
+the one measured on today's lists). Held-out lists since 17:00 UTC: 30,891 lists, 724 purchases.
+
+| The ten ordered by | Lists it can change | Purchases in those lists | Purchases overall |
+|---|---|---|---|
+| v9 × organic (§22, lists since 16:14 UTC) | all | | **+2.5 % ± 1.1** |
+| v9, products added during the event ×1.5 for known shoppers | 52 % of known shoppers' lists | +1.9 % ± 1.4 (+1.3 ± 1.4) | +0.6 % ± 0.5 (+0.5 ± 0.5) |
+| v9 × e^(0.2 z), z = co-purchase with the shopper's abandoned carts, new shoppers only | 63 % of new shoppers' lists | +1.6 % ± 1.4 (+2.6 ± 1.4) | +0.6 % ± 0.5 (+1.0 ± 0.5) |
+
+The third is the one signal of §21 that is not in any arm, raised again by the second session when the
+teams behind us drew level outside trends (01:10 UTC: first by 0.08 on the hour, by 0.005 on the half
+hour). It stays out, for what it is worth and for what it needs:
+
+- It is worth what the ×1.5 is worth, a quarter of the organic order, and only when the shopper has had
+  the time to fill a cart. The 63 % above are shoppers 7 to 11 hours into the event. In the first two
+  hours of Saturday (measured by the second session on `shop.requests` against the shopper's earlier
+  `add_to_cart` events) 6 %, 17 %, 26 % and 32 % of the new shoppers' requests, by half hour, came after a
+  cart: a fifth. If the final starts from nothing that is about +0.15 % of the purchases; if its stream
+  carries on from the practice round, the +0.6 %.
+- For known shoppers it loses purchases (−1.2 % ± 1.1 at the same dose, −4.4 % ± 1.7 at e^(0.5 z)): v9
+  already reads their carts better than a co-purchase count does. It would have to be switched by the kind
+  of shopper.
+- It needs "bought by the same shoppers" for every pair of products: 5,000 × 5,000 numbers from the 60-day
+  history in the server's state, keyed on product ids, so empty for every product added during the event —
+  the one kind of thing the rest of the system avoids (features are counts, shares and matches, never
+  an id), added to the serving path the night before the final.
+
+**Putting the two estimates of a change together.** A night cannot confirm +2.5 % (above), and held-out
+lists cannot see what a live list does to the next request. Each is one estimate with its error, so they
+are combined, each weighted by its precision (1 / error²), and a change goes into the final when (a) the
+night does not contradict it — its side is not below the other over the whole night, nor more than one
+standard error below in the minutes with a trend — and (b) the combined estimate is 2 standard errors
+above zero. With a night worth ± 2.1 % on each question, that reads:
+
+| Change | Held-out lists | Goes into the final if the night reads |
+|---|---|---|
+| the organic order (v39) | +2.5 % ± 1.1 | at or above the other side: then the two together are +2.0 % ± 1.0 or better |
+| new products ×1.5 (v38) | +0.6 % ± 0.5 | 2 standard errors above the other side by itself: the held-out lists alone do not carry it |
+
+A reading "at or above" is a weak test — with no effect at all it comes out half of the time — so it is
+never the evidence: the held-out lists are, and the night is asked only whether it contradicts them. If
+the humans prefer the proven version whatever the reading, that is v31, and nothing is lost that we had.
+
+**The next trend, with the rank held (Leashes, 01:30 to 02:15 UTC; read by the second session).** As large
+as the largest of Saturday: the subcategory went from 1.1 % to 11.4 % of the store's purchases (×10.3). The
+organic arms now place the trending product where v9 does: in slot 1 in 20.9 % of their lists against
+21.9 % (in Vitamins 18.5 % against 21.9 %). Inside the trend the organic order read −0.11 (−0.7 se) and new
+×1.5 +0.15 (+1.0 se); over the night so far (00:50 to 02:15 UTC, 7,600 requests on each side) −0.07 (−0.7
+se) and 0.00. Nothing either way yet. Two things to keep:
+
+- **The dose of the lift is right at the margin.** Half of the lists held a trending product, 4.3 of them
+  on average, and those lists sold less than the others (1.75 purchases per 100 against 2.82 in v31). That
+  is which requests they are, not what the lift did to them. Inside those lists the trending products took
+  44.1 % of the clicks where their slots predict 42.5 % (Vitamins: 50.6 % against 54.3 %): slot for slot
+  they did as well as the shopper's own best candidates, which v9 ranks above the ones the trending
+  products pushed out. Were the lift twice too strong, they would take about 27 %. The lists that fill
+  with trending products are the ones of shoppers with weak signals of their own, where every product
+  draws three quarters of the clicks its slot usually gets. What would reopen it: that share falling
+  clearly under the slot prediction in another trend (the case for lift ^ 0.5, which ran as v35).
+- **The trend is no longer ours alone.** Inside it we read 2.340 against 2.285 and 2.280 for the next two
+  teams (team_14, team_03; every request counted, the ones a team did not answer included): +0.055, against
+  +0.017 in the 45 minutes before, where Game Consoles and Vitamins had given +0.10 to +0.33. Every team
+  rises inside a trend (a ranker that reads the recent views picks it up by itself); we rise more.
+  (team_14 read 1.77 before this trend because it answered about half of the requests, between two
+  versions, not because its ranker was worse.) Two teams differ by 0.10 over 45 minutes by chance, so it
+  is one reading, but outside trends the nearest teams are level with us since about 01:00 UTC.
+
+**The third trend of the night (Sneakers, 03:30 to 04:15 UTC; read by the second session).** From 0.42 %
+to 6.24 % of the store's purchases (×14.8), found 57 seconds in.
+
+- **The dose, again on the prediction.** Inside the lists that hold a trending product it took 31.2 % of
+  the clicks where its slots predict 31.0 %: 1.01 (Leashes 1.04, Vitamins 0.93). The exponent stays at 1.
+- **What the lift is worth on the board: about 0.08 while a trend runs.** We rose by 0.14 inside the trend
+  (2.212 to 2.357) and the teams that answer every request by 0.04 to 0.08; in Leashes 0.19 against 0.06
+  to 0.15. The gap to the next team went from +0.06 before to +0.13 inside (Leashes: +0.02 to +0.055).
+- **The organic order in the minutes with a trend** (Leashes and Sneakers, 8,100 requests on each side):
+  −0.13 (−1.3 se), with cold −0.44 and warm +0.11; over the whole night to 04:15 UTC −0.07 (−1.0 se). As it
+  stands the rule gives v31. How much chance there is in a cold reading over 90 minutes: v31 and v38 give
+  a new shopper the very same list and read 3.34 and 2.88.
+- **The organic arms showed a trending product in slot 1 a little less often in both trends** (18.8 %
+  against 20.0 %, and 20.9 % against 21.9 %). It is not the code. The two rankers' carousel models are
+  the same files; a replay of 300 of the day's requests with a made-up Sneakers trend leaves every
+  trending product in its slot in 300 of 300 lists; and comparing lists that hold the same number of
+  trending products the difference over the two trends is −1.1 points (−1.3 se). The number of trending
+  products per list, which no ordering can change, differs as much between arms (1.39 to 1.50): it is who
+  fell in each arm.
+
+**How the two questions ended (05:33 UTC).** On the window in which the four arms ran side by side
+(00:45 to 05:30 UTC), the organisers' metric:
+
+| Arm | Requests | Purchases per 100 | Cold | Warm | EUR per request | Against v31 |
+|---|---|---|---|---|---|---|
+| v31: v9 + trend lift | 12,742 | 2.299 | 2.915 | 1.851 | 1.121 | |
+| v38: new products ×1.5 | 12,937 | 2.238 | 2.733 | 1.874 | 1.108 | −0.06 (−0.8 se) |
+| v39: the organic order | 12,718 | 2.199 | 2.701 | 1.837 | 1.154 | −0.10 (−1.2 se) |
+| v40: both | 12,729 | 2.144 | 2.622 | 1.810 | 1.055 | −0.15 (−1.9 se) |
+
+As two questions, half of the traffic on each side: the organic order −0.10 (−1.7 se; cold −0.16, warm
+−0.04) on 25,447 requests against 25,679; new products ×1.5 −0.06 (−1.0 se; cold −0.13, warm 0.00) on
+25,666 against 25,460. Neither could reach its bar by the morning any more: to be level over the night the
+organic order would have had to read +0.21 over the two hours left (+2.5 se: under 1 % if it does nothing,
+about 3 % if it is worth the +2.5 % of the held-out lists), and new ×1.5 needed +2 se by itself. At
+05:25 UTC the second session raised the alarm agreed with Javier beforehand: twice running we were not first
+on the 30-minute board (team_03 2.240, team_14 2.235, us 2.226). The best version of each of the three
+nearest teams read 2.26 to 2.33, which is what v31 reads, and half of our traffic was on the side that read
+2.06 in that half hour. The answer was the one written down in advance: the traffic to our best arm by the
+longest clean window. No arm was kept for a comparison, because no question was left that the remaining
+hours could answer. **v31 alone since 05:33:51 UTC**; six answers were lost in the handover. It is also the
+version for the final.
+
+**What the night says about the held-out estimate.** The organic order was worth +2.5 % ± 1.1 on held-out
+lists (§22) and read −4.3 % ± 2.5 live: 2.5 standard errors apart. Judging a new order on lists that were
+logged under another one assumes that a product keeps its appeal whatever sits around it, and that the
+attention curve of our click model is the simulator's; the live arms test the thing itself. The estimate
+was good for choosing what to try and wrong about the size, and when the two disagree the live arms
+decide, as they did for v16 against v9 (§15). It is why the night was only asked whether it contradicted
+the held-out lists. It did.
+
+**A trend too small for the detector (Watches, 05:30 UTC).** The subcategory was 0.07 % of the store's views
+and 0.03 % of its purchases, six products that sell; inside the trend 0.54 % and 0.74 % (views ×7.4,
+purchases ×31 to ×40). That is about 19 views a minute, and the detector asks for 40 in its view window,
+which is two whole minutes plus the one in progress. Right after each minute mark the window is back to two
+minutes, holds fewer than 40, and the trend goes off until the new minute fills: 37 s, 3 s and 33 s in its
+first six minutes. Replayed second by second on the whole stream (4.5 million views and purchases, the ten
+trends the store has had): the detector stayed on 100 % of the time after finding the trend in six of them,
+98 to 99 % in two, 93.7 % in Cutting Boards and 57 % in the first twelve minutes of Watches. It found the
+six larger ones 50 to 61 s in and the four smaller ones 121 to 143 s in. Holding a trend for 60 s after the
+last second it passed the gates would give 100 % in nine and 87.5 % in Watches, and would keep the lift on
+a minute longer after every trend ends. Not deployed: a trend on 0.7 % of the store's purchases moves a
+fraction of a purchase in a final, the gain averaged over the ten trends is about 4 % of a trend's lift,
+and it is a change to the detector three hours before the final. If the final brings small trends, it is
+one constant and a dozen lines in `reco/features.py`. A swap in the middle of this trend lost nothing: the
+new server had found Watches from the journal before it took over.
+Read when it ended (second session): 37 purchases in the 45 minutes, the detector on and off 19 times, a
+Watches product in 1.0 % of our lists (98 impressions, no click), and the board the same inside as before
+for every team. A trend moves the board in proportion to its share of the store's purchases.
+
+**Where the headroom is: requests from known shoppers.** On cold requests we have been far above the
+organisers' reference all along (2.6 to 3.2 against 1.6 to 2.0). On warm ones (a known shopper, no new
+product among the recent views) the reference has read 2.05 to 2.19 in every two hours since Saturday
+midday, and our best arm 1.84 to 1.98 since the evening (v9 read 2.11 ± 0.12 in its first two hours); the
+best versions of the two nearest teams read 1.84 and 1.94. Warm requests are 58 % of the traffic, so
+matching the reference there would be worth about +0.12 overall, four times what the trend lift gives
+averaged over a day. We did not find what the reference knows about a known shopper that we do not:
+co-purchases between shoppers add nothing to v9 for them (§21, §23), and weighting our live feedback more
+makes warm requests worse (§15). With more time it is the first thing to look at.
+
+**Repetition: measured on the morning of the final, and left alone (07:20 UTC).** With two teams level
+with us on the short boards and the best version of each of the four nearest about 0.1 above v31 on warm
+requests (1.94 pooled against 1.85 over 95 minutes, +1.4 se; the reference 2.07), we looked at what v9
+cannot see: what we have already shown each shopper. Of the day's 797,690 impressions with feedback, 53 %
+were of a product we had shown that shopper before, 20 % shown three times or more, 9 % five times or more.
+Against what their slot gives on average, purchases read 1.17 and 1.27 for a product shown once or twice
+before, 1.02 at 3 to 4 times, 0.82 at 5 to 9, 0.48 at 10 to 19 and 0.23 from 20 on (an abandoned cart: 1.85
+never shown, 0.56 at 10 to 19). A product shown many times without a purchase is worth less, and still more
+than what sits below it in the same list: reordering the ten by it loses on the day's 80,100 lists with
+feedback (position-based, as in §22). Products shown five times or more to the bottom −2.4 % ± 0.5, ten
+times or more −0.4 % ± 0.2, a just-viewed product to the top −1.9 % ± 0.6. v9's order inside the list
+stands. What a product from outside the ten would do in their place the log cannot say: that takes a live
+arm, and there were ninety minutes left. No arm of the night and no ranker we have reads above v9 on warm
+requests, so nothing was deployed and v31 serves the final.
+
+## 24. Reliability, third look: twelve seconds without Wi-Fi (15 Nov, 03:16 UTC)
+
+The one burst of lost answers of the night: 34 requests in a row (ts 03:16:41.8 to 03:16:52.7; a feedback
+row is stamped 4.2 s after its request, so they show in the feedback of 03:16:46 to 03:16:57) came back
+`missing`. Every other team answered 100 % of those minutes: it was ours. The monitor
+(`scripts/netmon.py`, one line per second), the server's log and the list of what it ranked, side by
+side, on RawTree's clock (the laptop's runs 0.4 s ahead, measured):
+
+| UTC | The link, seen by the monitor | The server |
+|---|---|---|
+| 03:16:37.5 | ping to the router 26–40 ms (usually 4–5) | answering as usual |
+| 03:16:40.5 | a new connection to RawTree fails (2 s) | still answering on the connections it has; the last request it ranks has ts 03:16:41.700 |
+| 03:16:42 | silent | the four polls on their way time out after 2.5 s, three inserts after 2 s, every refresh after 5 s |
+| 03:16:43.5 | the router does not answer pings | `no poll came back for 2 s`, six times |
+| 03:16:53.5 | a connection gets through, after waiting 6.8 s; clean from here | |
+| 03:16:55.4 | | the first poll comes back, 10.6 s after it was sent: the requests of the last 2.8 s are ranked in one go |
+| 03:16:56.3 | | their answers land: 3.6 s after the oldest (too late), 3.2 s after the next (taken), in time for the rest |
+| 03:16:59.5 | ping 127–247 ms for five seconds, nothing lost | answers take 1.3–2.1 s for five seconds, then 1.0–1.4 s again |
+
+**What a different loop would have saved: about three requests of the 34.** With the link silent for 11.5 s,
+some 31 were out of reach for any loop: a request has to be read, ranked and answered within 3 s of its ts.
+The server's first poll came back 1.9 s after the monitor's first good connection instead of the 0.6 s a
+fresh connection and a query take. The poll that came back had lasted 10.6 s with a time limit of 2.5 s:
+the limit covers connecting and each read, not looking the host's address up, which a new connection does
+first (the record is short-lived: it read 12 s and 1 s of life left when we looked) and which waits on
+Windows' own retries, seconds apart. Three requests are 0.014 % of a final. Closing that gap means changing
+how every poll and every insert connects, the night before, with no way to rehearse a real outage on the
+machine that is serving. **The loop stays as it is.** It did what it is built for: no thread died, nothing
+was restarted (the supervisor only starts a server that has exited: a restart, a minute or two of loading,
+would have cost more than the drop), and the answers resumed by themselves.
+
+**What it was.** Windows logged nothing in those minutes: no disconnection, no roaming, no new address
+(WLAN-AutoConfig, System, DHCP and network-status logs all empty). The link was 5 GHz, channel 48 (not a
+radar channel), 802.11ac at 867 Mbps, signal 88 %; the laptop was on mains, the adapter set to maximum
+performance, no sleep, no restart pending. So the radio stayed associated and nothing crossed it for twelve
+seconds: the router or the air, not a setting on the laptop. In the 10.6 hours the monitor has logged
+(Saturday 16:57 UTC to Sunday 03:37 UTC) it is the only outage; three single pings lost on Saturday evening
+cost nothing. Since Saturday 20:00 UTC, 89 of 83,320 requests went unanswered (99.89 % answered): these 34
+are the largest single piece.
+
+**For the final.** One such drop in the two hours is 0.16 % of the answers, and from one event in 10.6
+hours the chance of one is about one in six: small in expectation. What a cable removes is the tail, a
+drop that lasts a minute. The laptop has a wired port (gigabit), unused so far. Two things to know:
+
+- **A connection stays on the adapter it was opened on.** The server holds twelve connections to RawTree,
+  all through the Wi-Fi (`scripts/link.ps1` shows them). With a cable plugged in, Windows sends new
+  connections through it by itself, but the server opens new ones only when it has to. So the cable goes in
+  *before* the swap that sets the final's version, and `scripts/link.ps1` confirms it afterwards.
+- **The Wi-Fi stays on, as the spare.** If the cable fails, the server's connections fail with it and are
+  opened again over the Wi-Fi within seconds.

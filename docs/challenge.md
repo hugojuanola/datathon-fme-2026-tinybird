@@ -124,6 +124,22 @@ Teams that generalise beat teams that memorise:
 - **Price changes** — announced in `shop.catalog_updates`.
 - **Stock-outs** — inactive products make the answer invalid.
 
+**The final continues Saturday's state** (organisers' message, Sun 15 Nov about 09:10 CET, verbatim in
+[`sources/final-announcement.md`](sources/final-announcement.md)): "it's the same world, still running.
+Nothing resets at 10:00."
+
+- **Purchases still count.** A returning shopper carries everything they bought: in the history, in the
+  store on Saturday (`shop.events`) and through our recommendations (`feedback`), and tends not to want it
+  again. Our state holds the three (`reco/state.py`: the history cache, the journal of live events, our
+  feedback, at start-up and every two seconds) and a product the shopper bought is never in a list.
+- **Carts do not.** `add_to_cart` is an activity event: no pending cart turns into a purchase later. We
+  never treated a cart as a pending purchase: it is a signal of interest, with the weight measured on
+  our own live feedback (0.53 % per impression against 0.052 %, findings §1), and it wears off with the
+  age of the cart and with repetition (findings §21, §23).
+- **The catalogue carries on**: Saturday's new products stay, stock and price changes keep arriving in
+  `shop.catalog_updates`. So the server must not be restarted "clean": the one running carries the state,
+  and a relaunched one rebuilds the same state from the history, the journal and the feedback.
+
 ## Hard rules
 
 - Shoppers, sessions and outcomes come from a simulator with a secret seed; the catalogue is synthetic.

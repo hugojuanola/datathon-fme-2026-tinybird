@@ -211,6 +211,16 @@ Measured: feedback is written **≈4.23 s after the request `ts`** (p95 4.25 s).
 That gives a free measurement of the baseline on live traffic: **CTR 2.36%, realised conversion 0.82%,
 0.147 €/request** over 10,890 requests.
 
+The feedback row's own `ts` is that write time, not the request's: a minute of feedback holds the requests
+of 4.2 s earlier (measured again on 15 Nov: 4,202–4,251 ms on 90 requests). Join on `request_id`, or shift,
+when lining feedback up with a log. How late an answer may land (measured 15 Nov): since 14 Nov 20:00 UTC,
+86 of our 83,231 answers that were used had `latency_ms` above 3,000 (17 above 3,300, the latest 3,459),
+and no row of ours says `late`, only `missing`. The brief says the 3 seconds are "measured by the
+organisers' clock (polled every half second)", which fits answers being taken up to about 3.5 s. We stop
+answering a request 2.8 s after its ts (`MAX_AGE_MS` in `reco/serve.py`), so where `late` begins was never
+reached, and whether an answer between 3,000 and 3,459 ms counts as on time for the reliability score is
+not known: nothing to lean on.
+
 ## Public leaderboard numbers (practice, last hour, same moment)
 
 | | Conversion (exp. purchases / 100 req) | Cold conversion | € / request |

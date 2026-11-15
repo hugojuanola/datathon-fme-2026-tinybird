@@ -96,7 +96,22 @@ def main() -> None:
             against = "" if s == suffixes[0] else "  vs v" + suffixes[0] + ": " + ", ".join(
                 f"{k} {v[k] - first[0][k]:+.2f} ({(v[k] - first[0][k]) / (experiments.SPREAD[k] * (1 / max(n[k], 1) + 1 / max(first[1][k], 1)) ** 0.5):+.1f} se)"
                 for k in ("all", "cold", "warm"))
-            print(f"     v{s}  requests {n['all']:>6,}  overall {v['all']:.3f} ({v['all'] - ref['all']:+.3f})  cold {v['cold']:.3f}  warm {v['warm']:.3f}{against}")
+            print(f"     v{s}  requests {n['all']:>6,}  overall {v['all']:.3f} ({v['all'] - ref['all']:+.3f})  cold {v['cold']:.3f}  warm {v['warm']:.3f}  "
+                  f"eur {v['eur']:.2f}{against}")
+        for line in experiments.contrast_lines(rows_):
+            print(f"     > {line}")
+        present = [s for s in suffixes if s in rows_]
+        if regime == "all" and len(present) > 2:      # an arm two standard errors below the others is taken out
+            lowest = None
+            for s in present:
+                v, n = experiments.values(rows_[s])
+                rest_v, rest_n = experiments.pooled(rows_, tuple(o for o in present if o != s))
+                diff = v["all"] - rest_v["all"]
+                se = experiments.SPREAD["all"] * (1 / max(n["all"], 1) + 1 / max(rest_n["all"], 1)) ** 0.5
+                if lowest is None or diff / se < lowest[1] / lowest[2]:
+                    lowest = (s, diff, se)
+            print(f"     > the lowest arm against the others pooled: v{lowest[0]} {lowest[1]:+.3f} ({lowest[1] / lowest[2]:+.1f} se); "
+                  f"an arm is taken out at -2 se over a clean window")
 
     print("\n4) SERVER")
     print(f"   last start at log line {started}; last trend line: {trend or 'none'}")

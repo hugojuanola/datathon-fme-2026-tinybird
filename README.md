@@ -62,6 +62,7 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
 | More weight on today's feedback, routing by kind of request, more features: no | Three ideas that looked right offline or for an hour and did not hold on thousands of live requests; one ranker serves everybody | §17, §20 |
 | Ten more signals, each checked against what the ranker already predicts: one survives | Co-purchases, repetition, cart history, promotions, ids for brand and subcategory: all within a quarter of the ranker's own prediction. Holding only the slot equal would have "found" four of them. The one that left something: after a click a known shopper buys a product added during the event 37 % of the time, the ranker expected 26 % | §21 |
 | A model must not be asked about what it has never seen | The first trend with the organic model live: it filled a sixth of the slots with a trending subcategory nobody clicked (2 clicks in 2,936 impressions). Caught by the watch in 12 minutes, fixed in 21: on trending products the organic model has no say | §21 |
+| A neutral score is not a neutral rank | In the next trend the organic arms showed the trending product as often as v9 but lower (first slot in 16–19 % of lists against 22 %), where it drew 52 % of the clicks against the 38 % its slots predict: the products that come out first are the ones with the highest organic factor. A trending product now keeps the rank v9 and the lift give it; the organic factor orders the rest | §23 |
 | Price drops and new products are small next to that | A 19 % promotion sells about ×1.2; a new product takes its fair share from its first ten minutes | §16 |
 
 ## How we know: offline first, then live
@@ -79,7 +80,7 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
   ([`scripts/arms.py`](scripts/arms.py)). We measured how noisy that is — three arms doing exactly the same
   read 1.92, 2.40 and 2.59 in one quarter of an hour — and only act on hours of traffic or on effects well
   beyond the noise (findings §15). When the offline judges and the live arms disagreed (v16 against v9 on
-  known shoppers), the live arms decided.
+  known shoppers; the organic order, +2.5 % on held-out lists and −4.3 % live), the live arms decided.
 
 | Version | What changed | Expected purchases per 100 requests |
 |---|---|---|
@@ -88,10 +89,11 @@ All of it runs in 45–90 ms per request, in one Python process: [`reco/`](reco/
 | v5 | first learned ranker on top of the rules | 1.81 |
 | v7–v10 | + description attributes, new products, carts by subcategory | 2.3–2.4 |
 | reference | the organisers' recommender | 2.06 |
-| v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | being measured over the night (findings §20) |
-| v9 × organic | + what shoppers go on to buy in the store | being measured over the night |
-| v9 × organic, new products ×1.5 | + products added during the event lifted for known shoppers | being measured over the night (findings §21) |
-| v9 picks the ten, organic orders them | the same ten products as v9, ordered with what shoppers go on to buy | being measured over the night; +2.5 % to +4.7 % purchases on held-out lists, depending on the attention curve (findings §22) |
+| v9 + trend lift | + products of a trending subcategory multiplied by the detector's lift | 2.39 over 22:25–00:40 UTC on Saturday night and 2.30 over 00:45–05:30 UTC on Sunday, the best of the four arms of the night. **Alone since 05:34 UTC on Sunday: the version for the final** (findings §20, §23) |
+| v9 × organic over the best 100 | + what shoppers go on to buy in the store, choosing among v9's best 100 candidates | 2.30 over the same hours: closed (never above v9 + lift, 20 ms more per answer) |
+| v9 × organic over the best 100, new products ×1.5 | + products added during the event lifted for known shoppers | 2.45 over the same hours: closed with the one above; the ×1.5 then got arms of its own (findings §21, §23) |
+| v9 picks the ten, organic orders them | the same ten products as v9, ordered with what shoppers go on to buy; a trending product keeps v9's slot | 2.20 against 2.30 for v9 + trend lift over 00:45–05:30 UTC (12,700 requests each); as a question on half of the traffic −0.10 (−1.7 se), where held-out lists had given +2.5 % ± 1.1. Closed: the live arms decide (findings §22, §23) |
+| v9 + trend lift, new products ×1.5 | + products added during the event lifted for known shoppers, without the organic model | 2.24 against 2.30 over the same hours; as a question on half of the traffic −0.06 (−1.0 se). Closed (findings §21, §23) |
 
 ## Learning from the stream
 
@@ -120,8 +122,10 @@ no ids, a profile builds itself from the stream, and the detector does not know 
 Nothing waits for a single call: four staggered pollers, four senders, an insert that has not come back in
 0.6 s is sent again on another connection. A new version loads in standby, answers real requests in a
 self-test, and takes over without a gap ([`scripts/swap_server.ps1`](scripts/swap_server.ps1)). If the ranker fails the rules answer; if the rules fail, the best
-sellers in stock. What costs answers is the home connection, not the code: findings §8,
-[`scripts/netmon.py`](scripts/netmon.py), [`docs/final-round.md`](docs/final-round.md).
+sellers in stock. What costs answers is the home connection, not the code: findings §8, §18,
+[`scripts/netmon.py`](scripts/netmon.py), [`docs/final-round.md`](docs/final-round.md). The night before
+the final the Wi-Fi went silent for 12 seconds: 34 requests unanswered, of which about three were within
+reach of any loop, and the server went on by itself two seconds after the link came back (findings §24).
 
 ## Repository map
 
@@ -134,7 +138,7 @@ sellers in stock. What costs answers is the home connection, not the code: findi
 | [`models/`](models/) | The trained rankers (LightGBM text files) |
 | [`docs/findings.md`](docs/findings.md) | Every measurement behind the design, in the order we made them |
 | [`docs/challenge.md`](docs/challenge.md), [`docs/data.md`](docs/data.md), [`docs/rawtree.md`](docs/rawtree.md) | Rules and scoring · data dictionary · RawTree cheat sheet |
-| [`queries/`](queries/), [`scripts/`](scripts/) | Reusable SQL · `rt.py` (SQL from the shell), `arms.py` (A/B on the organisers' metric), `leaderboard.py`, `netmon.py` |
+| [`queries/`](queries/), [`scripts/`](scripts/) | Reusable SQL · `rt.py` (SQL from the shell), `arms.py` (A/B on the organisers' metric), `leaderboard.py`, `netmon.py` and `link.ps1` (is it the Wi-Fi? which link does the server use?) |
 | [`presentation/`](presentation/README.md) | The jury presentation: an animated HTML deck, in Spanish |
 | [`avanced_data_analysis/`](avanced_data_analysis/README.md) | Exploratory analysis: what drives a purchase (figures, clustering, SHAP) |
 | [`realtime_analyisi_leaderboard/`](realtime_analyisi_leaderboard/README.md) | Live watch of the leaderboard and of each arm |
